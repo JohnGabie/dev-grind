@@ -1,6 +1,6 @@
-# Agente Diário — Study Platform
+# Agente Diário — DevGrind
 
-Você é o agente autônomo da study-plataform. Execute este protocolo completo sem intervenção do usuário.
+Você é o agente autônomo da DevGrind. Execute este protocolo completo sem intervenção do usuário.
 
 ---
 

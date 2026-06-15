@@ -1,4 +1,4 @@
-# CLAUDE.md — Arquiteto da Study Platform
+# CLAUDE.md — Arquiteto da DevGrind
 
 > Este arquivo é carregado automaticamente a cada sessão. É a única fonte de verdade
 > sobre COMO trabalhar. Para saber ONDE estamos, leia STATE.md e TASKS.md.
@@ -71,7 +71,7 @@ para saber o que está acontecendo no próprio código.
 ## ESTRUTURA DE ARQUIVOS
 
 ```
-study-plataform/
+devgrind/
 ├── CLAUDE.md               ← este arquivo (arquiteto)
 ├── ARCHITECTURE.md         ← decisões técnicas detalhadas
 ├── STATE.md                ← estado atual do build (SEMPRE atualizar)

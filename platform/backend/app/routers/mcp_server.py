@@ -836,7 +836,7 @@ async def mcp_endpoint(request: Request):
                 responses.append(_ok(id_, {
                     "protocolVersion": "2024-11-05",
                     "capabilities": {"tools": {}},
-                    "serverInfo": {"name": "study-platform", "version": "1.0.0"},
+                    "serverInfo": {"name": "devgrind", "version": "1.0.0"},
                 }))
 
             elif method in ("notifications/initialized", "notifications/cancelled"):

@@ -222,7 +222,7 @@ function IntegracoesSection() {
   }
 
   const mcpConfig = (raw: string) => JSON.stringify({
-    mcpServers: { 'study-platform': { type: 'http', url: `${serverUrl}/mcp`, headers: { Authorization: `Bearer ${raw}` } } },
+    mcpServers: { 'devgrind': { type: 'http', url: `${serverUrl}/mcp`, headers: { Authorization: `Bearer ${raw}` } } },
   }, null, 2)
 
   return (
@@ -338,7 +338,7 @@ function IntegracoesSection() {
 
           <p style={{ margin: '8px 0 0', fontSize: 10, color: 'var(--muted)', opacity: 0.7, lineHeight: 1.6 }}>
             Cole em <code style={{ fontFamily: 'var(--f-mono)' }}>~/.claude.json</code> sob <code style={{ fontFamily: 'var(--f-mono)' }}>mcpServers</code>
-            {' '}ou rode: <code style={{ fontFamily: 'var(--f-mono)' }}>claude mcp add --transport http study-platform {serverUrl}/mcp</code>
+            {' '}ou rode: <code style={{ fontFamily: 'var(--f-mono)' }}>claude mcp add --transport http devgrind {serverUrl}/mcp</code>
           </p>
         </div>
       )}

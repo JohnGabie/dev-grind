@@ -1,0 +1,9 @@
+name = "devgrind-worker"
+main = "src/index.ts"
+compatibility_date = "2026-06-15"
+
+[[d1_databases]]
+binding = "DB"
+database_name = "devgrind"
+database_id = "0a2833b8-c0dc-44d8-938b-568a9af0a5de"
+migrations_dir = "drizzle"

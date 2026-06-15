@@ -1,4 +1,4 @@
-# Daily study agent — runs at 6am via Windows Task Scheduler
+# DevGrind daily agent — runs at 6am via Windows Task Scheduler
 # Requires: Claude Code CLI in PATH, backend running on localhost:8000
 
 $root = "C:\Users\joaog\PycharmProjects\study-plataform"

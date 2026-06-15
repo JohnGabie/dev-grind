@@ -78,7 +78,7 @@ export default function LoginPage() {
             </svg>
           </div>
           <h1 className="f-display" style={{ fontSize: 26, fontWeight: 800, color: 'var(--text)', margin: 0 }}>
-            Study Platform
+            DevGrind
           </h1>
           <p className="f-mono" style={{ fontSize: 11, color: 'var(--cyan)', marginTop: 6 }}>
             // train · think · ship

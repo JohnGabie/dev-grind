@@ -128,7 +128,7 @@ export default function Sidebar() {
             overflow: 'hidden',
             transition: 'max-width 220ms ease, opacity 150ms ease',
           }}>
-            Study Platform
+            DevGrind
           </span>
         </div>
 

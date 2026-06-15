@@ -55,6 +55,8 @@ Nova pasta/
 # Logs
 agent/logs/
 *.log
+*.err
+*.log.err
 
 # study-backend is a separate repo — tracked as submodule or excluded
 study-backend/

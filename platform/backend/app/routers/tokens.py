@@ -72,9 +72,9 @@ def revoke_token(
 @router.get("/claude-md", response_class=PlainTextResponse)
 def get_claude_md(user: User = Depends(get_current_user)):
     rank = _compute_rank(user.honor)
-    return f"""# Study Platform — Local Kata Development
+    return f"""# DevGrind — Local Kata Development
 
-You are connected to {user.name}'s study platform via MCP.
+You are connected to {user.name}'s DevGrind via MCP.
 
 ## On session start
 Call `get_context()` to read the current learning state.

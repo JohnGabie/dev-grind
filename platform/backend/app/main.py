@@ -31,7 +31,7 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="Study Platform API", lifespan=lifespan)
+app = FastAPI(title="DevGrind API", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -64,4 +64,4 @@ app.mount("/book-imgs", StaticFiles(directory="app/uploads/book-imgs"), name="bo
 
 @app.get("/")
 def root():
-    return {"status": "ok", "api": "Study Platform"}
+    return {"status": "ok", "api": "DevGrind"}
