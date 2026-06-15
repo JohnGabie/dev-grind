@@ -12,6 +12,9 @@ import ChatPage from './pages/ChatPage'
 import BooksPage from './pages/BooksPage'
 import BookReaderPage from './pages/BookReaderPage'
 import ConfigPage from './pages/ConfigPage'
+import StorePage from './pages/StorePage'
+import StoreItemPage from './pages/StoreItemPage'
+import CommunityPage from './pages/CommunityPage'
 
 export default function App() {
   return (
@@ -29,6 +32,9 @@ export default function App() {
             <Route path="books" element={<BooksPage />} />
             <Route path="books/:slug" element={<BookReaderPage />} />
             <Route path="config" element={<ConfigPage />} />
+            <Route path="store" element={<StorePage />} />
+            <Route path="store/:itemId" element={<StoreItemPage />} />
+            <Route path="community" element={<CommunityPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

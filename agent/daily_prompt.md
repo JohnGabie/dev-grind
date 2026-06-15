@@ -40,17 +40,47 @@ python agent/codewars_sync.py --json
 
 ---
 
-## 3. ANÁLISE — Identificar gaps
+## 3. ANÁLISE — Identificar gaps e atualizar perfil
 
-Com os dados acima, identifique:
+### 3a. Ler perfil atual
 
-1. **Conceitos com rate < 0.6**: esses precisam de reforço direto
-2. **Conceitos sem nenhuma tentativa**: esses precisam de introdução
+Use a ferramenta MCP `get_profile` (via `POST http://localhost:8000/mcp` com Bearer token do agente,
+method `tools/call`, name `get_profile`) ou leia o perfil via `GET http://localhost:8000/profile/me`.
+
+### 3b. Cruzar analytics com perfil
+
+Para cada conceito nos dados de performance:
+
+**Gap confirmado** (rate < 0.6 E ≥ 5 tentativas):
+- Se já existe no perfil → atualizar `last_seen` e `evidence` com data de hoje
+- Se não existe → adicionar com `severity: 2`, `type: "fundament_gap"`
+
+**Gap resolvido** (rate >= 0.8 E ≥ 5 tentativas E estava nos gaps):
+- Remover dos gaps
+- Adicionar nos `strengths` com `observed_at: hoje`
+
+**Sem dados suficientes** (< 5 tentativas): ignorar — dado não confiável.
+
+### 3c. Atualizar perfil
+
+Use `update_profile("gaps", gaps_atualizados)` e `update_profile("level", level_atualizado)`.
+
+Use `add_profile_note` com category `"daily_agent"` descrevendo o ciclo:
+```
+"Ciclo YYYY-MM-DD: N gaps confirmados, M resolvidos. Conceitos prioritários: X, Y."
+```
+
+### 3d. Calibrar geração
+
+1. **Conceitos com rate < 0.6**: precisam de reforço direto
+2. **Conceitos sem nenhuma tentativa**: precisam de introdução
 3. **Fase atual do roadmap**: quais tópicos estão pendentes nessa fase?
 4. **Atividade recente**:
    - 0 exercícios nos últimos 3 dias → gerar 1 exercício fácil (reengajamento)
    - Atividade normal → gerar 2 exercícios nos gaps identificados
    - 5+ exercícios/dia → gerar 3 exercícios, aumentar dificuldade
+5. **Prioridade de gap**: severity 3 → severity 2 → severity 1; prefira gaps com < 5 tentativas
+   (exposição nova supera reforço para gaps não tentados)
 
 Taxonomy de conceitos disponíveis:
 ```

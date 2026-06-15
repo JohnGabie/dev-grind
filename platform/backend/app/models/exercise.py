@@ -24,6 +24,7 @@ class Exercise(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     generated_by = Column(String(50), default="manual")
     book_reference = Column(String, nullable=True)
+    user_id = Column(String, ForeignKey("users.id"), nullable=True)  # null = global seed
 
     test_cases = relationship("TestCase", back_populates="exercise", order_by="TestCase.order")
     submissions = relationship("Submission", back_populates="exercise")

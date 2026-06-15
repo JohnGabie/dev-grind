@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException
+import os
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from sqlalchemy import func
@@ -16,7 +17,9 @@ router = APIRouter(prefix="/users", tags=["users"])
 
 
 class UserUpdate(BaseModel):
-    name: str
+    name: str | None = None
+    bio: str | None = None
+    social_links: dict | None = None
 
 
 @router.patch("/me")
@@ -25,11 +28,62 @@ def update_me(
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    if not body.name.strip():
-        raise HTTPException(status_code=422, detail="name cannot be empty")
-    current_user.name = body.name.strip()
+    if body.name is not None:
+        if not body.name.strip():
+            raise HTTPException(status_code=422, detail="name cannot be empty")
+        current_user.name = body.name.strip()
+    if body.bio is not None:
+        current_user.bio = body.bio.strip() or None
+    if body.social_links is not None:
+        import json
+        current_user.social_links = json.dumps(body.social_links)
     db.commit()
-    return {"name": current_user.name}
+    return {"name": current_user.name, "bio": current_user.bio}
+
+
+@router.post("/me/cover")
+async def upload_cover(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if not file.content_type or not file.content_type.startswith("image/"):
+        raise HTTPException(status_code=422, detail="o arquivo precisa ser uma imagem")
+
+    ext = (file.filename or "").rsplit(".", 1)[-1].lower()
+    if ext not in {"jpg", "jpeg", "png", "webp", "gif"}:
+        ext = "jpg"
+
+    filename = f"{current_user.id}.{ext}"
+    path = f"app/uploads/covers/{filename}"
+
+    # Remove old cover file if extension changed
+    for old_ext in {"jpg", "jpeg", "png", "webp", "gif"} - {ext}:
+        old_path = f"app/uploads/covers/{current_user.id}.{old_ext}"
+        if os.path.exists(old_path):
+            os.remove(old_path)
+
+    content = await file.read()
+    with open(path, "wb") as f:
+        f.write(content)
+
+    current_user.cover_url = f"/covers/{filename}"
+    db.commit()
+    return {"cover_url": current_user.cover_url}
+
+
+@router.delete("/me/cover")
+def delete_cover(
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    if current_user.cover_url:
+        path = f"app/uploads{current_user.cover_url}"
+        if os.path.exists(path):
+            os.remove(path)
+        current_user.cover_url = None
+        db.commit()
+    return {"cover_url": None}
 
 
 @router.get("/me/stats")
@@ -89,24 +143,39 @@ def get_my_stats(
         for sub, ex in recent
     ]
 
-    since = date.today() - timedelta(weeks=52)
-    heatmap_rows = (
-        db.query(DailyProgress)
-        .filter(DailyProgress.user_id == user.id, DailyProgress.date >= since)
+    since = date.today() - timedelta(days=364)
+    kata_rows = (
+        db.query(
+            func.date(Submission.submitted_at).label("day"),
+            func.count(Submission.id).label("count"),
+        )
+        .filter(
+            Submission.user_id == user.id,
+            Submission.status == "passed",
+            func.date(Submission.submitted_at) >= since,
+        )
+        .group_by(func.date(Submission.submitted_at))
         .all()
     )
-    heatmap = {str(r.date): r.exercises_completed for r in heatmap_rows}
+    heatmap: dict = {}
+    for row in kata_rows:
+        day = str(row.day)
+        heatmap[day] = {"total": row.count, "katas": row.count, "books": 0, "courses": 0}
 
     return {
         "user": {
             "name": user.name,
             "email": user.email,
             "avatar_url": user.avatar_url,
+            "cover_url": user.cover_url,
+            "bio": user.bio,
+            "social_links": __import__('json').loads(user.social_links or '{}'),
             "created_at": str(user.created_at.date()),
         },
         "rank": rank,
         "rank_progress": round(progress, 3),
         "honor": user.honor,
+        "coins": user.coins,
         "honor_for_next_rank": honor_for_next,
         "total_completed": total_completed,
         "total_attempted": total_attempted,

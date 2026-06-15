@@ -8,4 +8,16 @@ api.interceptors.request.use((config) => {
   return config
 })
 
+api.interceptors.response.use(
+  r => r,
+  err => {
+    if (err.response?.status === 401 || (err.response?.status === 422 && err.response?.data?.detail?.[0]?.loc?.includes('authorization'))) {
+      localStorage.removeItem('token')
+      localStorage.removeItem('user')
+      window.location.href = '/login'
+    }
+    return Promise.reject(err)
+  }
+)
+
 export default api

@@ -3,51 +3,8 @@ import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import { useAuth } from '../../auth/AuthContext'
 import { ChatPanel } from '../ChatPanel'
+import { CosmeticsProvider } from '../../contexts/CosmeticsContext'
 import api from '../../api/client'
-
-// ── Starfield ────────────────────────────────────────────────────────────────
-function makeShadows(n: number, color: string): string {
-  const s: string[] = []
-  for (let i = 0; i < n; i++)
-    s.push(`${Math.floor(Math.random() * 2000)}px ${Math.floor(Math.random() * 2000)}px ${color}`)
-  return s.join(', ')
-}
-
-// Generated once at module load — stable across re-renders
-const S1 = makeShadows(700, 'rgba(190, 220, 255, 0.35)')
-const S2 = makeShadows(200, 'rgba(34, 211, 238, 0.50)')
-const S3 = makeShadows(80,  'rgba(34, 211, 238, 0.80)')
-
-function StarLayer({ shadows, size, duration }: { shadows: string; size: number; duration: number }) {
-  const style: React.CSSProperties = {
-    position: 'absolute',
-    width: size, height: size,
-    background: 'transparent',
-    boxShadow: shadows,
-    animation: `animStar ${duration}s linear infinite`,
-  }
-  return (
-    <>
-      <div style={style} />
-      <div style={{ ...style, top: 2000 }} />
-    </>
-  )
-}
-
-function Starfield() {
-  return (
-    <div style={{
-      position: 'fixed', bottom: 0, left: 70, right: 0,
-      height: 220, overflow: 'hidden', pointerEvents: 'none',
-      background: 'linear-gradient(to top, rgba(13,26,42,0.65) 0%, transparent 100%)',
-      zIndex: 5,
-    }}>
-      <StarLayer shadows={S1} size={1} duration={50} />
-      <StarLayer shadows={S2} size={2} duration={100} />
-      <StarLayer shadows={S3} size={3} duration={150} />
-    </div>
-  )
-}
 
 // ── TopBar ───────────────────────────────────────────────────────────────────
 const DIFF_COLOR: Record<string, string> = {
@@ -59,11 +16,11 @@ const DIFF_COLOR: Record<string, string> = {
 function TopBar() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
-  const [stats, setStats] = useState<{ rank: string; honor: number } | null>(null)
+  const [stats, setStats] = useState<{ rank: string; honor: number; coins: number } | null>(null)
 
   useEffect(() => {
     api.get('/users/me/stats')
-      .then(r => setStats({ rank: r.data.rank, honor: r.data.honor }))
+      .then(r => setStats({ rank: r.data.rank, honor: r.data.honor, coins: r.data.coins ?? 0 }))
       .catch(() => {})
   }, [])
 
@@ -117,6 +74,34 @@ function TopBar() {
               }}>
                 {stats.honor.toLocaleString()}
                 <span style={{ opacity: 0.5, fontSize: 11, marginLeft: 5 }}>honor</span>
+              </span>
+            </button>
+          )}
+
+          {/* Coins */}
+          {stats && (
+            <button
+              onClick={() => navigate('/store')}
+              title="Grind Store"
+              style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '0 14px',
+                background: 'none', border: 'none', cursor: 'pointer',
+                transition: 'background 130ms',
+                borderLeft: '1px solid var(--border)',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.background = 'rgba(251,191,36,0.06)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'none')}
+            >
+              <svg width="12" height="12" viewBox="0 0 16 16" fill="none">
+                <polygon points="8,1 14,4.5 14,11.5 8,15 2,11.5 2,4.5" fill="rgba(251,191,36,0.15)" stroke="#fbbf24" strokeWidth="1.2" />
+                <text x="8" y="11" textAnchor="middle" fontSize="7" fontWeight="800" fill="#fbbf24" fontFamily="monospace">G</text>
+              </svg>
+              <span style={{
+                fontSize: 12, fontWeight: 700, fontFamily: 'var(--f-mono)',
+                color: '#fbbf24', letterSpacing: '-0.01em',
+              }}>
+                {stats.coins.toLocaleString()}
               </span>
             </button>
           )}
@@ -246,16 +231,21 @@ function ChatBubble() {
 
 // ── Layout ───────────────────────────────────────────────────────────────────
 export default function AppLayout() {
+  const location = useLocation()
+  const hideTopBar = location.pathname === '/profile'
+
   return (
-    <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: 'var(--bg)' }}>
-      <Sidebar />
-      <main style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
-        <TopBar />
-        <div style={{ height: '100%', overflow: 'hidden' }}>
-          <Outlet />
-        </div>
-      </main>
-      <ChatBubble />
-    </div>
+    <CosmeticsProvider>
+      <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: 'var(--bg)' }}>
+        <Sidebar />
+        <main style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
+          {!hideTopBar && <TopBar />}
+          <div style={{ height: '100%', overflow: 'hidden' }}>
+            <Outlet />
+          </div>
+        </main>
+        <ChatBubble />
+      </div>
+    </CosmeticsProvider>
   )
 }

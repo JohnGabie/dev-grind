@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+import ReactMarkdown from 'react-markdown'
 import api from '../api/client'
 
 function getAiConfig() {
@@ -21,9 +22,9 @@ type SourceType = 'exercise' | 'course' | 'book' | 'dashboard' | 'general'
 
 interface ConversationSource {
   type: SourceType
-  title: string        // e.g. "Função com *args"
-  subtitle?: string    // e.g. "Cap. 3 — Path Parameters"
-  slug?: string        // for navigation back to source
+  title: string
+  subtitle?: string
+  slug?: string
 }
 
 interface Conversation {
@@ -131,66 +132,6 @@ function mkId() {
   return Math.random().toString(36).slice(2, 10)
 }
 
-const MOCK: Conversation[] = [
-  {
-    id: 'c1',
-    title: 'Como funciona dependency injection no FastAPI?',
-    context: 'kata:validar-request-body-pydantic',
-    source: { type: 'exercise', title: 'Validar Request Body com Pydantic', slug: 'validar-request-body-pydantic' },
-    updated_at: new Date(Date.now() - 3 * 3600 * 1000).toISOString(),
-    messages: [
-      { id: 'm1', role: 'user', content: 'Como funciona dependency injection no FastAPI?', timestamp: new Date(Date.now() - 3 * 3600 * 1000).toISOString() },
-      { id: 'm2', role: 'assistant', content: 'O FastAPI usa o sistema de `Depends()` para injetar dependências automaticamente em funções de rota.\n\nExemplo básico:\n\n```python\nfrom fastapi import Depends\n\ndef get_db():\n    db = SessionLocal()\n    try:\n        yield db\n    finally:\n        db.close()\n\n@app.get("/users")\ndef list_users(db = Depends(get_db)):\n    return db.query(User).all()\n```\n\nO FastAPI chama `get_db()` antes de cada request e injeta o resultado como parâmetro. O `yield` garante que o cleanup roda depois da response.', timestamp: new Date(Date.now() - 3 * 3600 * 1000 + 5000).toISOString() },
-      { id: 'm3', role: 'user', content: 'E posso ter dependências que dependem de outras dependências?', timestamp: new Date(Date.now() - 2.5 * 3600 * 1000).toISOString() },
-      { id: 'm4', role: 'assistant', content: 'Sim, dependências podem ser aninhadas. O FastAPI resolve o grafo de dependências automaticamente e garante que cada dep. seja criada uma vez por request (se estiver no mesmo escopo).\n\n```python\ndef get_settings():\n    return Settings()\n\ndef get_db(settings = Depends(get_settings)):\n    db = create_engine(settings.db_url)\n    ...\n\n@app.get("/items")\ndef items(db = Depends(get_db)):\n    ...\n```', timestamp: new Date(Date.now() - 2.5 * 3600 * 1000 + 4000).toISOString() },
-    ],
-  },
-  {
-    id: 'c2',
-    title: 'Diferença entre *args e **kwargs',
-    context: 'kata:funcao-args-variaveis',
-    source: { type: 'exercise', title: 'Função com *args', slug: 'funcao-args-variaveis' },
-    updated_at: new Date(Date.now() - 27 * 3600 * 1000).toISOString(),
-    messages: [
-      { id: 'm1', role: 'user', content: 'Qual a diferença entre *args e **kwargs?', timestamp: new Date(Date.now() - 27 * 3600 * 1000).toISOString() },
-      { id: 'm2', role: 'assistant', content: '`*args` captura argumentos posicionais extras como uma **tupla**.\n`**kwargs` captura argumentos nomeados extras como um **dicionário**.\n\n```python\ndef exemplo(*args, **kwargs):\n    print(args)   # (1, 2, 3)\n    print(kwargs) # {\'nome\': \'João\'}\n\nexemplo(1, 2, 3, nome="João")\n```\n\nUso típico: funções que precisam aceitar qualquer combinação de argumentos, como wrappers e decorators.', timestamp: new Date(Date.now() - 27 * 3600 * 1000 + 3000).toISOString() },
-    ],
-  },
-  {
-    id: 'c3',
-    title: 'O que é um ORM e quando usar?',
-    context: 'general',
-    source: { type: 'general', title: 'conversa avulsa' },
-    updated_at: new Date(Date.now() - 4 * 24 * 3600 * 1000).toISOString(),
-    messages: [
-      { id: 'm1', role: 'user', content: 'O que é um ORM e quando usar?', timestamp: new Date(Date.now() - 4 * 24 * 3600 * 1000).toISOString() },
-      { id: 'm2', role: 'assistant', content: 'ORM (Object-Relational Mapper) é uma biblioteca que mapeia tabelas do banco para classes Python.\n\nNo ZionHub vocês usam SQLAlchemy — cada linha da tabela vira um objeto Python, e você consulta com Python em vez de SQL puro.\n\n**Quando usar:** CRUD simples, projetos Django/FastAPI, quando a lógica de negócio importa mais que a query.\n\n**Quando evitar:** Queries complexas com muitos JOINs e agregações — SQL direto é mais previsível e rápido nesses casos.', timestamp: new Date(Date.now() - 4 * 24 * 3600 * 1000 + 5000).toISOString() },
-    ],
-  },
-  {
-    id: 'c4',
-    title: 'Como lidar com migrações sem derrubar o banco?',
-    context: 'course:fastapi-do-zero',
-    source: { type: 'course', title: 'FastAPI do Zero', subtitle: 'Cap. 5 — Banco de dados' },
-    updated_at: new Date(Date.now() - 2 * 24 * 3600 * 1000).toISOString(),
-    messages: [
-      { id: 'm1', role: 'user', content: 'Como lidar com migrações sem derrubar o banco em produção?', timestamp: new Date(Date.now() - 2 * 24 * 3600 * 1000).toISOString() },
-      { id: 'm2', role: 'assistant', content: 'A chave é fazer migrações *aditivas* primeiro — nunca remover ou renomear colunas em um único deploy.\n\nEstratégia segura com Alembic:\n\n1. **Deploy 1:** adiciona a coluna nova (nullable)\n2. **Deploy 2:** backfill dos dados existentes\n3. **Deploy 3:** aplica o NOT NULL constraint\n4. **Deploy 4 (opcional):** remove a coluna antiga\n\nCada passo pode ser revertido sem perda de dados.', timestamp: new Date(Date.now() - 2 * 24 * 3600 * 1000 + 6000).toISOString() },
-    ],
-  },
-  {
-    id: 'c5',
-    title: 'O que o item 22 do Effective Python quer dizer na prática?',
-    context: 'book:effective-python',
-    source: { type: 'book', title: 'Effective Python', subtitle: 'Item 22 — *args variáveis' },
-    updated_at: new Date(Date.now() - 6 * 24 * 3600 * 1000).toISOString(),
-    messages: [
-      { id: 'm1', role: 'user', content: 'O item 22 fala em "reduce visual noise with variable positional arguments" — o que isso significa na prática?', timestamp: new Date(Date.now() - 6 * 24 * 3600 * 1000).toISOString() },
-      { id: 'm2', role: 'assistant', content: 'O ponto do Slatkin é que funções com muitos parâmetros opcionais ficam verbosas na chamada. Usar `*args` reduz o ruído visual quando você tem uma lista de coisas homogêneas.\n\nExemplo do livro:\n```python\n# Sem *args — verbose\nlog("mensagem", [arg1, arg2, arg3])\n\n# Com *args — limpo\nlog("mensagem", arg1, arg2, arg3)\n```\n\nA limitação: uma vez que você usa `*args`, não dá pra passar um gerador sem consumi-lo todo antes — o Python converte tudo em tupla na entrada.', timestamp: new Date(Date.now() - 6 * 24 * 3600 * 1000 + 8000).toISOString() },
-    ],
-  },
-]
-
 // ── Componentes menores ───────────────────────────────────────────────────────
 
 function TypingDots() {
@@ -207,6 +148,47 @@ function TypingDots() {
   )
 }
 
+const mdComponents = {
+  code({ children, className, ...props }: any) {
+    const isBlock = !!className
+    if (isBlock) {
+      return (
+        <pre style={{
+          background: 'rgba(0,0,0,0.35)', border: '1px solid var(--border)',
+          borderRadius: 5, padding: '10px 14px', overflowX: 'auto',
+          margin: '8px 0', fontSize: 12, lineHeight: 1.6,
+          fontFamily: 'var(--f-mono)',
+        }}>
+          <code className={className} style={{ background: 'none', padding: 0 }} {...props}>{children}</code>
+        </pre>
+      )
+    }
+    return (
+      <code style={{
+        background: 'rgba(255,255,255,0.07)', padding: '1px 5px',
+        borderRadius: 3, fontSize: 12, fontFamily: 'var(--f-mono)',
+      }} {...props}>{children}</code>
+    )
+  },
+  pre({ children }: any) { return <>{children}</> },
+  p({ children }: any) { return <p style={{ margin: '0 0 8px' }}>{children}</p> },
+  ul({ children }: any) { return <ul style={{ margin: '4px 0 8px', paddingLeft: 18 }}>{children}</ul> },
+  ol({ children }: any) { return <ol style={{ margin: '4px 0 8px', paddingLeft: 18 }}>{children}</ol> },
+  li({ children }: any) { return <li style={{ marginBottom: 2 }}>{children}</li> },
+  strong({ children }: any) { return <strong style={{ color: 'var(--text)', fontWeight: 700 }}>{children}</strong> },
+  h1({ children }: any) { return <h1 style={{ fontSize: 15, fontWeight: 700, margin: '12px 0 6px', color: 'var(--text)' }}>{children}</h1> },
+  h2({ children }: any) { return <h2 style={{ fontSize: 13, fontWeight: 700, margin: '10px 0 5px', color: 'var(--text)' }}>{children}</h2> },
+  h3({ children }: any) { return <h3 style={{ fontSize: 12, fontWeight: 700, margin: '8px 0 4px', color: 'var(--text)' }}>{children}</h3> },
+  blockquote({ children }: any) {
+    return (
+      <blockquote style={{
+        borderLeft: '3px solid var(--border-lit)', paddingLeft: 12, margin: '8px 0',
+        color: 'var(--muted)',
+      }}>{children}</blockquote>
+    )
+  },
+}
+
 function MessageBubble({ msg, isNew }: { msg: Message; isNew?: boolean }) {
   const isUser = msg.role === 'user'
   return (
@@ -221,10 +203,13 @@ function MessageBubble({ msg, isNew }: { msg: Message; isNew?: boolean }) {
         background: isUser ? 'rgba(34,211,238,0.09)' : 'var(--bg-card)',
         border: `1px solid ${isUser ? 'rgba(34,211,238,0.22)' : 'var(--border)'}`,
         fontSize: 13, color: 'var(--text)', lineHeight: 1.7,
-        whiteSpace: 'pre-wrap', wordBreak: 'break-word',
         fontFamily: 'var(--f-mono)',
       }}>
-        {msg.content}
+        {isUser ? (
+          <span style={{ whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>{msg.content}</span>
+        ) : (
+          <ReactMarkdown components={mdComponents}>{msg.content}</ReactMarkdown>
+        )}
       </div>
     </div>
   )
@@ -234,8 +219,8 @@ function MessageBubble({ msg, isNew }: { msg: Message; isNew?: boolean }) {
 export default function ChatPage() {
   const navigate = useNavigate()
   const [aiConfig, setAiConfig] = useState(getAiConfig)
-  const [convs, setConvs] = useState<Conversation[]>(MOCK)
-  const [activeId, setActiveId] = useState<string>(MOCK[0].id)
+  const [convs, setConvs] = useState<Conversation[]>([])
+  const [activeId, setActiveId] = useState<string>('')
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
   const [newMsgIds, setNewMsgIds] = useState<Set<string>>(new Set())
@@ -249,13 +234,13 @@ export default function ChatPage() {
     return () => window.removeEventListener('focus', refresh)
   }, [])
 
-  const active = convs.find(c => c.id === activeId) ?? convs[0]
+  const active = convs.find(c => c.id === activeId) ?? null
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [active?.messages.length, sending])
 
-  const newConversation = () => {
+  const newConversation = useCallback(() => {
     const id = mkId()
     const conv: Conversation = {
       id, title: 'Nova conversa',
@@ -265,11 +250,11 @@ export default function ChatPage() {
     setConvs(prev => [conv, ...prev])
     setActiveId(id)
     setTimeout(() => inputRef.current?.focus(), 50)
-  }
+  }, [])
 
   const send = useCallback(async () => {
     const text = input.trim()
-    if (!text || sending) return
+    if (!text || sending || !active) return
     setInput('')
 
     const userMsg: Message = { id: mkId(), role: 'user', content: text, timestamp: new Date().toISOString() }
@@ -373,6 +358,16 @@ export default function ChatPage() {
 
           {/* List */}
           <div style={{ flex: 1, overflowY: 'auto' }}>
+            {convs.length === 0 && (
+              <div style={{ padding: '24px 14px', textAlign: 'center' }}>
+                <p style={{ margin: 0, fontSize: 11, color: 'var(--muted)', lineHeight: 1.6 }}>
+                  Nenhuma conversa ainda.
+                </p>
+                <p style={{ margin: '4px 0 0', fontSize: 10, color: 'var(--muted)', opacity: 0.6 }}>
+                  Clique em + para começar.
+                </p>
+              </div>
+            )}
             {convs.map(c => {
               const isActive = c.id === activeId
               return (
@@ -412,7 +407,7 @@ export default function ChatPage() {
           </div>
         </div>
 
-        {/* ── Right panel — active chat ────────────────────────────────────── */}
+        {/* ── Right panel — active chat or welcome ─────────────────────────── */}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', overflow: 'hidden', position: 'relative' }}>
 
           {/* Subtle background mesh */}
@@ -424,171 +419,221 @@ export default function ChatPage() {
             `,
           }} />
 
-          {/* Messages */}
-          <div style={{
-            flex: 1, overflowY: 'auto', padding: '28px 32px 24px',
-            display: 'flex', flexDirection: 'column', gap: 12,
-            position: 'relative', zIndex: 1,
-          }}>
-            {/* Conversation header — inside the scroll area */}
-            <div style={{ marginBottom: 8 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
-                <p style={{
-                  margin: 0, fontSize: 15, fontWeight: 700,
-                  color: 'var(--text)', letterSpacing: '-0.02em', lineHeight: 1.3,
-                }}>
-                  {active.title}
-                </p>
-                {active.source && active.source.type !== 'general' && (
-                  <SourceBadge source={active.source} size="md" />
-                )}
-              </div>
-              <div style={{ marginTop: 14, height: 1, background: 'var(--border)' }} />
-            </div>
-
-            {active.messages.length === 0 && !sending && (
+          {!active ? (
+            /* No conversation selected */
+            <div style={{
+              flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+              gap: 16, position: 'relative', zIndex: 1,
+            }}>
               <div style={{
-                margin: 'auto', textAlign: 'center',
-                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14,
+                width: 56, height: 56, borderRadius: '50%',
+                background: 'var(--cyan-faint)', border: '1px solid var(--cyan-glow)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: 'var(--cyan)',
               }}>
-                {!aiConfig.api_key ? (
-                  <>
-                    <div style={{
-                      width: 48, height: 48, borderRadius: '50%',
-                      background: 'rgba(113,113,113,0.08)', border: '1px solid var(--border)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      color: 'var(--muted)',
-                    }}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-                      </svg>
-                    </div>
-                    <div>
-                      <p style={{ margin: '0 0 6px', fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>
-                        IA não configurada
-                      </p>
-                      <p style={{ margin: '0 0 14px', fontSize: 11, color: 'var(--muted)', lineHeight: 1.6 }}>
-                        Adicione uma API key em Configurações para usar o chat.
-                      </p>
-                      <button
-                        onClick={() => navigate('/config')}
-                        style={{
-                          fontSize: 12, padding: '7px 18px', borderRadius: 6, cursor: 'pointer',
-                          background: 'rgba(34,211,238,0.08)', border: '1px solid rgba(34,211,238,0.25)',
-                          color: 'var(--cyan)',
-                        }}
-                      >
-                        Ir para Configurações →
-                      </button>
-                    </div>
-                  </>
-                ) : (
-                  <>
-                    <div style={{
-                      width: 48, height: 48, borderRadius: '50%',
-                      background: 'var(--cyan-faint)', border: '1px solid var(--cyan-glow)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      color: 'var(--cyan)',
-                    }}>
-                      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
-                        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <p style={{ margin: '0 0 4px', fontSize: 13, color: 'var(--muted)' }}>
-                        faça uma pergunta para começar
-                      </p>
-                      <p style={{ margin: 0, fontSize: 10, color: 'var(--muted)', opacity: 0.5, fontFamily: 'var(--f-mono)' }}>
-                        {aiConfig.model} · {aiConfig.base_url.replace('https://', '').split('/')[0]}
-                      </p>
-                    </div>
-                  </>
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                </svg>
+              </div>
+              <div style={{ textAlign: 'center' }}>
+                <p style={{ margin: '0 0 6px', fontSize: 14, fontWeight: 600, color: 'var(--text)' }}>
+                  Assistente de Aprendizado
+                </p>
+                <p style={{ margin: '0 0 18px', fontSize: 12, color: 'var(--muted)', lineHeight: 1.6 }}>
+                  Pergunte sobre exercícios, código, FastAPI, SQL, HTTP.
+                </p>
+                <button
+                  onClick={newConversation}
+                  style={{
+                    fontSize: 12, padding: '8px 20px', borderRadius: 6, cursor: 'pointer',
+                    background: 'rgba(34,211,238,0.08)', border: '1px solid rgba(34,211,238,0.25)',
+                    color: 'var(--cyan)', fontFamily: 'var(--f-mono)',
+                  }}
+                >
+                  + Nova conversa
+                </button>
+                {!aiConfig.api_key && (
+                  <p style={{ margin: '14px 0 0', fontSize: 11, color: 'var(--muted)' }}>
+                    <span style={{ opacity: 0.6 }}>Sem API key — </span>
+                    <span
+                      onClick={() => navigate('/config')}
+                      style={{ color: 'var(--cyan)', cursor: 'pointer', textDecoration: 'underline' }}
+                    >
+                      configurar agora
+                    </span>
+                  </p>
                 )}
               </div>
-            )}
+            </div>
+          ) : (
+            <>
+              {/* Messages */}
+              <div style={{
+                flex: 1, overflowY: 'auto', padding: '28px 32px 24px',
+                display: 'flex', flexDirection: 'column', gap: 12,
+                position: 'relative', zIndex: 1,
+              }}>
+                {/* Conversation header */}
+                <div style={{ marginBottom: 8 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+                    <p style={{
+                      margin: 0, fontSize: 15, fontWeight: 700,
+                      color: 'var(--text)', letterSpacing: '-0.02em', lineHeight: 1.3,
+                    }}>
+                      {active.title}
+                    </p>
+                    {active.source && active.source.type !== 'general' && (
+                      <SourceBadge source={active.source} size="md" />
+                    )}
+                  </div>
+                  <div style={{ marginTop: 14, height: 1, background: 'var(--border)' }} />
+                </div>
 
-            {active.messages.map(msg => (
-              <MessageBubble key={msg.id} msg={msg} isNew={newMsgIds.has(msg.id)} />
-            ))}
+                {active.messages.length === 0 && !sending && (
+                  <div style={{
+                    margin: 'auto', textAlign: 'center',
+                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14,
+                  }}>
+                    {!aiConfig.api_key ? (
+                      <>
+                        <div style={{
+                          width: 48, height: 48, borderRadius: '50%',
+                          background: 'rgba(113,113,113,0.08)', border: '1px solid var(--border)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          color: 'var(--muted)',
+                        }}>
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                          </svg>
+                        </div>
+                        <div>
+                          <p style={{ margin: '0 0 6px', fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>
+                            IA não configurada
+                          </p>
+                          <p style={{ margin: '0 0 14px', fontSize: 11, color: 'var(--muted)', lineHeight: 1.6 }}>
+                            Adicione uma API key em Configurações para usar o chat.
+                          </p>
+                          <button
+                            onClick={() => navigate('/config')}
+                            style={{
+                              fontSize: 12, padding: '7px 18px', borderRadius: 6, cursor: 'pointer',
+                              background: 'rgba(34,211,238,0.08)', border: '1px solid rgba(34,211,238,0.25)',
+                              color: 'var(--cyan)',
+                            }}
+                          >
+                            Ir para Configurações →
+                          </button>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div style={{
+                          width: 48, height: 48, borderRadius: '50%',
+                          background: 'var(--cyan-faint)', border: '1px solid var(--cyan-glow)',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          color: 'var(--cyan)',
+                        }}>
+                          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+                          </svg>
+                        </div>
+                        <div>
+                          <p style={{ margin: '0 0 4px', fontSize: 13, color: 'var(--muted)' }}>
+                            faça uma pergunta para começar
+                          </p>
+                          <p style={{ margin: 0, fontSize: 10, color: 'var(--muted)', opacity: 0.5, fontFamily: 'var(--f-mono)' }}>
+                            {aiConfig.model} · {aiConfig.base_url.replace('https://', '').split('/')[0]}
+                          </p>
+                        </div>
+                      </>
+                    )}
+                  </div>
+                )}
 
-            {sending && (
-              <div style={{ alignSelf: 'flex-start' }}>
+                {active.messages.map(msg => (
+                  <MessageBubble key={msg.id} msg={msg} isNew={newMsgIds.has(msg.id)} />
+                ))}
+
+                {sending && (
+                  <div style={{ alignSelf: 'flex-start' }}>
+                    <div style={{
+                      padding: '10px 16px',
+                      borderRadius: '12px 12px 12px 3px',
+                      background: 'var(--bg-card)', border: '1px solid var(--border)',
+                    }}>
+                      <TypingDots />
+                    </div>
+                  </div>
+                )}
+                <div ref={bottomRef} />
+              </div>
+
+              {/* Input */}
+              <div style={{
+                flexShrink: 0, padding: '14px 24px 18px',
+                borderTop: '1px solid var(--border)',
+                background: 'var(--bg)',
+                position: 'relative', zIndex: 1,
+              }}>
                 <div style={{
-                  padding: '10px 16px',
-                  borderRadius: '12px 12px 12px 3px',
-                  background: 'var(--bg-card)', border: '1px solid var(--border)',
-                }}>
-                  <TypingDots />
+                  display: 'flex', gap: 10,
+                  background: 'var(--bg-card)',
+                  border: '1px solid var(--border)',
+                  borderRadius: 10, padding: '8px 10px',
+                  transition: 'border-color 150ms',
+                }}
+                  onFocusCapture={e => (e.currentTarget.style.borderColor = 'var(--border-lit)')}
+                  onBlurCapture={e => (e.currentTarget.style.borderColor = 'var(--border)')}
+                >
+                  <input
+                    ref={inputRef}
+                    type="text"
+                    placeholder={aiConfig.api_key ? 'pergunte algo...' : 'configure a IA em Configurações para usar o chat'}
+                    value={input}
+                    disabled={!aiConfig.api_key}
+                    onChange={e => setInput(e.target.value)}
+                    onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }}
+                    style={{
+                      flex: 1, height: 28, padding: 0,
+                      background: 'transparent', border: 'none',
+                      color: aiConfig.api_key ? 'var(--text)' : 'var(--muted)',
+                      fontSize: 13, fontFamily: 'var(--f-mono)', outline: 'none',
+                      cursor: aiConfig.api_key ? 'text' : 'not-allowed',
+                    }}
+                  />
+                  <button
+                    onClick={send}
+                    disabled={!input.trim() || sending || !aiConfig.api_key}
+                    style={{
+                      width: 32, height: 32, borderRadius: 7, flexShrink: 0,
+                      background: input.trim() && !sending && aiConfig.api_key ? 'rgba(34,211,238,0.12)' : 'transparent',
+                      border: `1px solid ${input.trim() && !sending && aiConfig.api_key ? 'rgba(34,211,238,0.3)' : 'transparent'}`,
+                      cursor: input.trim() && !sending && aiConfig.api_key ? 'pointer' : 'not-allowed',
+                      color: input.trim() && !sending && aiConfig.api_key ? 'var(--cyan)' : 'var(--muted)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      transition: 'all 150ms',
+                    }}
+                  >
+                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
+                      <line x1="22" y1="2" x2="11" y2="13" />
+                      <polygon points="22 2 15 22 11 13 2 9 22 2" />
+                    </svg>
+                  </button>
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
+                  <p style={{ margin: 0, fontSize: 9, color: 'var(--muted)', fontFamily: 'var(--f-mono)', opacity: 0.5 }}>
+                    {aiConfig.api_key ? 'Enter para enviar' : ''}
+                  </p>
+                  {aiConfig.api_key && (
+                    <p style={{ margin: 0, fontSize: 9, color: 'var(--muted)', fontFamily: 'var(--f-mono)', opacity: 0.4 }}>
+                      {aiConfig.model}
+                    </p>
+                  )}
                 </div>
               </div>
-            )}
-            <div ref={bottomRef} />
-          </div>
-
-          {/* Input */}
-          <div style={{
-            flexShrink: 0, padding: '14px 24px 18px',
-            borderTop: '1px solid var(--border)',
-            background: 'var(--bg)',
-            position: 'relative', zIndex: 1,
-          }}>
-            <div style={{
-              display: 'flex', gap: 10,
-              background: 'var(--bg-card)',
-              border: '1px solid var(--border)',
-              borderRadius: 10, padding: '8px 10px',
-              transition: 'border-color 150ms',
-            }}
-              onFocusCapture={e => (e.currentTarget.style.borderColor = 'var(--border-lit)')}
-              onBlurCapture={e => (e.currentTarget.style.borderColor = 'var(--border)')}
-            >
-              <input
-                ref={inputRef}
-                type="text"
-                placeholder={aiConfig.api_key ? 'pergunte algo...' : 'configure a IA em Configurações para usar o chat'}
-                value={input}
-                disabled={!aiConfig.api_key}
-                onChange={e => setInput(e.target.value)}
-                onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }}
-                style={{
-                  flex: 1, height: 28, padding: 0,
-                  background: 'transparent', border: 'none',
-                  color: aiConfig.api_key ? 'var(--text)' : 'var(--muted)',
-                  fontSize: 13, fontFamily: 'var(--f-mono)', outline: 'none',
-                  cursor: aiConfig.api_key ? 'text' : 'not-allowed',
-                }}
-              />
-              <button
-                onClick={send}
-                disabled={!input.trim() || sending || !aiConfig.api_key}
-                style={{
-                  width: 32, height: 32, borderRadius: 7, flexShrink: 0,
-                  background: input.trim() && !sending && aiConfig.api_key ? 'rgba(34,211,238,0.12)' : 'transparent',
-                  border: `1px solid ${input.trim() && !sending && aiConfig.api_key ? 'rgba(34,211,238,0.3)' : 'transparent'}`,
-                  cursor: input.trim() && !sending && aiConfig.api_key ? 'pointer' : 'not-allowed',
-                  color: input.trim() && !sending && aiConfig.api_key ? 'var(--cyan)' : 'var(--muted)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  transition: 'all 150ms',
-                }}
-              >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round">
-                  <line x1="22" y1="2" x2="11" y2="13" />
-                  <polygon points="22 2 15 22 11 13 2 9 22 2" />
-                </svg>
-              </button>
-            </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
-              <p style={{ margin: 0, fontSize: 9, color: 'var(--muted)', fontFamily: 'var(--f-mono)', opacity: 0.5 }}>
-                {aiConfig.api_key ? 'Enter para enviar · Shift+Enter para nova linha' : ''}
-              </p>
-              {aiConfig.api_key && (
-                <p style={{ margin: 0, fontSize: 9, color: 'var(--muted)', fontFamily: 'var(--f-mono)', opacity: 0.4 }}>
-                  {aiConfig.model}
-                </p>
-              )}
-            </div>
-          </div>
+            </>
+          )}
         </div>
       </div>
     </>

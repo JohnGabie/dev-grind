@@ -230,7 +230,7 @@ export default function PdfViewer({ slug, onLoadSuccess, onPageChange, onToggleT
             ? [dpr, 0, 0, dpr, 0, 0] as [number,number,number,number,number,number]
             : null
 
-          await page.render({ canvasContext: ctx, transform: transform ?? undefined, viewport: vp }).promise
+          await page.render({ canvas: cv, canvasContext: ctx, transform: transform ?? undefined, viewport: vp }).promise
         }
         if (cancelled) return
 

@@ -8,4 +8,5 @@ pymupdf4llm
 python-multipart
 python-jose[cryptography]
 google-auth
+requests
 openai

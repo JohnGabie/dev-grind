@@ -1,3 +1,7 @@
+import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import api from '../api/client'
+
 const PHASES = [
   {
     phase: 1, label: 'Python com Intenção', status: 'active',
@@ -40,7 +44,143 @@ const S: Record<string, { border: string; dot: string; label: string }> = {
   locked: { border: 'var(--border)',          dot: 'var(--faint)', label: 'locked' },
 }
 
+interface AiCourse {
+  id: string
+  title: string
+  description: string | null
+  book_slug: string | null
+  modules: unknown[]
+  is_complete: boolean
+  created_at: string | null
+}
+
+function AiCourseCard({ course }: { course: AiCourse }) {
+  const navigate = useNavigate()
+  const [expanded, setExpanded] = useState(false)
+  const moduleCount = Array.isArray(course.modules) ? course.modules.length : 0
+
+  return (
+    <div
+      className="card"
+      style={{
+        padding: '16px 18px',
+        borderColor: course.is_complete ? 'rgba(63,185,80,0.25)' : 'rgba(68,188,211,0.2)',
+      }}
+    >
+      {/* Header row */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', marginBottom: 4 }}>
+            <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>{course.title}</span>
+            {course.is_complete ? (
+              <span style={{
+                fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 3,
+                border: '1px solid rgba(63,185,80,0.4)', color: 'var(--green)',
+                letterSpacing: '0.08em', textTransform: 'uppercase',
+              }}>completo</span>
+            ) : (
+              <span style={{
+                fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 3,
+                border: '1px solid rgba(68,188,211,0.35)', color: 'var(--cyan)',
+                letterSpacing: '0.08em', textTransform: 'uppercase',
+              }}>em andamento</span>
+            )}
+          </div>
+
+          {course.description && (
+            <p style={{ fontSize: 11, color: 'var(--muted)', margin: '0 0 6px', lineHeight: 1.6 }}>
+              {course.description}
+            </p>
+          )}
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <span style={{ fontSize: 10, color: 'var(--faint)' }}>
+              {moduleCount} módulo{moduleCount !== 1 ? 's' : ''}
+              {course.book_slug && ` · ${course.book_slug}`}
+            </span>
+            {moduleCount > 0 && (
+              <button
+                onClick={() => setExpanded(v => !v)}
+                style={{
+                  background: 'none', border: 'none', cursor: 'pointer',
+                  fontSize: 10, color: 'var(--muted)', padding: 0,
+                }}
+              >
+                {expanded ? '▲ ocultar' : '▼ ver módulos'}
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Continue with AI — only when incomplete */}
+        {!course.is_complete && (
+          <button
+            onClick={() => navigate('/chats')}
+            style={{
+              flexShrink: 0,
+              fontSize: 10, fontWeight: 600,
+              padding: '5px 12px', borderRadius: 4, cursor: 'pointer',
+              background: 'rgba(68,188,211,0.07)',
+              border: '1px solid rgba(68,188,211,0.3)',
+              color: 'var(--cyan)',
+              whiteSpace: 'nowrap',
+            }}
+            title="Pedir à IA para continuar este curso"
+          >
+            continuar com IA
+          </button>
+        )}
+      </div>
+
+      {/* Modules list — expanded */}
+      {expanded && moduleCount > 0 && (
+        <div style={{ marginTop: 14, borderTop: '1px solid var(--border)', paddingTop: 12 }}>
+          {!course.is_complete && (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: 7,
+              marginBottom: 10, padding: '6px 10px', borderRadius: 4,
+              background: 'rgba(68,188,211,0.05)',
+              border: '1px solid rgba(68,188,211,0.15)',
+            }}>
+              <span style={{ fontSize: 10, color: 'var(--cyan)' }}>⚠</span>
+              <span style={{ fontSize: 10, color: 'var(--muted)' }}>
+                Curso incompleto — abre o chat e pede para a IA adicionar mais módulos.
+              </span>
+            </div>
+          )}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {(course.modules as Record<string, unknown>[]).map((mod, i) => (
+              <div key={i} style={{
+                padding: '8px 12px', borderRadius: 4,
+                background: 'rgba(255,255,255,0.02)',
+                border: '1px solid var(--border)',
+              }}>
+                <p style={{ fontSize: 11, fontWeight: 600, color: 'var(--text)', margin: '0 0 3px' }}>
+                  {String(mod.title ?? `Módulo ${i + 1}`)}
+                </p>
+                {Array.isArray(mod.topics) && mod.topics.length > 0 && (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                    {(mod.topics as string[]).map((t, ti) => (
+                      <span key={ti} className="tag">{t}</span>
+                    ))}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function CoursesPage() {
+  const [aiCourses, setAiCourses] = useState<AiCourse[]>([])
+
+  useEffect(() => {
+    api.get('/courses').then(r => setAiCourses(r.data)).catch(() => {})
+  }, [])
+
   return (
     <div style={{ height: '100%', overflowY: 'auto' }}>
       <div style={{ maxWidth: 1080, margin: '0 auto', padding: '52px 48px 72px' }}>
@@ -59,7 +199,30 @@ export default function CoursesPage() {
           </p>
         </div>
 
-        {/* Phases */}
+        {/* AI-generated courses */}
+        {aiCourses.length > 0 && (
+          <div style={{ marginBottom: 52 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 14 }}>
+              <p className="section-label" style={{ margin: 0 }}>cursos gerados pela IA</p>
+              {aiCourses.some(c => !c.is_complete) && (
+                <span style={{
+                  fontSize: 9, fontWeight: 700, padding: '2px 7px', borderRadius: 3,
+                  border: '1px solid rgba(68,188,211,0.3)', color: 'var(--cyan)',
+                  letterSpacing: '0.08em', textTransform: 'uppercase',
+                }}>
+                  {aiCourses.filter(c => !c.is_complete).length} em andamento
+                </span>
+              )}
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {aiCourses.map(course => (
+                <AiCourseCard key={course.id} course={course} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Static phases */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 40 }}>
           {PHASES.map((phase, pi) => {
             const ps = S[phase.status]

@@ -41,7 +41,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-from app.routers import exercises, submissions, progress, auth, users, analytics, agent, books, tokens, mcp_server, chat  # noqa: E402
+from app.routers import exercises, submissions, progress, auth, users, analytics, agent, books, tokens, mcp_server, chat, courses, profile, store  # noqa: E402
 
 app.include_router(auth.router)
 app.include_router(users.router)
@@ -54,6 +54,9 @@ app.include_router(books.router)
 app.include_router(tokens.router)
 app.include_router(mcp_server.router)
 app.include_router(chat.router)
+app.include_router(courses.router)
+app.include_router(profile.router)
+app.include_router(store.router)
 
 app.mount("/covers", StaticFiles(directory="app/uploads/covers"), name="covers")
 app.mount("/book-imgs", StaticFiles(directory="app/uploads/book-imgs"), name="book-imgs")

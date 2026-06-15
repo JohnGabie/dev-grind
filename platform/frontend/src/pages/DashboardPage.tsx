@@ -2,7 +2,8 @@ import { useEffect, useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import ReactMarkdown from 'react-markdown'
 import { useAuth } from '../auth/AuthContext'
-import StarfieldFooter from '../components/StarfieldFooter'
+import { BackgroundFooter } from '../components/BackgroundRenderer'
+import { useCosmetics } from '../contexts/CosmeticsContext'
 import api from '../api/client'
 
 interface Exercise {
@@ -91,28 +92,6 @@ function assignModes(exercises: Exercise[]): Record<string, Exercise | null> {
     warmup:   sorted[sorted.length - 1] ?? null,
     practice: sorted.length >= 3 ? sorted[1] : sorted[1] ?? null,
   }
-}
-
-// ── MiniHeatmap ───────────────────────────────────────────────────────────────
-function MiniHeatmap({ breakdown }: { breakdown: { date: string; completed: number }[] }) {
-  const map = Object.fromEntries(breakdown.map(d => [d.date, d.completed]))
-  const days = Array.from({ length: 28 }, (_, i) => {
-    const d = new Date(); d.setDate(d.getDate() - (27 - i))
-    const key = d.toISOString().split('T')[0]
-    return { key, count: map[key] || 0 }
-  })
-  return (
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 3 }}>
-      {days.map(({ key, count }) => (
-        <div key={key} title={`${key}: ${count}`} style={{
-          width: 10, height: 10, borderRadius: 2,
-          background: count === 0 ? 'var(--border)'
-            : count === 1 ? 'rgba(34,211,238,0.35)'
-            : 'var(--cyan)',
-        }} />
-      ))}
-    </div>
-  )
 }
 
 // ── ResumeCard ────────────────────────────────────────────────────────────────
@@ -655,6 +634,7 @@ const MOCK_RECENT: HistoryItem[] = [
 
 export default function DashboardPage() {
   const { user } = useAuth()
+  const { bg } = useCosmetics()
   const [exercises, setExercises] = useState<Exercise[]>([])
   const [summary, setSummary] = useState<Summary | null>(null)
   const [resume, setResume] = useState<Resume | null>(null)
@@ -681,7 +661,10 @@ export default function DashboardPage() {
       setInsights(ins.data?.length ? ins.data : MOCK_INSIGHTS)
       setInsightIdx(0)
       const rawRecent: RecentExercise[] = recent.data ?? []
-      const exerciseItems: HistoryItem[] = rawRecent.map(ex => ({ ...ex, type: 'exercise' as const }))
+      const seen = new Set<string>()
+      const exerciseItems: HistoryItem[] = rawRecent
+        .filter(ex => { if (seen.has(ex.id)) return false; seen.add(ex.id); return true })
+        .map(ex => ({ ...ex, type: 'exercise' as const }))
       setRecentItems(exerciseItems.length ? exerciseItems : MOCK_RECENT)
     }).finally(() => setLoading(false))
   }, [])
@@ -693,8 +676,11 @@ export default function DashboardPage() {
   )
 
   return (
-    <div style={{ height: '100%', overflowY: 'auto' }}>
-      <div style={{ maxWidth: 1080, margin: '0 auto', padding: '44px 56px 72px' }}>
+    <div style={{ height: '100%', overflow: 'hidden', position: 'relative' }}>
+      <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 700, pointerEvents: 'none', zIndex: 0 }}>
+        <BackgroundFooter height={700} config={bg('bg_dashboard')} />
+      </div>
+      <div style={{ maxWidth: 1080, margin: '0 auto', padding: '44px 56px 72px', position: 'relative', zIndex: 1 }}>
 
         {/* Header */}
         <div className="fade-up" style={{
@@ -887,7 +873,6 @@ export default function DashboardPage() {
 
 
       </div>
-      <StarfieldFooter />
     </div>
   )
 }
