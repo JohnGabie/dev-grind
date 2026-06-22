@@ -1,11 +1,14 @@
 import { Hono } from 'hono'
-import { eq, desc, and } from 'drizzle-orm'
+import { eq, desc, and, count } from 'drizzle-orm'
 import { getDb } from '../db'
 import { books } from '../db/schema'
 import { requireAuth } from '../middleware/auth'
 import type { AppEnv } from '../types'
 
 const router = new Hono<AppEnv>()
+
+const MAX_PDF_BYTES = 20 * 1024 * 1024  // 20 MB
+const MAX_PDFS_PER_USER = 4
 
 function slugify(text: string): string {
   return text
@@ -15,6 +18,14 @@ function slugify(text: string): string {
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '')
     .slice(0, 80)
+}
+
+async function gzipBuffer(data: ArrayBuffer): Promise<ArrayBuffer> {
+  const cs = new CompressionStream('gzip')
+  const writer = cs.writable.getWriter()
+  writer.write(data)
+  writer.close()
+  return new Response(cs.readable).arrayBuffer()
 }
 
 // GET /books
@@ -59,6 +70,23 @@ router.post('/upload', requireAuth, async (c) => {
   const ext = file.name.toLowerCase().endsWith('.pdf') ? 'pdf' : 'md'
   const content_type = ext === 'pdf' ? 'pdf' : 'markdown'
 
+  // Size limit (PDFs only)
+  if (ext === 'pdf' && file.size > MAX_PDF_BYTES) {
+    return c.json({ detail: `PDF muito grande. Máximo permitido: ${MAX_PDF_BYTES / 1024 / 1024}MB.` }, 413)
+  }
+
+  // PDF count limit
+  if (ext === 'pdf') {
+    const [{ value: pdfCount }] = await db
+      .select({ value: count() })
+      .from(books)
+      .where(and(eq(books.user_id, userId), eq(books.content_type, 'pdf')))
+
+    if (pdfCount >= MAX_PDFS_PER_USER) {
+      return c.json({ detail: `Limite de ${MAX_PDFS_PER_USER} PDFs por usuário atingido. Delete um para adicionar outro.` }, 429)
+    }
+  }
+
   // Unique slug
   let base = slugify(title)
   const existing = await db.select({ slug: books.slug }).from(books).where(eq(books.user_id, userId))
@@ -67,13 +95,23 @@ router.post('/upload', requireAuth, async (c) => {
   let i = 1
   while (taken.has(slug)) slug = `${base}-${i++}`
 
-  // Upload book file to R2
+  // Upload book file — compress PDFs with gzip before storing
   const fileKey = `${userId}/${slug}/file.${ext}`
-  await r2.put(fileKey, file.stream(), {
-    httpMetadata: {
-      contentType: ext === 'pdf' ? 'application/pdf' : 'text/markdown; charset=utf-8',
-    },
-  })
+
+  if (ext === 'pdf') {
+    const raw = await file.arrayBuffer()
+    const compressed = await gzipBuffer(raw)
+    await r2.put(fileKey, compressed, {
+      httpMetadata: {
+        contentType: 'application/pdf',
+        contentEncoding: 'gzip',
+      },
+    })
+  } else {
+    await r2.put(fileKey, file.stream(), {
+      httpMetadata: { contentType: 'text/markdown; charset=utf-8' },
+    })
+  }
 
   // Upload cover to R2 (optional)
   let cover_path: string | null = null
@@ -147,12 +185,15 @@ router.get('/:slug/pdf', requireAuth, async (c) => {
   const obj = await c.env.BOOKS.get(book.file_path)
   if (!obj) return c.json({ error: 'file not found in storage' }, 404)
 
-  return new Response(obj.body, {
-    headers: {
-      'Content-Type': 'application/pdf',
-      'Cache-Control': 'private, max-age=3600',
-    },
-  })
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/pdf',
+    'Cache-Control': 'private, max-age=3600',
+  }
+  if (obj.httpMetadata?.contentEncoding) {
+    headers['Content-Encoding'] = obj.httpMetadata.contentEncoding
+  }
+
+  return new Response(obj.body, { headers })
 })
 
 // GET /books/:slug/cover
@@ -198,8 +239,8 @@ router.get('/:slug/text', requireAuth, async (c) => {
 })
 
 // POST /books/:slug/extract-text — not supported in Worker
-router.post('/:slug/extract-text', requireAuth, async (_c) => {
-  return c.json({ error: 'Text extraction is not available in this environment. Read the PDF directly.' }, 501)
+router.post('/:slug/extract-text', requireAuth, async (c) => {
+  return c.json({ error: 'Text extraction is not available in this environment. Use the PDF viewer directly.' }, 501)
 })
 
 // DELETE /books/:slug
