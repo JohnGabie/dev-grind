@@ -1,7 +1,7 @@
 import { Hono } from 'hono'
 import { eq, desc, and, count, sum, asc } from 'drizzle-orm'
 import { getDb } from '../db'
-import { books } from '../db/schema'
+import { books, userInventory, storeItems } from '../db/schema'
 import { requireAuth } from '../middleware/auth'
 import type { AppEnv } from '../types'
 
@@ -30,25 +30,39 @@ async function gzipBuffer(data: ArrayBuffer): Promise<ArrayBuffer> {
   return new Response(cs.readable).arrayBuffer()
 }
 
+async function getPdfSlotLimit(db: ReturnType<typeof getDb>, userId: string): Promise<number> {
+  const [{ value: extra }] = await db
+    .select({ value: count() })
+    .from(userInventory)
+    .innerJoin(storeItems, eq(userInventory.item_id, storeItems.id))
+    .where(and(eq(userInventory.user_id, userId), eq(storeItems.type, 'book_slot')))
+  return 4 + Math.min(Number(extra ?? 0), 4)
+}
+
 // GET /books
 router.get('/', requireAuth, async (c) => {
   const db = getDb(c.env)
   const userId = c.get('userId')
-  const rows = await db.select().from(books)
-    .where(eq(books.user_id, userId))
-    .orderBy(desc(books.created_at))
 
-  return c.json(rows.map(b => ({
-    slug: b.slug,
-    title: b.title,
-    author: b.author,
-    year: b.year,
-    phase: b.phase,
-    available: true,
-    progress: 0,
-    cover_url: b.cover_path ? `/books/${b.slug}/cover` : null,
-    content_type: b.content_type,
-  })))
+  const [rows, slotLimit] = await Promise.all([
+    db.select().from(books).where(eq(books.user_id, userId)).orderBy(desc(books.created_at)),
+    getPdfSlotLimit(db, userId),
+  ])
+
+  return c.json({
+    slot_limit: slotLimit,
+    books: rows.map(b => ({
+      slug: b.slug,
+      title: b.title,
+      author: b.author,
+      year: b.year,
+      phase: b.phase,
+      available: true,
+      progress: 0,
+      cover_url: b.cover_path ? `/books/${b.slug}/cover` : null,
+      content_type: b.content_type,
+    })),
+  })
 })
 
 // POST /books/upload
@@ -93,15 +107,17 @@ router.post('/upload', requireAuth, async (c) => {
     httpMeta = { contentType: 'text/markdown; charset=utf-8' }
   }
 
-  // PDF count limit
+  // PDF count limit (dynamic based on store purchases)
   if (ext === 'pdf') {
-    const [{ value: pdfCount }] = await db
-      .select({ value: count() })
-      .from(books)
-      .where(and(eq(books.user_id, userId), eq(books.content_type, 'pdf')))
+    const [{ value: pdfCount }, slotLimit] = await Promise.all([
+      db.select({ value: count() }).from(books)
+        .where(and(eq(books.user_id, userId), eq(books.content_type, 'pdf')))
+        .then(r => r[0]),
+      getPdfSlotLimit(db, userId),
+    ])
 
-    if (pdfCount >= MAX_PDFS_PER_USER) {
-      return c.json({ detail: `Limite de ${MAX_PDFS_PER_USER} PDFs por usuário atingido. Delete um para adicionar outro.` }, 429)
+    if (Number(pdfCount) >= slotLimit) {
+      return c.json({ detail: `Limite de ${slotLimit} PDFs atingido. Compre mais slots na loja.` }, 429)
     }
   }
 

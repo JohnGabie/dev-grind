@@ -12,8 +12,10 @@ interface StoreItem {
   category: string
   price_coins: number
   rarity: 'free' | 'common' | 'rare' | 'legendary'
-  item_data: BgConfig
+  item_data: BgConfig & { max_purchases?: number }
   owned: boolean
+  owned_count: number
+  max_purchases: number
   equipped_slots: string[]
 }
 
@@ -45,17 +47,33 @@ export default function StorePage() {
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [catFilter, setCatFilter] = useState<CategoryFilter>('todos')
+  const [buyingId, setBuyingId] = useState<string | null>(null)
 
-  useEffect(() => {
-    Promise.all([
-      api.get('/store/items'),
-      api.get('/users/me/stats'),
-    ]).then(([itemsRes, statsRes]) => {
-      setItems(itemsRes.data)
-      setCoins(statsRes.data.coins ?? 0)
-    }).catch(() => {}).finally(() => setLoading(false))
-  }, [])
+  const fetchAll = () => Promise.all([
+    api.get('/store/items'),
+    api.get('/users/me/stats'),
+  ]).then(([itemsRes, statsRes]) => {
+    setItems(itemsRes.data)
+    setCoins(statsRes.data.coins ?? 0)
+  }).catch(() => {})
 
+  useEffect(() => { fetchAll().finally(() => setLoading(false)) }, [])
+
+  const handleBuyUtility = async (item: StoreItem) => {
+    if (buyingId) return
+    setBuyingId(item.id)
+    try {
+      const r = await api.post(`/store/buy/${item.id}`)
+      setCoins(r.data.coins)
+      await fetchAll()
+    } catch (e: any) {
+      alert(e.response?.data?.detail ?? 'Erro ao comprar.')
+    } finally {
+      setBuyingId(null)
+    }
+  }
+
+  const utilities = items.filter(i => i.type === 'book_slot')
   const backgrounds = items.filter(i => i.type === 'background')
 
   // Group by category
@@ -219,6 +237,82 @@ export default function StorePage() {
               {totalOwned}/{backgrounds.length} variantes adquiridas
             </p>
           </div>
+
+          {/* ── Utilidades ───────────────────────────────────────────── */}
+          {utilities.length > 0 && (
+            <div style={{ marginBottom: 52 }}>
+              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)', fontFamily: 'var(--f-mono)', margin: '0 0 16px' }}>
+                utilidades
+              </p>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+                {utilities.map(item => {
+                  const atMax = item.owned_count >= item.max_purchases
+                  const canAfford = coins >= item.price_coins
+                  const isbuying = buyingId === item.id
+                  return (
+                    <div key={item.id} style={{
+                      display: 'flex', alignItems: 'center', gap: 20,
+                      padding: '18px 22px', borderRadius: 10,
+                      border: '1px solid var(--border)',
+                      background: 'var(--bg-card)',
+                    }}>
+                      {/* Icon */}
+                      <div style={{
+                        width: 44, height: 44, borderRadius: 8, flexShrink: 0,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        background: 'rgba(168,85,247,0.1)', border: '1px solid rgba(168,85,247,0.2)',
+                      }}>
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#a855f7" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                          <line x1="12" y1="7" x2="12" y2="13"/><line x1="9" y1="10" x2="15" y2="10"/>
+                        </svg>
+                      </div>
+
+                      {/* Info */}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ margin: '0 0 3px', fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>{item.name}</p>
+                        <p style={{ margin: 0, fontSize: 11, color: 'var(--muted)', lineHeight: 1.5 }}>{item.description}</p>
+                      </div>
+
+                      {/* Count */}
+                      <div style={{ textAlign: 'center', flexShrink: 0 }}>
+                        <p style={{ margin: '0 0 2px', fontSize: 18, fontWeight: 800, fontFamily: 'var(--f-mono)', color: atMax ? 'var(--green)' : 'var(--text)' }}>
+                          {item.owned_count}<span style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 400 }}>/{item.max_purchases}</span>
+                        </p>
+                        <p style={{ margin: 0, fontSize: 9, color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>compras</p>
+                      </div>
+
+                      {/* Buy button */}
+                      <button
+                        onClick={() => !atMax && canAfford && handleBuyUtility(item)}
+                        disabled={atMax || !canAfford || isbuying}
+                        style={{
+                          flexShrink: 0, display: 'flex', alignItems: 'center', gap: 6,
+                          padding: '8px 16px', borderRadius: 7, cursor: atMax || !canAfford ? 'not-allowed' : 'pointer',
+                          fontSize: 12, fontWeight: 700, fontFamily: 'var(--f-mono)',
+                          border: '1px solid',
+                          borderColor: atMax ? 'var(--border)' : canAfford ? 'rgba(168,85,247,0.4)' : 'var(--border)',
+                          background: atMax ? 'transparent' : canAfford ? 'rgba(168,85,247,0.1)' : 'transparent',
+                          color: atMax ? 'var(--green)' : canAfford ? '#a855f7' : 'var(--muted)',
+                          opacity: isbuying ? 0.6 : 1,
+                          transition: 'all 130ms',
+                        }}
+                      >
+                        {atMax ? (
+                          'máximo'
+                        ) : (
+                          <>
+                            <CoinIcon size={11} />
+                            {isbuying ? '...' : item.price_coins.toLocaleString()}
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Grid */}
           {entries.length === 0 ? (

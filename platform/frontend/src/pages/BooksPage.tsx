@@ -3,6 +3,36 @@ import { useNavigate } from 'react-router-dom'
 import api from '../api/client'
 import AddBookModal from '../components/AddBookModal'
 
+function EmptySlotCard({ onClick }: { onClick: () => void }) {
+  const [hovered, setHovered] = useState(false)
+  return (
+    <div
+      onClick={onClick}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      style={{
+        height: 148,
+        border: `2px dashed ${hovered ? 'var(--cyan)' : 'var(--border)'}`,
+        borderRadius: 8,
+        display: 'flex', flexDirection: 'column',
+        alignItems: 'center', justifyContent: 'center',
+        cursor: 'pointer', gap: 8,
+        background: hovered ? 'rgba(34,211,238,0.03)' : 'transparent',
+        transition: 'border-color 130ms, background 130ms',
+      }}
+    >
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+        stroke={hovered ? 'var(--cyan)' : 'var(--faint)'}
+        strokeWidth="1.5" strokeLinecap="round" style={{ transition: 'stroke 130ms' }}>
+        <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+      </svg>
+      <span style={{ fontSize: 10, fontWeight: 600, color: hovered ? 'var(--cyan)' : 'var(--faint)', transition: 'color 130ms', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+        adicionar pdf
+      </span>
+    </div>
+  )
+}
+
 const PHASE_CFG: Record<number, { label: string; color: string }> = {
   1: { label: 'Python',      color: 'var(--cyan)'  },
   2: { label: 'Web & APIs',  color: 'var(--blue)'  },
@@ -244,12 +274,16 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
 export default function BooksPage() {
   const navigate = useNavigate()
   const [books, setBooks] = useState<Book[]>([])
+  const [slotLimit, setSlotLimit] = useState(4)
   const [activePhase, setActivePhase] = useState<number | null>(null)
   const [showAddModal, setShowAddModal] = useState(false)
 
   const fetchBooks = useCallback(() => {
     api.get('/books').then(r => {
-      setBooks(withProgress(r.data as Omit<Book, 'progress'>[]))
+      const data = r.data
+      const rawBooks = Array.isArray(data) ? data : (data.books ?? [])
+      setBooks(withProgress(rawBooks as Omit<Book, 'progress'>[]))
+      if (data.slot_limit) setSlotLimit(data.slot_limit)
     }).catch(() => {})
   }, [])
 
@@ -294,7 +328,9 @@ export default function BooksPage() {
           <div style={{ display: 'flex', alignItems: 'center', gap: 28 }}>
             <div>
               <span style={{ fontSize: 20, fontWeight: 800, color: 'var(--text)', fontFamily: 'var(--f-mono)' }}>{books.length}</span>
-              <span style={{ fontSize: 11, color: 'var(--muted)', marginLeft: 7 }}>livros</span>
+              <span style={{ fontSize: 11, color: 'var(--muted)', marginLeft: 4 }}>/</span>
+              <span style={{ fontSize: 20, fontWeight: 800, color: 'var(--muted)', fontFamily: 'var(--f-mono)', marginLeft: 4 }}>{slotLimit}</span>
+              <span style={{ fontSize: 11, color: 'var(--muted)', marginLeft: 7 }}>slots</span>
             </div>
             {totalStarted > 0 && (
               <div>
@@ -303,21 +339,42 @@ export default function BooksPage() {
               </div>
             )}
 
-            <button
-              onClick={() => setShowAddModal(true)}
-              className="btn btn-cyan"
-              style={{ marginLeft: 'auto', fontSize: 11, display: 'flex', alignItems: 'center', gap: 6 }}
-            >
-              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
-              adicionar livro
-            </button>
+            {books.length < slotLimit ? (
+              <button
+                onClick={() => setShowAddModal(true)}
+                className="btn btn-cyan"
+                style={{ marginLeft: 'auto', fontSize: 11, display: 'flex', alignItems: 'center', gap: 6 }}
+              >
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+                  <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+                </svg>
+                adicionar livro
+              </button>
+            ) : (
+              <button
+                onClick={() => navigate('/store')}
+                style={{
+                  marginLeft: 'auto', fontSize: 11, display: 'flex', alignItems: 'center', gap: 6,
+                  background: 'transparent', border: '1px solid var(--border)',
+                  borderRadius: 6, padding: '7px 13px', cursor: 'pointer',
+                  color: 'var(--muted)', fontFamily: 'var(--f-mono)',
+                  transition: 'border-color 130ms, color 130ms',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border-lit)'; e.currentTarget.style.color = 'var(--text)' }}
+                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--muted)' }}
+              >
+                comprar slots →
+              </button>
+            )}
           </div>
         </div>
 
         {books.length === 0 ? (
-          <EmptyState onAdd={() => setShowAddModal(true)} />
+          <div className="fade-up" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 10, animationDelay: '80ms', opacity: 0 }}>
+            {Array.from({ length: slotLimit }).map((_, i) => (
+              <EmptySlotCard key={`empty-${i}`} onClick={() => setShowAddModal(true)} />
+            ))}
+          </div>
         ) : (
           <>
             {/* Filter tabs */}
@@ -354,6 +411,9 @@ export default function BooksPage() {
                   onClick={() => navigate(`/books/${book.slug}`)}
                   onDelete={() => handleDelete(book.slug)}
                 />
+              ))}
+              {activePhase === null && Array.from({ length: Math.max(0, slotLimit - books.length) }).map((_, i) => (
+                <EmptySlotCard key={`empty-${i}`} onClick={() => setShowAddModal(true)} />
               ))}
             </div>
           </>

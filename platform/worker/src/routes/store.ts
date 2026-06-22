@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import { eq, and, isNotNull } from 'drizzle-orm'
+import { eq, and, isNotNull, count } from 'drizzle-orm'
 import { getDb } from '../db'
 import { users, storeItems, userInventory } from '../db/schema'
 import { requireAuth } from '../middleware/auth'
@@ -12,7 +12,9 @@ function itemDict(
   item: typeof storeItems.$inferSelect,
   owned: boolean,
   equippedSlots: string[],
+  ownedCount: number,
 ) {
+  const itemData = JSON.parse(item.item_data as string ?? '{}')
   return {
     id: item.id,
     name: item.name,
@@ -21,8 +23,10 @@ function itemDict(
     category: item.category,
     price_coins: item.price_coins,
     rarity: item.rarity,
-    item_data: JSON.parse(item.item_data as string ?? '{}'),
+    item_data: itemData,
     owned,
+    owned_count: ownedCount,
+    max_purchases: itemData.max_purchases ?? 1,
     equipped_slots: equippedSlots,
   }
 }
@@ -35,29 +39,50 @@ router.get('/items', requireAuth, async (c) => {
   const items = await db.select().from(storeItems).where(eq(storeItems.is_active, true))
   const inv = await db.select().from(userInventory).where(eq(userInventory.user_id, userId))
 
-  const ownedIds = new Set(inv.map(e => e.item_id))
-  const slotMap = new Map(inv.filter(e => e.equipped_slot).map(e => [e.equipped_slot!, e.item_id]))
+  // Count per item_id (supports stackable items)
+  const countMap = new Map<string, number>()
+  const slotMap = new Map<string, string>()
+  for (const row of inv) {
+    countMap.set(row.item_id, (countMap.get(row.item_id) ?? 0) + 1)
+    if (row.equipped_slot) slotMap.set(row.equipped_slot, row.item_id)
+  }
 
   return c.json(items.map(item => {
-    const equippedSlots = [...slotMap.entries()].filter(([, iid]) => iid === item.id).map(([slot]) => slot)
-    return itemDict(item, ownedIds.has(item.id), equippedSlots)
+    const ownedCount = countMap.get(item.id) ?? 0
+    const equippedSlots = [...slotMap.entries()]
+      .filter(([, iid]) => iid === item.id)
+      .map(([slot]) => slot)
+    return itemDict(item, ownedCount > 0, equippedSlots, ownedCount)
   }))
 })
 
 // POST /store/buy/:item_id
 router.post('/buy/:item_id', requireAuth, async (c) => {
-  const itemId = c.req.param('item_id')
+  const itemId = c.req.param('item_id') ?? ''
   const db = getDb(c.env)
   const userId = c.get('userId')
 
   const [item] = await db.select().from(storeItems).where(eq(storeItems.id, itemId)).limit(1)
   if (!item) return c.json({ detail: 'Item não encontrado' }, 404)
 
-  const [alreadyOwned] = await db.select({ id: userInventory.id })
-    .from(userInventory)
-    .where(and(eq(userInventory.user_id, userId), eq(userInventory.item_id, itemId)))
-    .limit(1)
-  if (alreadyOwned) return c.json({ detail: 'Item já adquirido' }, 400)
+  const itemData = JSON.parse(item.item_data as string ?? '{}')
+  const maxPurchases: number = itemData.max_purchases ?? 1
+
+  if (maxPurchases <= 1) {
+    const [alreadyOwned] = await db.select({ id: userInventory.id })
+      .from(userInventory)
+      .where(and(eq(userInventory.user_id, userId), eq(userInventory.item_id, itemId)))
+      .limit(1)
+    if (alreadyOwned) return c.json({ detail: 'Item já adquirido' }, 400)
+  } else {
+    const [{ value: ownedCount }] = await db
+      .select({ value: count() })
+      .from(userInventory)
+      .where(and(eq(userInventory.user_id, userId), eq(userInventory.item_id, itemId)))
+    if (Number(ownedCount) >= maxPurchases) {
+      return c.json({ detail: `Limite de ${maxPurchases} compras atingido.` }, 400)
+    }
+  }
 
   const [user] = await db.select({ coins: users.coins }).from(users).where(eq(users.id, userId)).limit(1)
   if (user.coins < item.price_coins) return c.json({ detail: 'Coins insuficientes' }, 400)
@@ -71,7 +96,7 @@ router.post('/buy/:item_id', requireAuth, async (c) => {
 
 // POST /store/equip/:item_id?slot=bg_dashboard
 router.post('/equip/:item_id', requireAuth, async (c) => {
-  const itemId = c.req.param('item_id')
+  const itemId = c.req.param('item_id') ?? ''
   const slot = c.req.query('slot')
   if (!slot || !VALID_SLOTS.has(slot)) {
     return c.json({ detail: `Slot inválido. Use: ${[...VALID_SLOTS].join(', ')}` }, 400)
@@ -86,7 +111,6 @@ router.post('/equip/:item_id', requireAuth, async (c) => {
     .limit(1)
   if (!entry) return c.json({ detail: 'Item não está no inventário' }, 403)
 
-  // Unequip current item in this slot
   await db.update(userInventory)
     .set({ equipped_slot: null })
     .where(and(eq(userInventory.user_id, userId), eq(userInventory.equipped_slot, slot)))
