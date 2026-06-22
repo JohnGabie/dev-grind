@@ -377,7 +377,6 @@ function ProfileMockup() {
 
 // Public profile — FriendCard hover popup, real proportions scaled down
 function PublicProfileMockup() {
-  const circ = 2 * Math.PI * 20
   return (
     <div style={{ position: 'absolute', inset: 0, overflow: 'hidden', pointerEvents: 'none' }}>
       <div style={{

@@ -20,7 +20,6 @@ const DIFF_COLOR: Record<string, string> = {
   '5kyu': '#22c55e', '4kyu': '#eab308', '3kyu': '#f97316',
   '2kyu': '#ef4444', '1kyu': '#a855f7',
 }
-const RANK_ORDER = ['8kyu', '7kyu', '6kyu', '5kyu', '4kyu', '3kyu', '2kyu', '1kyu']
 
 function timeAgo(iso: string) {
   const diff = Date.now() - new Date(iso).getTime()
@@ -149,155 +148,6 @@ function Heatmap({ heatmap }: { heatmap: Record<string, HeatmapDay> }) {
           )}
         </div>
       )}
-    </div>
-  )
-}
-
-// ── Showcase Cards ────────────────────────────────────────────────────────────
-function ShowcaseLatest({ completion }: { completion: Stats['recent_completions'][0] | undefined }) {
-  const dc = completion ? (DIFF_COLOR[completion.difficulty] || '#525252') : '#525252'
-  return (
-    <div style={{
-      borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border)',
-      background: completion
-        ? `linear-gradient(160deg, ${dc}18 0%, ${dc}06 60%, var(--bg-card) 100%)`
-        : 'var(--bg-card)',
-      display: 'flex', flexDirection: 'column', height: 180,
-      position: 'relative',
-    }}>
-      <div style={{
-        padding: '12px 14px 0',
-        fontSize: 9, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
-        color: 'var(--muted)', fontFamily: 'var(--f-mono)',
-      }}>
-        Último exercício
-      </div>
-      {completion ? (
-        <>
-          <div style={{ flex: 1, padding: '10px 14px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-            <p style={{
-              fontSize: 15, fontWeight: 700, margin: '0 0 6px',
-              display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
-              overflow: 'hidden', lineHeight: 1.35, letterSpacing: '-0.02em',
-            }}>
-              {completion.title}
-            </p>
-          </div>
-          <div style={{
-            padding: '10px 14px', borderTop: `1px solid ${dc}22`,
-            display: 'flex', alignItems: 'center', gap: 8,
-          }}>
-            <span style={{
-              fontSize: 9, fontWeight: 700, fontFamily: 'var(--f-mono)', letterSpacing: '0.06em',
-              padding: '3px 8px', borderRadius: 4,
-              background: `${dc}20`, border: `1px solid ${dc}40`, color: dc,
-            }}>
-              {completion.difficulty}
-            </span>
-            <span style={{ fontSize: 10, color: 'var(--muted)', fontFamily: 'var(--f-mono)', marginLeft: 'auto' }}>
-              {timeAgo(completion.submitted_at)}
-            </span>
-          </div>
-        </>
-      ) : (
-        <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-          <span style={{ fontSize: 11, color: 'var(--muted)', fontFamily: 'var(--f-mono)' }}>nenhum exercício ainda</span>
-        </div>
-      )}
-    </div>
-  )
-}
-
-function ShowcaseStreak({ streak, daysActive }: { streak: number; daysActive: number }) {
-  const active = streak > 0
-  const color = active ? '#f97316' : '#525252'
-  return (
-    <div style={{
-      borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border)',
-      background: active
-        ? `linear-gradient(160deg, ${color}18 0%, ${color}06 60%, var(--bg-card) 100%)`
-        : 'var(--bg-card)',
-      display: 'flex', flexDirection: 'column', height: 180,
-    }}>
-      <div style={{
-        padding: '12px 14px 0',
-        fontSize: 9, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
-        color: 'var(--muted)', fontFamily: 'var(--f-mono)',
-      }}>
-        Sequência
-      </div>
-      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4 }}>
-        <span style={{
-          fontSize: 52, fontWeight: 900, lineHeight: 1, fontFamily: 'var(--f-mono)',
-          color: active ? color : 'var(--muted)', letterSpacing: '-0.04em',
-        }}>
-          {streak}
-        </span>
-        <span style={{ fontSize: 10, color: 'var(--muted)', fontFamily: 'var(--f-mono)' }}>
-          dias consecutivos
-        </span>
-      </div>
-      <div style={{
-        padding: '10px 14px', borderTop: `1px solid ${color}18`,
-        fontSize: 10, color: 'var(--muted)', fontFamily: 'var(--f-mono)', textAlign: 'right',
-      }}>
-        {daysActive} dias ativos no total
-      </div>
-    </div>
-  )
-}
-
-function ShowcaseRank({ rank, rankProgress, honor, nextRank }: {
-  rank: string; rankProgress: number; honor: number; nextRank: string | undefined
-}) {
-  const rankColor = DIFF_COLOR[rank] || '#525252'
-  const pct = Math.round(rankProgress * 100)
-  const size = 72, cx = 36, cy = 36, r = 28, circ = 2 * Math.PI * r
-  return (
-    <div style={{
-      borderRadius: 8, overflow: 'hidden', border: '1px solid var(--border)',
-      background: `linear-gradient(160deg, ${rankColor}18 0%, ${rankColor}06 60%, var(--bg-card) 100%)`,
-      display: 'flex', flexDirection: 'column', height: 180,
-    }}>
-      <div style={{
-        padding: '12px 14px 0',
-        fontSize: 9, fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase',
-        color: 'var(--muted)', fontFamily: 'var(--f-mono)',
-      }}>
-        Nível
-      </div>
-      <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 20 }}>
-        <div style={{ position: 'relative', width: size, height: size }}>
-          <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
-            <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--border)" strokeWidth="3" />
-            <circle cx={cx} cy={cy} r={r} fill="none"
-              stroke={rankColor} strokeWidth="3.5" strokeLinecap="round"
-              strokeDasharray={circ}
-              strokeDashoffset={circ * (1 - pct / 100)}
-            />
-          </svg>
-          <div style={{
-            position: 'absolute', inset: 0,
-            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
-          }}>
-            <span style={{ fontSize: 18, fontWeight: 900, color: rankColor, fontFamily: 'var(--f-mono)', lineHeight: 1 }}>
-              {rank.replace('kyu', '')}
-            </span>
-            <span style={{ fontSize: 8, color: rankColor, opacity: 0.6, fontFamily: 'var(--f-mono)' }}>kyu</span>
-          </div>
-        </div>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-          <span style={{ fontSize: 22, fontWeight: 900, fontFamily: 'var(--f-mono)', color: rankColor, letterSpacing: '-0.03em', lineHeight: 1 }}>
-            {honor.toLocaleString()}
-          </span>
-          <span style={{ fontSize: 10, color: 'var(--muted)', fontFamily: 'var(--f-mono)' }}>honor</span>
-          {nextRank && (
-            <span style={{ fontSize: 9, color: 'var(--muted)', fontFamily: 'var(--f-mono)', opacity: 0.6 }}>
-              → {nextRank} · {pct}%
-            </span>
-          )}
-        </div>
-      </div>
     </div>
   )
 }
@@ -863,7 +713,6 @@ export default function ProfilePage() {
     </div>
   )
 
-  const nextRank = RANK_ORDER[RANK_ORDER.indexOf(stats.rank) + 1]
   const rankColor = DIFF_COLOR[stats.rank] || '#525252'
   const coverSrc = coverUrl ?? null
 

@@ -12,6 +12,11 @@ const MAX_PDFS_PER_USER = 4
 const R2_LIMIT_BYTES    = 10 * 1024 * 1024 * 1024 // 10 GB global bucket limit
 const R2_EVICT_THRESHOLD = R2_LIMIT_BYTES * 0.90  // start evicting at 90%
 
+async function sha256Short(str: string): Promise<string> {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str))
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 16)
+}
+
 function slugify(text: string): string {
   return text
     .toLowerCase()
@@ -74,6 +79,7 @@ router.post('/upload', requireAuth, async (c) => {
   const formData = await c.req.formData()
   const file = formData.get('file') as File | null
   const cover = formData.get('cover') as File | null
+  const coverUrl = (formData.get('cover_url') as string | null)?.trim() || null
   const title = (formData.get('title') as string | null)?.trim()
   const author = (formData.get('author') as string | null)?.trim()
   const year = formData.get('year') as string | null
@@ -158,7 +164,7 @@ router.post('/upload', requireAuth, async (c) => {
   const fileKey = `${userId}/${slug}/file.${ext}`
   await r2.put(fileKey, fileData, { httpMetadata: httpMeta })
 
-  // Upload cover to R2 (optional)
+  // Upload cover to R2 — from uploaded file or remote URL
   let cover_path: string | null = null
   if (cover && cover.size > 0) {
     const coverExt = cover.name.split('.').pop() ?? 'jpg'
@@ -167,6 +173,27 @@ router.post('/upload', requireAuth, async (c) => {
       httpMetadata: { contentType: cover.type || 'image/jpeg' },
     })
     cover_path = coverKey
+  } else if (coverUrl) {
+    try {
+      const hash = await sha256Short(coverUrl)
+      // Check both extensions — reuse if already stored
+      const existingJpg = await r2.head(`covers/${hash}.jpg`)
+      const existingPng = !existingJpg ? await r2.head(`covers/${hash}.png`) : null
+      if (existingJpg) {
+        cover_path = `covers/${hash}.jpg`
+      } else if (existingPng) {
+        cover_path = `covers/${hash}.png`
+      } else {
+        const res = await fetch(coverUrl)
+        if (res.ok) {
+          const ct = res.headers.get('content-type') || 'image/jpeg'
+          const ext = ct.includes('png') ? 'png' : 'jpg'
+          const coverKey = `covers/${hash}.${ext}`
+          await r2.put(coverKey, res.body!, { httpMetadata: { contentType: ct } })
+          cover_path = coverKey
+        }
+      }
+    } catch { /* skip cover if fetch fails */ }
   }
 
   await db.insert(books).values({
@@ -231,15 +258,25 @@ router.get('/:slug/pdf', requireAuth, async (c) => {
   const obj = await c.env.BOOKS.get(book.file_path)
   if (!obj) return c.json({ error: 'file not found in storage' }, 404)
 
-  const headers: Record<string, string> = {
-    'Content-Type': 'application/pdf',
-    'Cache-Control': 'private, max-age=3600',
-  }
-  if (obj.httpMetadata?.contentEncoding) {
-    headers['Content-Encoding'] = obj.httpMetadata.contentEncoding
+  const buf = await obj.arrayBuffer()
+  const bytes = new Uint8Array(buf)
+  const isGzip = bytes[0] === 0x1f && bytes[1] === 0x8b
+
+  let finalBuf: ArrayBuffer = buf
+  if (isGzip) {
+    const ds = new DecompressionStream('gzip')
+    const writer = ds.writable.getWriter()
+    await writer.write(bytes)
+    await writer.close()
+    finalBuf = await new Response(ds.readable).arrayBuffer()
   }
 
-  return new Response(obj.body, { headers })
+  return new Response(finalBuf, {
+    headers: {
+      'Content-Type': 'application/pdf',
+      'Cache-Control': 'private, no-store',
+    },
+  })
 })
 
 // GET /books/:slug/cover
@@ -287,6 +324,50 @@ router.get('/:slug/text', requireAuth, async (c) => {
 // POST /books/:slug/extract-text — not supported in Worker
 router.post('/:slug/extract-text', requireAuth, async (c) => {
   return c.json({ error: 'Text extraction is not available in this environment. Use the PDF viewer directly.' }, 501)
+})
+
+// POST /books/:slug/fetch-cover — client sends a resolved cover URL; worker stores it in R2
+router.post('/:slug/fetch-cover', requireAuth, async (c) => {
+  const db = getDb(c.env)
+  const userId = c.get('userId')
+  const slug = c.req.param('slug') ?? ''
+  const r2 = c.env.BOOKS
+
+  const [book] = await db.select().from(books)
+    .where(and(eq(books.slug, slug), eq(books.user_id, userId)))
+
+  if (!book) return c.json({ error: 'not found' }, 404)
+  if (book.cover_path) return c.json({ cover_url: `/books/${slug}/cover` })
+
+  const body = await c.req.json<{ cover_url?: string }>().catch(() => ({}))
+  const coverUrl = body.cover_url
+  if (!coverUrl) return c.json({ cover_url: null })
+
+  let cover_path: string | null = null
+  try {
+    const hash = await sha256Short(coverUrl)
+    const existingJpg = await r2.head(`covers/${hash}.jpg`)
+    const existingPng = !existingJpg ? await r2.head(`covers/${hash}.png`) : null
+    if (existingJpg) {
+      cover_path = `covers/${hash}.jpg`
+    } else if (existingPng) {
+      cover_path = `covers/${hash}.png`
+    } else {
+      const fetchRes = await fetch(coverUrl)
+      if (fetchRes.ok) {
+        const ct = fetchRes.headers.get('content-type') || 'image/jpeg'
+        const ext = ct.includes('png') ? 'png' : 'jpg'
+        const coverKey = `covers/${hash}.${ext}`
+        await r2.put(coverKey, fetchRes.body!, { httpMetadata: { contentType: ct } })
+        cover_path = coverKey
+      }
+    }
+  } catch { /* skip on error */ }
+
+  if (!cover_path) return c.json({ cover_url: null })
+
+  await db.update(books).set({ cover_path }).where(eq(books.id, book.id))
+  return c.json({ cover_url: `/books/${slug}/cover` })
 })
 
 // DELETE /books/:slug

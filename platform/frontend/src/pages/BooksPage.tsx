@@ -11,23 +11,31 @@ function EmptySlotCard({ onClick }: { onClick: () => void }) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        height: 148,
         border: `2px dashed ${hovered ? 'var(--cyan)' : 'var(--border)'}`,
         borderRadius: 8,
         display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center',
-        cursor: 'pointer', gap: 8,
+        cursor: 'pointer', gap: 10,
         background: hovered ? 'rgba(34,211,238,0.03)' : 'transparent',
         transition: 'border-color 130ms, background 130ms',
+        aspectRatio: '2/3',
       }}
     >
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-        stroke={hovered ? 'var(--cyan)' : 'var(--faint)'}
-        strokeWidth="1.5" strokeLinecap="round" style={{ transition: 'stroke 130ms' }}>
-        <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-      </svg>
-      <span style={{ fontSize: 10, fontWeight: 600, color: hovered ? 'var(--cyan)' : 'var(--faint)', transition: 'color 130ms', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-        adicionar pdf
+      <div style={{
+        width: 36, height: 36, borderRadius: 8,
+        background: hovered ? 'rgba(34,211,238,0.1)' : 'transparent',
+        border: `1px solid ${hovered ? 'rgba(34,211,238,0.3)' : 'var(--border)'}`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        transition: 'all 130ms',
+      }}>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+          stroke={hovered ? 'var(--cyan)' : 'var(--muted)'}
+          strokeWidth="2" strokeLinecap="round" style={{ transition: 'stroke 130ms' }}>
+          <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+        </svg>
+      </div>
+      <span style={{ fontSize: 9, fontWeight: 700, color: hovered ? 'var(--cyan)' : 'var(--muted)', transition: 'color 130ms', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+        adicionar
       </span>
     </div>
   )
@@ -103,23 +111,75 @@ function FilterTab({ label, count, active, color, onClick }: {
 function BookCard({ book, onClick, onDelete }: { book: Book; onClick: () => void; onDelete: () => void }) {
   const [hovered, setHovered] = useState(false)
   const [confirming, setConfirming] = useState(false)
+  const [coverSrc, setCoverSrc] = useState<string | null>(null)
+  const [coverLoading, setCoverLoading] = useState(true)
+  const [resolvedCoverUrl, setResolvedCoverUrl] = useState<string | null>(book.cover_url)
   const phase = book.phase != null ? PHASE_CFG[book.phase] : null
   const phaseColor = phase?.color ?? 'var(--muted)'
 
-  const handleDeleteClick = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    setConfirming(true)
-  }
+  // If the book has no cover, search client-side then ask the worker to store it
+  useEffect(() => {
+    if (book.cover_url) return
+    let cancelled = false
 
-  const handleConfirm = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    onDelete()
-  }
+    async function autoFetch() {
+      const title = book.title
+      let foundUrl: string | undefined
 
-  const handleCancel = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    setConfirming(false)
-  }
+      // 1. Google Books (with API key)
+      try {
+        const q = encodeURIComponent(`intitle:${title}`)
+        const key = import.meta.env.VITE_BOOKS_API_KEY ? `&key=${import.meta.env.VITE_BOOKS_API_KEY}` : ''
+        const res = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${q}&maxResults=1&fields=items(volumeInfo(imageLinks))${key}`)
+        if (res.ok) {
+          const data = await res.json()
+          const il = data.items?.[0]?.volumeInfo?.imageLinks
+          const raw: string | undefined = il?.extraLarge ?? il?.large ?? il?.medium ?? il?.small ?? il?.thumbnail ?? il?.smallThumbnail
+          if (raw) foundUrl = raw.replace(/^http:\/\//, 'https://').replace('&edge=curl', '')
+        }
+      } catch { /* try next */ }
+
+      // 2. Open Library fallback
+      if (!foundUrl) {
+        try {
+          const q = encodeURIComponent(title)
+          const res = await fetch(`https://openlibrary.org/search.json?title=${q}&limit=1&fields=cover_i`)
+          if (res.ok) {
+            const data = await res.json()
+            const coverId = data.docs?.[0]?.cover_i
+            if (coverId) foundUrl = `https://covers.openlibrary.org/b/id/${coverId}-L.jpg`
+          }
+        } catch { /* no cover */ }
+      }
+
+      if (cancelled || !foundUrl) { setCoverLoading(false); return }
+
+      // Send to worker to store permanently in R2
+      try {
+        const r = await api.post(`/books/${book.slug}/fetch-cover`, { cover_url: foundUrl })
+        if (!cancelled && r.data.cover_url) setResolvedCoverUrl(r.data.cover_url)
+        else setCoverLoading(false)
+      } catch { setCoverLoading(false) }
+    }
+
+    autoFetch()
+    return () => { cancelled = true }
+  }, [book.slug, book.cover_url])
+
+  // Fetch cover blob via authenticated client
+  useEffect(() => {
+    if (!resolvedCoverUrl) { setCoverLoading(false); return }
+    let objectUrl: string | null = null
+    api.get(resolvedCoverUrl, { responseType: 'blob' })
+      .then(r => { objectUrl = URL.createObjectURL(r.data); setCoverSrc(objectUrl) })
+      .catch(() => {})
+      .finally(() => setCoverLoading(false))
+    return () => { if (objectUrl) URL.revokeObjectURL(objectUrl) }
+  }, [resolvedCoverUrl])
+
+  const initials = book.title.split(/\s+/).filter(Boolean).slice(0, 2).map(w => w[0]).join('').toUpperCase()
+
+  const stopProp = (e: React.MouseEvent) => e.stopPropagation()
 
   return (
     <div
@@ -127,72 +187,35 @@ function BookCard({ book, onClick, onDelete }: { book: Book; onClick: () => void
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => { setHovered(false); setConfirming(false) }}
       style={{
-        position: 'relative', display: 'flex', flexDirection: 'column',
+        position: 'relative',
+        display: 'flex', flexDirection: 'column',
         background: 'var(--bg-card)',
         border: `1px solid ${confirming ? 'rgba(248,81,73,0.4)' : hovered ? 'var(--border-lit)' : 'var(--border)'}`,
         borderRadius: 8, overflow: 'hidden',
         cursor: confirming ? 'default' : 'pointer',
-        transform: hovered && !confirming ? 'translateY(-2px)' : 'translateY(0)',
-        transition: 'border-color 130ms, transform 150ms, box-shadow 130ms',
-        boxShadow: hovered && !confirming ? '0 4px 16px rgba(0,0,0,0.3)' : 'none',
-        height: book.cover_url ? 400 : 148,
+        transform: hovered && !confirming ? 'translateY(-3px)' : 'translateY(0)',
+        transition: 'border-color 130ms, transform 160ms, box-shadow 130ms',
+        boxShadow: hovered && !confirming ? '0 8px 24px rgba(0,0,0,0.45)' : '0 1px 4px rgba(0,0,0,0.2)',
       }}
     >
       {/* Phase spine */}
-      <div style={{ position: 'absolute', left: 0, top: 0, bottom: 0, width: 3, background: phaseColor, opacity: 0.9 }} />
+      <div style={{
+        position: 'absolute', left: 0, top: 0, bottom: 0, width: 3,
+        background: phaseColor, opacity: 0.85, zIndex: 2,
+      }} />
 
-      {/* Confirmation overlay */}
-      {confirming && (
-        <div
-          onClick={e => e.stopPropagation()}
-          style={{
-            position: 'absolute', inset: 0, zIndex: 10,
-            background: 'rgba(11,15,20,0.88)',
-            display: 'flex', flexDirection: 'column',
-            alignItems: 'center', justifyContent: 'center', gap: 12,
-          }}
-        >
-          <p style={{ fontSize: 12, color: 'var(--text)', margin: 0, fontWeight: 600 }}>Deletar livro?</p>
-          <p style={{ fontSize: 10, color: 'var(--muted)', margin: 0, textAlign: 'center', maxWidth: 160, lineHeight: 1.5 }}>
-            Arquivo e capa serão removidos permanentemente.
-          </p>
-          <div style={{ display: 'flex', gap: 8 }}>
-            <button
-              onClick={handleCancel}
-              style={{
-                padding: '5px 14px', borderRadius: 5, fontSize: 11, cursor: 'pointer',
-                background: 'transparent', border: '1px solid var(--border)',
-                color: 'var(--muted)',
-              }}
-            >
-              cancelar
-            </button>
-            <button
-              onClick={handleConfirm}
-              style={{
-                padding: '5px 14px', borderRadius: 5, fontSize: 11, cursor: 'pointer',
-                background: 'rgba(248,81,73,0.15)', border: '1px solid rgba(248,81,73,0.4)',
-                color: '#f85149', fontWeight: 700,
-              }}
-            >
-              deletar
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Delete button — visible on hover */}
+      {/* Delete button */}
       {!confirming && (
         <button
-          onClick={handleDeleteClick}
+          onClick={e => { stopProp(e); setConfirming(true) }}
           style={{
-            position: 'absolute', top: 8, right: 8, zIndex: 2,
-            width: 26, height: 26, padding: 0, borderRadius: 5,
+            position: 'absolute', top: 8, right: 8, zIndex: 4,
+            width: 28, height: 28, padding: 0, borderRadius: 6,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            background: hovered ? 'rgba(248,81,73,0.12)' : 'transparent',
-            border: `1px solid ${hovered ? 'rgba(248,81,73,0.35)' : 'transparent'}`,
+            background: hovered ? 'rgba(10,10,10,0.75)' : 'transparent',
+            border: `1px solid ${hovered ? 'rgba(248,81,73,0.4)' : 'transparent'}`,
             color: hovered ? '#f85149' : 'transparent',
-            cursor: 'pointer', transition: 'all 130ms',
+            cursor: 'pointer', transition: 'all 130ms', backdropFilter: 'blur(4px)',
           }}
           title="Deletar livro"
         >
@@ -202,16 +225,80 @@ function BookCard({ book, onClick, onDelete }: { book: Book; onClick: () => void
         </button>
       )}
 
-      {/* Cover image */}
-      {book.cover_url && (
-        <div style={{ height: 280, overflow: 'hidden', flexShrink: 0, marginLeft: 3 }}>
-          <img src={book.cover_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }} />
+      {/* Confirmation overlay */}
+      {confirming && (
+        <div
+          onClick={stopProp}
+          style={{
+            position: 'absolute', inset: 0, zIndex: 10,
+            background: 'rgba(10,10,10,0.92)',
+            display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center', gap: 12,
+          }}
+        >
+          <p style={{ fontSize: 12, color: 'var(--text)', margin: 0, fontWeight: 700 }}>Deletar livro?</p>
+          <p style={{ fontSize: 10, color: 'var(--muted)', margin: 0, textAlign: 'center', maxWidth: 160, lineHeight: 1.6 }}>
+            Arquivo e capa serão removidos permanentemente.
+          </p>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button onClick={e => { stopProp(e); setConfirming(false) }}
+              style={{ padding: '5px 14px', borderRadius: 5, fontSize: 11, cursor: 'pointer', background: 'transparent', border: '1px solid var(--border)', color: 'var(--muted)', fontFamily: 'var(--font)' }}>
+              cancelar
+            </button>
+            <button onClick={e => { stopProp(e); onDelete() }}
+              style={{ padding: '5px 14px', borderRadius: 5, fontSize: 11, cursor: 'pointer', background: 'rgba(248,81,73,0.15)', border: '1px solid rgba(248,81,73,0.4)', color: '#f85149', fontWeight: 700, fontFamily: 'var(--font)' }}>
+              deletar
+            </button>
+          </div>
         </div>
       )}
 
-      <div style={{ padding: '12px 14px 12px 18px', flex: 1, display: 'flex', flexDirection: 'column' }}>
-        {/* Phase badge */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 9 }}>
+      {/* Cover — always 2:3 portrait ratio */}
+      <div style={{ aspectRatio: '2/3', position: 'relative', marginLeft: 3, overflow: 'hidden', flexShrink: 0 }}>
+        {coverLoading ? (
+          <div className="skeleton" style={{ position: 'absolute', inset: 0 }} />
+        ) : coverSrc ? (
+          <img
+            src={coverSrc}
+            alt=""
+            style={{
+              width: '100%', height: '100%',
+              objectFit: 'cover', objectPosition: 'center top',
+              display: 'block',
+            }}
+          />
+        ) : (
+          // Stylized placeholder
+          <div style={{
+            position: 'absolute', inset: 0,
+            background: `linear-gradient(160deg, ${phaseColor}22 0%, #0d1117 70%)`,
+            display: 'flex', flexDirection: 'column',
+            alignItems: 'center', justifyContent: 'center',
+            gap: 14, padding: '16px 14px',
+          }}>
+            <div style={{
+              width: 48, height: 48, borderRadius: 10,
+              background: `${phaseColor}20`,
+              border: `1px solid ${phaseColor}40`,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 18, fontWeight: 800, color: phaseColor,
+            }}>
+              {initials}
+            </div>
+            <p style={{
+              fontSize: 10, fontWeight: 600, color: 'var(--muted)',
+              textAlign: 'center', lineHeight: 1.6, margin: 0,
+              display: '-webkit-box', WebkitLineClamp: 5, WebkitBoxOrient: 'vertical', overflow: 'hidden',
+            } as React.CSSProperties}>
+              {book.title}
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* Info */}
+      <div style={{ padding: '10px 12px 12px 16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 6 }}>
           {phase && (
             <span style={{
               fontSize: 9, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase',
@@ -228,22 +315,19 @@ function BookCard({ book, onClick, onDelete }: { book: Book; onClick: () => void
           )}
         </div>
 
-        {/* Title */}
         <p style={{
-          fontSize: 12, fontWeight: 700, margin: '0 0 5px', color: 'var(--text)', lineHeight: 1.45,
-          display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', flex: 1,
+          fontSize: 11, fontWeight: 700, margin: '0 0 3px', color: 'var(--text)', lineHeight: 1.4,
+          display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
         } as React.CSSProperties}>
           {book.title}
         </p>
 
-        {/* Author · year */}
-        <p style={{ fontSize: 10, color: 'var(--muted)', margin: 0 }}>
+        <p style={{ fontSize: 10, color: 'var(--muted)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {book.author}{book.year ? ` · ${book.year}` : ''}
         </p>
 
-        {/* Progress bar */}
         {book.progress > 0 && (
-          <div style={{ marginTop: 10, height: 2, background: 'var(--border)', borderRadius: 1 }}>
+          <div style={{ marginTop: 8, height: 2, background: 'var(--border)', borderRadius: 1 }}>
             <div style={{ width: `${book.progress}%`, height: '100%', background: 'var(--green)', borderRadius: 1 }} />
           </div>
         )}
@@ -252,23 +336,6 @@ function BookCard({ book, onClick, onDelete }: { book: Book; onClick: () => void
   )
 }
 
-// ── Empty state ───────────────────────────────────────────────────────────────
-function EmptyState({ onAdd }: { onAdd: () => void }) {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px 0', gap: 16 }}>
-      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--faint)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-      </svg>
-      <p style={{ fontSize: 13, color: 'var(--muted)', margin: 0 }}>nenhum livro adicionado ainda</p>
-      <button onClick={onAdd} className="btn btn-cyan" style={{ fontSize: 11, display: 'flex', alignItems: 'center', gap: 6 }}>
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-          <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-        </svg>
-        adicionar primeiro livro
-      </button>
-    </div>
-  )
-}
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function BooksPage() {
@@ -370,7 +437,7 @@ export default function BooksPage() {
         </div>
 
         {books.length === 0 ? (
-          <div className="fade-up" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 10, animationDelay: '80ms', opacity: 0 }}>
+          <div className="fade-up" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 10, animationDelay: '80ms', opacity: 0 }}>
             {Array.from({ length: slotLimit }).map((_, i) => (
               <EmptySlotCard key={`empty-${i}`} onClick={() => setShowAddModal(true)} />
             ))}
@@ -402,7 +469,7 @@ export default function BooksPage() {
             {/* Grid */}
             <div
               className="fade-up"
-              style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 10, animationDelay: '80ms', opacity: 0 }}
+              style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 10, animationDelay: '80ms', opacity: 0 }}
             >
               {filtered.map(book => (
                 <BookCard

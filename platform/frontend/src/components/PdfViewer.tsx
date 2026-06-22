@@ -129,7 +129,7 @@ export default function PdfViewer({ slug, onLoadSuccess, onPageChange, onToggleT
     msg.style.display = 'flex'
     msg.textContent   = 'carregando PDF...'
 
-    api.get(`/books/${slug}/pdf`, { responseType: 'arraybuffer' })
+    api.get(`/books/${slug}/pdf`, { responseType: 'arraybuffer', params: { _v: 2 } })
       .then(r => pdfjsLib.getDocument({ data: new Uint8Array(r.data) }).promise)
       .then(async doc => {
         if (cancelled) return
