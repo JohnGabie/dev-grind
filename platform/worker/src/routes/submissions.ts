@@ -3,6 +3,7 @@ import { desc, eq, and } from 'drizzle-orm'
 import { getDb } from '../db'
 import { exercises, submissions } from '../db/schema'
 import { requireAuth } from '../middleware/auth'
+import { recordAttempt } from '../lib/progress'
 import type { AppEnv } from '../types'
 
 const router = new Hono<AppEnv>()
@@ -35,6 +36,8 @@ router.post('/', requireAuth, async (c) => {
     submitted_at,
     time_spent_seconds: body.time_spent_seconds ?? null,
   })
+
+  await recordAttempt(db, c.get('userId'), body.status === 'passed')
 
   return c.json({ id, exercise_id: body.exercise_id, status: body.status, submitted_at }, 201)
 })

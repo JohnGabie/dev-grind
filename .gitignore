@@ -60,3 +60,6 @@ agent/logs/
 
 # study-backend is a separate repo — tracked as submodule or excluded
 study-backend/
+
+# Personal notes
+patterns to save/

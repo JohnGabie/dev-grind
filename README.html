@@ -1,0 +1,972 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DevGrind — Backend Learning Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0a0a0f;
+      --bg2:       #0f0f1a;
+      --bg3:       #141420;
+      --border:    #1e1e2e;
+      --border2:   #2a2a3e;
+      --cyan:      #00e5ff;
+      --cyan-dim:  rgba(0,229,255,0.15);
+      --cyan-glow: rgba(0,229,255,0.06);
+      --green:     #00ff9f;
+      --green-dim: rgba(0,255,159,0.12);
+      --purple:    #bd93f9;
+      --purple-dim:rgba(189,147,249,0.12);
+      --orange:    #ffb86c;
+      --red:       #ff5555;
+      --text:      #cdd6f4;
+      --text-dim:  #6c7086;
+      --text-mid:  #a6adc8;
+      --radius:    8px;
+      --radius-lg: 14px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'JetBrains Mono', monospace;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.7;
+      overflow-x: hidden;
+    }
+
+    /* ── STARFIELD ─────────────────────────────────────────── */
+    #stars { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+    .star {
+      position: absolute;
+      border-radius: 50%;
+      background: #fff;
+      animation: twinkle var(--d) ease-in-out infinite;
+    }
+    @keyframes twinkle {
+      0%, 100% { opacity: var(--lo); transform: scale(1); }
+      50%       { opacity: var(--hi); transform: scale(1.4); }
+    }
+
+    /* ── LAYOUT ────────────────────────────────────────────── */
+    .wrap { position: relative; z-index: 1; max-width: 900px; margin: 0 auto; padding: 0 24px 120px; }
+
+    /* ── HERO ──────────────────────────────────────────────── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 80px 0 60px;
+    }
+
+    .badge {
+      display: inline-block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      border: 1px solid var(--cyan);
+      border-radius: 4px;
+      padding: 3px 10px;
+      margin-bottom: 24px;
+    }
+
+    .hero-title {
+      font-size: clamp(48px, 8vw, 80px);
+      font-weight: 800;
+      letter-spacing: -.02em;
+      line-height: 1;
+      background: linear-gradient(135deg, var(--cyan) 0%, var(--purple) 60%, var(--green) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      margin-bottom: 8px;
+    }
+
+    .hero-sub {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-mid);
+      margin-bottom: 28px;
+    }
+
+    .hero-desc {
+      font-size: 15px;
+      color: var(--text-dim);
+      max-width: 560px;
+      line-height: 1.85;
+      margin-bottom: 40px;
+    }
+
+    .hero-tags { display: flex; flex-wrap: wrap; gap: 10px; }
+    .tag {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      padding: 5px 12px;
+      border-radius: 4px;
+      border: 1px solid;
+    }
+    .tag-cyan   { color: var(--cyan);   border-color: var(--cyan);   background: var(--cyan-dim); }
+    .tag-green  { color: var(--green);  border-color: var(--green);  background: var(--green-dim); }
+    .tag-purple { color: var(--purple); border-color: var(--purple); background: var(--purple-dim); }
+    .tag-orange { color: var(--orange); border-color: var(--orange); background: rgba(255,184,108,.1); }
+
+    /* ── SECTIONS ──────────────────────────────────────────── */
+    section { margin-top: 96px; }
+
+    .section-label {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: 10px;
+    }
+
+    h2 {
+      font-size: 28px;
+      font-weight: 800;
+      letter-spacing: -.01em;
+      color: var(--text);
+      margin-bottom: 14px;
+    }
+
+    h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 8px;
+    }
+
+    p { color: var(--text-dim); margin-bottom: 14px; }
+
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, var(--cyan) 0%, transparent 100%);
+      opacity: .25;
+      margin-bottom: 20px;
+    }
+
+    /* ── CARDS ─────────────────────────────────────────────── */
+    .card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      transition: border-color .2s;
+    }
+    .card:hover { border-color: var(--border2); }
+
+    .card-grid { display: grid; gap: 16px; }
+    .card-grid-2 { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+    .card-grid-3 { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+
+    .card-icon {
+      font-size: 28px;
+      margin-bottom: 14px;
+      line-height: 1;
+    }
+
+    .card-accent-cyan  { border-left: 3px solid var(--cyan); }
+    .card-accent-green { border-left: 3px solid var(--green); }
+    .card-accent-purple{ border-left: 3px solid var(--purple); }
+    .card-accent-orange{ border-left: 3px solid var(--orange); }
+
+    /* ── TRACK CARDS ───────────────────────────────────────── */
+    .track-card {
+      padding: 32px;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+    }
+    .track-duolingo {
+      background: linear-gradient(135deg, rgba(0,229,255,.06) 0%, var(--bg2) 100%);
+      border-color: rgba(0,229,255,.2);
+    }
+    .track-codewars {
+      background: linear-gradient(135deg, rgba(0,255,159,.06) 0%, var(--bg2) 100%);
+      border-color: rgba(0,255,159,.2);
+    }
+    .track-number {
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+    }
+    .tn-cyan  { color: var(--cyan); }
+    .tn-green { color: var(--green); }
+    .track-title { font-size: 22px; font-weight: 800; margin-bottom: 6px; }
+    .track-sub   { font-size: 13px; color: var(--text-dim); margin-bottom: 16px; }
+
+    .pill-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+    .pill {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 4px 10px;
+      border-radius: 20px;
+      border: 1px solid var(--border2);
+      color: var(--text-dim);
+      background: var(--bg3);
+    }
+
+    /* ── STACK TABLE ───────────────────────────────────────── */
+    .stack-table { width: 100%; border-collapse: collapse; }
+    .stack-table th {
+      text-align: left;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      padding: 10px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+    .stack-table td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      vertical-align: top;
+    }
+    .stack-table tr:last-child td { border-bottom: none; }
+    .stack-table tr:hover td { background: var(--bg3); }
+    .td-layer { color: var(--text-dim); font-size: 13px; }
+    .td-tech  { color: var(--cyan); font-weight: 700; }
+    .td-why   { color: var(--text-mid); font-size: 13px; }
+
+    /* ── FLOW DIAGRAM ──────────────────────────────────────── */
+    .flow {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .flow-step {
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+    }
+    .flow-left {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex-shrink: 0;
+      width: 36px;
+    }
+    .flow-dot {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--bg3);
+      border: 2px solid var(--cyan);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      font-weight: 800;
+      color: var(--cyan);
+      flex-shrink: 0;
+    }
+    .flow-line {
+      width: 2px;
+      flex: 1;
+      min-height: 28px;
+      background: linear-gradient(180deg, var(--cyan) 0%, transparent 100%);
+      opacity: .3;
+      margin: 4px 0;
+    }
+    .flow-content {
+      padding-bottom: 28px;
+      padding-top: 6px;
+    }
+    .flow-title { font-weight: 700; color: var(--text); margin-bottom: 4px; }
+    .flow-desc  { color: var(--text-dim); font-size: 13px; }
+
+    /* ── PHASE TIMELINE ────────────────────────────────────── */
+    .phases { display: flex; flex-direction: column; gap: 12px; }
+    .phase {
+      display: flex;
+      gap: 16px;
+      align-items: center;
+      padding: 16px 20px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--bg2);
+    }
+    .phase-num {
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: .08em;
+      color: var(--text-dim);
+      flex-shrink: 0;
+      width: 56px;
+    }
+    .phase-name { font-weight: 700; color: var(--text); font-size: 14px; }
+    .phase-desc { font-size: 12px; color: var(--text-dim); }
+    .phase-status {
+      margin-left: auto;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      padding: 3px 10px;
+      border-radius: 20px;
+      flex-shrink: 0;
+    }
+    .status-done    { color: var(--green);  background: var(--green-dim);  border: 1px solid var(--green); }
+    .status-partial { color: var(--orange); background: rgba(255,184,108,.1); border: 1px solid var(--orange); }
+    .status-pending { color: var(--text-dim); background: var(--bg3); border: 1px solid var(--border2); }
+
+    /* ── CODE BLOCK ────────────────────────────────────────── */
+    .code-block {
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 24px;
+      overflow-x: auto;
+      position: relative;
+    }
+    .code-block pre {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.8;
+      color: var(--text-mid);
+    }
+    .code-block .c-kw   { color: var(--purple); }
+    .code-block .c-str  { color: var(--green); }
+    .code-block .c-fn   { color: var(--cyan); }
+    .code-block .c-cm   { color: var(--text-dim); }
+    .code-block .c-num  { color: var(--orange); }
+    .code-label {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 10px;
+    }
+
+    /* ── CONCEPTS GRID ─────────────────────────────────────── */
+    .concepts { display: flex; flex-wrap: wrap; gap: 8px; }
+    .concept {
+      font-size: 12px;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 4px;
+      border: 1px solid var(--border2);
+      background: var(--bg3);
+    }
+    .c-python { color: #4fc3f7; border-color: rgba(79,195,247,.3); background: rgba(79,195,247,.08); }
+    .c-http   { color: #ffb86c; border-color: rgba(255,184,108,.3); background: rgba(255,184,108,.08); }
+    .c-sql    { color: #f8f8f2; border-color: rgba(248,248,242,.2); background: rgba(248,248,242,.05); }
+    .c-fastapi{ color: var(--green); border-color: rgba(0,255,159,.3); background: rgba(0,255,159,.08); }
+    .c-arch   { color: var(--purple); border-color: rgba(189,147,249,.3); background: rgba(189,147,249,.08); }
+
+    /* ── DEPLOY BOX ────────────────────────────────────────── */
+    .deploy-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    @media (max-width: 600px) { .deploy-grid { grid-template-columns: 1fr; } }
+
+    .deploy-card {
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      background: var(--bg2);
+      padding: 24px;
+    }
+    .deploy-title {
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      margin-bottom: 10px;
+    }
+    .deploy-name { font-size: 20px; font-weight: 800; margin-bottom: 6px; }
+    .deploy-detail { font-size: 12px; color: var(--text-dim); }
+    .deploy-cmd {
+      margin-top: 14px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 10px 14px;
+      font-size: 12px;
+      color: var(--cyan);
+    }
+    .deploy-cmd::before { content: '$ '; color: var(--text-dim); }
+
+    /* ── SIGNAL TABLE ──────────────────────────────────────── */
+    .signal-table { width: 100%; border-collapse: collapse; }
+    .signal-table th {
+      text-align: left;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      padding: 8px 14px;
+      border-bottom: 1px solid var(--border);
+    }
+    .signal-table td {
+      padding: 11px 14px;
+      border-bottom: 1px solid var(--border);
+      font-size: 12px;
+      vertical-align: top;
+    }
+    .signal-table tr:last-child td { border-bottom: none; }
+    .td-signal { color: var(--cyan); font-weight: 600; }
+    .td-valid  { color: var(--green); }
+    .td-drop   { color: var(--red); }
+
+    /* ── NAV ───────────────────────────────────────────────── */
+    nav {
+      position: fixed;
+      top: 24px;
+      right: 24px;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      align-items: flex-end;
+    }
+    nav a {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+      color: var(--text-dim);
+      text-decoration: none;
+      transition: color .15s;
+    }
+    nav a:hover { color: var(--cyan); }
+    @media (max-width: 740px) { nav { display: none; } }
+
+    /* ── FOOTER ────────────────────────────────────────────── */
+    footer {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      padding: 60px 24px 80px;
+      color: var(--text-dim);
+      font-size: 12px;
+      border-top: 1px solid var(--border);
+    }
+    footer strong { color: var(--cyan); font-weight: 700; }
+
+    /* ── SCROLLBAR ─────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<!-- Starfield -->
+<canvas id="stars"></canvas>
+<script>
+  const canvas = document.getElementById('stars');
+  const ctx = canvas.getContext('2d');
+  let stars = [];
+  function resize() {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  function makeStars() {
+    stars = [];
+    const n = Math.floor((canvas.width * canvas.height) / 4000);
+    for (let i = 0; i < n; i++) {
+      stars.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        r: Math.random() * 1.2 + .2,
+        lo: Math.random() * .15 + .05,
+        hi: Math.random() * .5 + .3,
+        t: Math.random() * Math.PI * 2,
+        s: Math.random() * .008 + .003,
+      });
+    }
+  }
+  function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    const now = performance.now() / 1000;
+    for (const s of stars) {
+      const a = s.lo + (s.hi - s.lo) * (0.5 + 0.5 * Math.sin(now * s.s * 6.28 + s.t));
+      ctx.globalAlpha = a;
+      ctx.fillStyle = '#a0c4ff';
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    requestAnimationFrame(draw);
+  }
+  window.addEventListener('resize', () => { resize(); makeStars(); });
+  resize(); makeStars(); draw();
+</script>
+
+<!-- Nav -->
+<nav>
+  <a href="#about">About</a>
+  <a href="#tracks">Tracks</a>
+  <a href="#stack">Stack</a>
+  <a href="#agent">Agent</a>
+  <a href="#deploy">Deploy</a>
+  <a href="#roadmap">Roadmap</a>
+</nav>
+
+<div class="wrap">
+
+  <!-- HERO -->
+  <div class="hero" id="about">
+    <span class="badge">v0.1 — Private Alpha</span>
+    <h1 class="hero-title">DevGrind</h1>
+    <p class="hero-sub">A backend learning platform built for one person.</p>
+    <p class="hero-desc">
+      DevGrind is a personal study platform built for João — a single user with ADHD
+      learning Python, FastAPI, SQL, and HTTP to fully understand his own production
+      project (ZionHub), without depending on AI to navigate his own code.
+    </p>
+    <div class="hero-tags">
+      <span class="tag tag-cyan">Cloudflare Workers</span>
+      <span class="tag tag-green">Pyodide · Python in-browser</span>
+      <span class="tag tag-purple">Adaptive AI Agent</span>
+      <span class="tag tag-orange">Monaco Editor</span>
+    </div>
+  </div>
+
+  <!-- TRACKS -->
+  <section id="tracks">
+    <p class="section-label">Core Concept</p>
+    <h2>Two separate learning tracks</h2>
+    <div class="divider"></div>
+    <p>DevGrind has two distinct modes of learning, each designed for a different cognitive state and goal.</p>
+
+    <div class="card-grid card-grid-2" style="margin-top:24px">
+      <div class="track-card track-duolingo">
+        <p class="track-number tn-cyan">Track 01</p>
+        <h3 class="track-title">Courses</h3>
+        <p class="track-sub">Structured, linear progression — Duolingo style</p>
+        <div class="divider"></div>
+        <p style="font-size:13px">Content is built on top of the 21 books in <code>study-backend/books/</code>.
+        Each lesson is a book chapter with theory and practical exercises attached.
+        The learner advances module by module, phase by phase.</p>
+        <div class="pill-list">
+          <span class="pill">Linear roadmap</span>
+          <span class="pill">Chapter-linked exercises</span>
+          <span class="pill">Phase progression</span>
+          <span class="pill">21 books as source</span>
+        </div>
+      </div>
+
+      <div class="track-card track-codewars">
+        <p class="track-number tn-green">Track 02</p>
+        <h3 class="track-title">Practice</h3>
+        <p class="track-sub">Adaptive kata engine — CodeWars style</p>
+        <div class="divider"></div>
+        <p style="font-size:13px">Standalone exercises with real code execution via Pyodide (Python in the browser).
+        An AI agent analyses performance by concept and calibrates the next batch.
+        Focus: real backend problems — HTTP, SQL, FastAPI. Not algorithm puzzles.</p>
+        <div class="pill-list">
+          <span class="pill">Pyodide execution</span>
+          <span class="pill">Adaptive batches</span>
+          <span class="pill">Concept tracking</span>
+          <span class="pill">kyu/honor system</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card" style="margin-top:16px; background: rgba(189,147,249,.04); border-color: rgba(189,147,249,.2);">
+      <h3 style="color:var(--purple); margin-bottom:10px">CodeWars is context, not content</h3>
+      <p style="font-size:13px; margin:0">The CodeWars public API is used only to read João's completed katas (user: JohnGabie)
+      to understand his current level and avoid repeating topics he already knows. No exercises
+      are copied from CodeWars — all content is generated by the adaptive agent based on
+      the study books and the personal roadmap.</p>
+    </div>
+  </section>
+
+  <!-- STACK -->
+  <section id="stack">
+    <p class="section-label">Technology</p>
+    <h2>Stack</h2>
+    <div class="divider"></div>
+
+    <div class="card" style="padding:0; overflow:hidden">
+      <table class="stack-table">
+        <thead>
+          <tr>
+            <th>Layer</th>
+            <th>Technology</th>
+            <th>Reason</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="td-layer">Backend</td>
+            <td class="td-tech">Cloudflare Workers + Hono + Drizzle ORM</td>
+            <td class="td-why">Edge-deployed, zero cold starts, D1 SQLite</td>
+          </tr>
+          <tr>
+            <td class="td-layer">Database</td>
+            <td class="td-tech">Cloudflare D1 (SQLite)</td>
+            <td class="td-why">Will be migrated to PostgreSQL as a live exercise when João reaches DB phase</td>
+          </tr>
+          <tr>
+            <td class="td-layer">Frontend</td>
+            <td class="td-tech">React 18 + Vite + TypeScript</td>
+            <td class="td-why">Simple SPA, 4–5 pages, no SSR needed for single-user</td>
+          </tr>
+          <tr>
+            <td class="td-layer">Code Editor</td>
+            <td class="td-tech">Monaco Editor</td>
+            <td class="td-why">Same engine as VS Code — identical keyboard shortcuts</td>
+          </tr>
+          <tr>
+            <td class="td-layer">Code Execution</td>
+            <td class="td-tech">Pyodide (Python → WebAssembly)</td>
+            <td class="td-why">No execution server, no rate limits, runs 100% in the browser</td>
+          </tr>
+          <tr>
+            <td class="td-layer">Typography</td>
+            <td class="td-tech">JetBrains Mono (only font)</td>
+            <td class="td-why">Developer tool aesthetic. Full monospace, weights 400–800. Headings look like terminal</td>
+          </tr>
+          <tr>
+            <td class="td-layer">Auth</td>
+            <td class="td-tech">Google OAuth + dev bypass</td>
+            <td class="td-why">Zero friction. Whitelist by email. Dev mode skips OAuth entirely</td>
+          </tr>
+          <tr>
+            <td class="td-layer">Adaptive Agent</td>
+            <td class="td-tech">Claude Code /schedule (every 6h)</td>
+            <td class="td-why">Uses the user's existing Claude Code account — no API key needed in the backend</td>
+          </tr>
+          <tr>
+            <td class="td-layer">Content Source</td>
+            <td class="td-tech">study-backend/ (21 books, profile, quizzes)</td>
+            <td class="td-why">Single source of truth for all learning content</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- AGENT -->
+  <section id="agent">
+    <p class="section-label">Intelligence</p>
+    <h2>How the adaptive agent works</h2>
+    <div class="divider"></div>
+    <p>The agent does NOT validate exercises in real time. It operates in asynchronous cycles every 6 hours.</p>
+
+    <div class="flow" style="margin-top:32px">
+      <div class="flow-step">
+        <div class="flow-left"><div class="flow-dot">1</div><div class="flow-line"></div></div>
+        <div class="flow-content">
+          <p class="flow-title">User solves exercises</p>
+          <p class="flow-desc">Pyodide validates code in the browser. Result (passed / partial / failed) plus time spent, concepts, and cursor heatmap are saved to the database via POST /submissions.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-left"><div class="flow-dot">2</div><div class="flow-line"></div></div>
+        <div class="flow-content">
+          <p class="flow-title">Agent fires every 6 hours</p>
+          <p class="flow-desc">Claude Code /schedule runs <code>agent/daily_prompt.md</code>. The agent reads analytics, the user profile, the roadmap, and recent chat messages.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-left"><div class="flow-dot">3</div><div class="flow-line"></div></div>
+        <div class="flow-content">
+          <p class="flow-title">Gap analysis</p>
+          <p class="flow-desc">Which concepts have a pass rate below 60%? The agent requires at least 2 independent signals (e.g., low pass rate + repeated chat questions) before acting on a gap. Signal quality over signal quantity (ADR-019).</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-left"><div class="flow-dot">4</div><div class="flow-line"></div></div>
+        <div class="flow-content">
+          <p class="flow-title">Generates calibrated exercises</p>
+          <p class="flow-desc">Writes 1–3 JSON exercises into <code>platform/backend/app/exercises/generated/YYYY-MM-DD/</code>, then calls POST /exercises/load. Quantity scales with recent activity. Saves a brief insight to <code>agent/last_insight.json</code>.</p>
+        </div>
+      </div>
+      <div class="flow-step">
+        <div class="flow-left"><div class="flow-dot">5</div><div class="flow-line"></div></div>
+        <div class="flow-content">
+          <p class="flow-title">Roadmap gates progression</p>
+          <p class="flow-desc">The agent amplifies learning within the current roadmap module — it does not skip modules or change what João is learning. The roadmap is the spine; the agent adjusts density and difficulty within it (ADR-015).</p>
+        </div>
+      </div>
+    </div>
+
+    <div style="margin-top:32px">
+      <p class="section-label" style="margin-bottom:14px">Concept taxonomy tracked per exercise</p>
+      <div class="concepts">
+        <span class="concept c-python">python:types</span>
+        <span class="concept c-python">python:functions</span>
+        <span class="concept c-python">python:async</span>
+        <span class="concept c-python">python:oop</span>
+        <span class="concept c-http">http:methods</span>
+        <span class="concept c-http">http:status-codes</span>
+        <span class="concept c-http">http:headers</span>
+        <span class="concept c-http">http:rest</span>
+        <span class="concept c-sql">sql:select</span>
+        <span class="concept c-sql">sql:joins</span>
+        <span class="concept c-sql">sql:aggregations</span>
+        <span class="concept c-sql">sql:transactions</span>
+        <span class="concept c-fastapi">fastapi:routing</span>
+        <span class="concept c-fastapi">fastapi:pydantic</span>
+        <span class="concept c-fastapi">fastapi:auth</span>
+        <span class="concept c-fastapi">fastapi:middleware</span>
+        <span class="concept c-arch">arch:separation-of-concerns</span>
+        <span class="concept c-arch">arch:error-handling</span>
+        <span class="concept c-arch">arch:naming</span>
+      </div>
+    </div>
+
+    <div style="margin-top:28px">
+      <p class="section-label" style="margin-bottom:14px">Signal quality thresholds (ADR-019)</p>
+      <div class="card" style="padding:0; overflow:hidden">
+        <table class="signal-table">
+          <thead>
+            <tr><th>Signal</th><th>Valid if</th><th>Discarded if</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td class="td-signal">time_on_line</td>
+              <td class="td-valid">5s – 300s per line</td>
+              <td class="td-drop">&lt;5s (accidental scroll) or &gt;300s (user left)</td>
+            </tr>
+            <tr>
+              <td class="td-signal">time_spent</td>
+              <td class="td-valid">60s – 7200s</td>
+              <td class="td-drop">&lt;60s (quick test) or &gt;7200s (abandoned)</td>
+            </tr>
+            <tr>
+              <td class="td-signal">cursor_heatmap</td>
+              <td class="td-valid">≥ 3 distinct lines visited</td>
+              <td class="td-drop">&lt;3 lines (editor barely used)</td>
+            </tr>
+            <tr>
+              <td class="td-signal">chat_messages</td>
+              <td class="td-valid">≥ 10 characters</td>
+              <td class="td-drop">Test messages, "oi", isolated "?"</td>
+            </tr>
+            <tr>
+              <td class="td-signal">concept pass rate</td>
+              <td class="td-valid">≥ 5 submissions on that concept</td>
+              <td class="td-drop">&lt;5 submissions (insufficient sample)</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div style="margin-top:28px">
+      <p class="code-label">Calibration logic</p>
+      <div class="code-block"><pre><span class="c-cm"># Agent cycle — quantity calibration</span>
+<span class="c-kw">if</span> submissions_last_3_days == <span class="c-num">0</span>:
+    generate(<span class="c-num">1</span>, difficulty=<span class="c-str">"easy"</span>)      <span class="c-cm"># re-engagement</span>
+<span class="c-kw">elif</span> submissions_today &gt;= <span class="c-num">5</span>:
+    generate(<span class="c-num">3</span>, difficulty=<span class="c-str">"escalated"</span>)  <span class="c-cm"># high activity</span>
+<span class="c-kw">else</span>:
+    generate(<span class="c-num">2</span>, focus=<span class="c-str">"gap_concepts"</span>)   <span class="c-cm"># normal day</span></pre></div>
+    </div>
+  </section>
+
+  <!-- DEPLOY -->
+  <section id="deploy">
+    <p class="section-label">Infrastructure</p>
+    <h2>Deployment</h2>
+    <div class="divider"></div>
+    <p>Fully deployed on Cloudflare's edge — zero servers to manage.</p>
+
+    <div class="deploy-grid" style="margin-top:24px">
+      <div class="deploy-card" style="border-left:3px solid var(--orange)">
+        <p class="deploy-title">Backend</p>
+        <p class="deploy-name" style="color:var(--orange)">Cloudflare Workers</p>
+        <p class="deploy-detail">Worker: <code>devgrind-worker</code><br>
+        Database: D1 — <code>devgrind</code><br>
+        ORM: Drizzle + migrations<br>
+        Source: <code>platform/worker/src/index.ts</code></p>
+        <p class="deploy-cmd">cd platform/worker && wrangler deploy</p>
+      </div>
+
+      <div class="deploy-card" style="border-left:3px solid var(--cyan)">
+        <p class="deploy-title">Frontend</p>
+        <p class="deploy-name" style="color:var(--cyan)">Cloudflare Pages</p>
+        <p class="deploy-detail">React 18 + Vite + TypeScript<br>
+        Connected to git in Cloudflare dashboard<br>
+        Build: <code>npm run build</code><br>
+        Source: <code>platform/frontend/</code></p>
+        <p class="deploy-cmd">wrangler pages deploy dist</p>
+      </div>
+    </div>
+
+    <div style="margin-top:16px">
+      <div class="card" style="border-color:rgba(0,255,159,.2); background:rgba(0,255,159,.03)">
+        <h3 style="color:var(--green); margin-bottom:8px">Local development</h3>
+        <p style="font-size:13px; margin:0">Old FastAPI backend (<code>platform/backend/</code>) still exists for reference.
+        The active stack is the Cloudflare Worker. Run locally with <code>wrangler dev</code> in
+        <code>platform/worker/</code> and <code>npm run dev</code> in <code>platform/frontend/</code>.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ROADMAP -->
+  <section id="roadmap">
+    <p class="section-label">Build Phases</p>
+    <h2>Roadmap</h2>
+    <div class="divider"></div>
+    <p>Each phase has concrete completion criteria tracked in <code>vault-obsidian/TASKS.md</code>.</p>
+
+    <div class="phases" style="margin-top:24px">
+      <div class="phase">
+        <span class="phase-num">Phase 0–3</span>
+        <div>
+          <p class="phase-name">Architecture + MVP</p>
+          <p class="phase-desc">Backend, frontend, adaptive agent engine, Monaco + Pyodide integration</p>
+        </div>
+        <span class="phase-status status-done">Done</span>
+      </div>
+      <div class="phase">
+        <span class="phase-num">Phase 4</span>
+        <div>
+          <p class="phase-name">Dashboard upgrade</p>
+          <p class="phase-desc">Continue card, kata mode buttons, AI insight slot, in-platform chat widget</p>
+        </div>
+        <span class="phase-status status-pending">Pending</span>
+      </div>
+      <div class="phase">
+        <span class="phase-num">Phase 5</span>
+        <div>
+          <p class="phase-name">Books section</p>
+          <p class="phase-desc">Books as first-class objects: MD reader + PDF upload + dark mode + reading progress</p>
+        </div>
+        <span class="phase-status status-done">Done</span>
+      </div>
+      <div class="phase">
+        <span class="phase-num">Phase 6</span>
+        <div>
+          <p class="phase-name">Courses track (real)</p>
+          <p class="phase-desc">Structured curriculum: roadmap → modules → lessons referencing book chapters</p>
+        </div>
+        <span class="phase-status status-pending">Pending</span>
+      </div>
+      <div class="phase">
+        <span class="phase-num">Phase 7</span>
+        <div>
+          <p class="phase-name">Roadmap-driven agent</p>
+          <p class="phase-desc">Agent operates within current module, not pure gap-filling. Curated default exercises per module.</p>
+        </div>
+        <span class="phase-status status-pending">Pending</span>
+      </div>
+      <div class="phase">
+        <span class="phase-num">Phase 8</span>
+        <div>
+          <p class="phase-name">Cursor heatmap</p>
+          <p class="phase-desc">Monaco tracks time-on-line as difficulty signal. Sent with every submission.</p>
+        </div>
+        <span class="phase-status status-pending">Pending</span>
+      </div>
+      <div class="phase">
+        <span class="phase-num">Phase 9</span>
+        <div>
+          <p class="phase-name">Domain map + multi-language</p>
+          <p class="phase-desc">Profile shows mastered vs gap concepts. JavaScript (native) + SQL (sql.js WASM) runners.</p>
+        </div>
+        <span class="phase-status status-pending">Pending</span>
+      </div>
+      <div class="phase" style="border-left:3px solid var(--purple)">
+        <span class="phase-num">Phase 10</span>
+        <div>
+          <p class="phase-name">Grind Store</p>
+          <p class="phase-desc">Cosmetics system: Grind Coins, animated starfield backgrounds, badges, per-slot equipping</p>
+        </div>
+        <span class="phase-status status-partial">Partial</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRINCIPLES -->
+  <section>
+    <p class="section-label">Anti-patterns</p>
+    <h2>What this platform is NOT</h2>
+    <div class="divider"></div>
+
+    <div class="card-grid card-grid-3" style="margin-top:20px">
+      <div class="card card-accent-red" style="border-left-color:var(--red)">
+        <p class="card-icon">🚫</p>
+        <h3>Not algorithm kata</h3>
+        <p style="margin:0; font-size:13px">No sorting algorithms, no binary search, no Leetcode-style puzzles. Every exercise is a real backend development scenario.</p>
+      </div>
+      <div class="card card-accent-red" style="border-left-color:var(--red)">
+        <p class="card-icon">🚫</p>
+        <h3>Not real-time AI grading</h3>
+        <p style="margin:0; font-size:13px">Pyodide validates objectively (pass/fail). The AI runs in async cycles — it never grades individual answers in real time.</p>
+      </div>
+      <div class="card card-accent-red" style="border-left-color:var(--red)">
+        <p class="card-icon">🚫</p>
+        <h3>Not a generic platform</h3>
+        <p style="margin:0; font-size:13px">Built for one person. The curriculum maps exactly to João's production project (ZionHub) and personal roadmap.</p>
+      </div>
+      <div class="card card-accent-red" style="border-left-color:var(--red)">
+        <p class="card-icon">🚫</p>
+        <h3>No Anthropic key in backend</h3>
+        <p style="margin:0; font-size:13px">The daily agent runs as a Claude Code /schedule session — it uses João's existing account with no separate API key in the Worker.</p>
+      </div>
+      <div class="card card-accent-red" style="border-left-color:var(--red)">
+        <p class="card-icon">🚫</p>
+        <h3>No display fonts</h3>
+        <p style="margin:0; font-size:13px">JetBrains Mono is the only font, used everywhere in weights 400–800. No Syne, no Outfit, no "AI startup aesthetic."</p>
+      </div>
+      <div class="card card-accent-red" style="border-left-color:var(--red)">
+        <p class="card-icon">🚫</p>
+        <h3>No treadmill progression</h3>
+        <p style="margin:0; font-size:13px">The agent fills gaps but doesn't control the roadmap. A fixed curriculum ensures João always advances — the AI just adjusts the pacing.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FILES -->
+  <section>
+    <p class="section-label">Repository</p>
+    <h2>Key file structure</h2>
+    <div class="divider"></div>
+    <div class="code-block" style="margin-top:16px">
+      <pre><span class="c-fn">study-plataform/</span>
+├── <span class="c-str">vault-obsidian/</span>         <span class="c-cm">← STATE.md · TASKS.md · DECISIONS.md</span>
+├── <span class="c-str">agent/</span>
+│   ├── <span class="c-kw">daily_prompt.md</span>     <span class="c-cm">← full prompt Claude Code /schedule executes</span>
+│   ├── <span class="c-kw">exercise_schema.md</span>  <span class="c-cm">← JSON schema for generated exercises</span>
+│   ├── <span class="c-kw">codewars_sync.py</span>    <span class="c-cm">← reads public profile JohnGabie</span>
+│   └── <span class="c-kw">last_insight.json</span>   <span class="c-cm">← written by agent, shown in dashboard</span>
+├── <span class="c-str">study-backend/</span>          <span class="c-cm">← DO NOT MODIFY STRUCTURE</span>
+│   ├── <span class="c-kw">books/</span>              <span class="c-cm">← 21 books in Markdown</span>
+│   └── <span class="c-kw">memory/</span>             <span class="c-cm">← user profile, project roadmap, ZionHub context</span>
+└── <span class="c-str">platform/</span>
+    ├── <span class="c-str">worker/</span>             <span class="c-cm">← Cloudflare Worker (active backend)</span>
+    │   ├── <span class="c-kw">src/index.ts</span>
+    │   ├── <span class="c-kw">src/routes/</span>         <span class="c-cm">← submissions · courses · profile · store · progress</span>
+    │   ├── <span class="c-kw">drizzle/</span>            <span class="c-cm">← migrations for D1</span>
+    │   └── <span class="c-kw">wrangler.toml</span>       <span class="c-cm">← worker: devgrind-worker · D1: devgrind</span>
+    └── <span class="c-str">frontend/</span>           <span class="c-cm">← React 18 + Vite + TypeScript (Cloudflare Pages)</span>
+        └── <span class="c-kw">src/</span>
+            ├── <span class="c-kw">pages/</span>          <span class="c-cm">← Dashboard · Exercise · Profile · Books · Store</span>
+            ├── <span class="c-kw">components/</span>     <span class="c-cm">← Sidebar (56px rail) · AppLayout · StarfieldBg</span>
+            └── <span class="c-kw">hooks/</span>          <span class="c-cm">← usePyodide · useCosmetics</span></pre>
+    </div>
+  </section>
+
+</div>
+
+<footer>
+  Built by <strong>João Gabriel</strong> · Powered by <strong>Claude Code</strong> · Deployed on <strong>Cloudflare</strong>
+  <br><br>
+  <span style="opacity:.4">The goal: understand ZionHub line by line, without asking AI what your own code does.</span>
+</footer>
+
+</body>
+</html>
