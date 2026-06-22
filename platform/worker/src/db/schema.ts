@@ -90,10 +90,11 @@ export const books = sqliteTable('books', {
   year:         integer('year'),
   phase:        integer('phase'),
   content_type: text('content_type').notNull(), // 'markdown' | 'pdf'
-  file_path:    text('file_path').notNull(),
-  cover_path:   text('cover_path'),
-  text_path:    text('text_path'),
-  created_at:   text('created_at').notNull().default(sql`(CURRENT_TIMESTAMP)`),
+  file_path:        text('file_path').notNull(),
+  cover_path:       text('cover_path'),
+  text_path:        text('text_path'),
+  file_size_bytes:  integer('file_size_bytes').notNull().default(0),
+  created_at:       text('created_at').notNull().default(sql`(CURRENT_TIMESTAMP)`),
 }, (t) => [
   index('idx_books_slug').on(t.slug),
 ])

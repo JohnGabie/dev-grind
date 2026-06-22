@@ -1,5 +1,5 @@
 import { Hono } from 'hono'
-import { eq, desc, and, count } from 'drizzle-orm'
+import { eq, desc, and, count, sum, asc } from 'drizzle-orm'
 import { getDb } from '../db'
 import { books } from '../db/schema'
 import { requireAuth } from '../middleware/auth'
@@ -7,8 +7,10 @@ import type { AppEnv } from '../types'
 
 const router = new Hono<AppEnv>()
 
-const MAX_PDF_BYTES = 20 * 1024 * 1024  // 20 MB
+const MAX_PDF_BYTES     = 20 * 1024 * 1024        // 20 MB per file
 const MAX_PDFS_PER_USER = 4
+const R2_LIMIT_BYTES    = 10 * 1024 * 1024 * 1024 // 10 GB global bucket limit
+const R2_EVICT_THRESHOLD = R2_LIMIT_BYTES * 0.90  // start evicting at 90%
 
 function slugify(text: string): string {
   return text
@@ -75,6 +77,22 @@ router.post('/upload', requireAuth, async (c) => {
     return c.json({ detail: `PDF muito grande. Máximo permitido: ${MAX_PDF_BYTES / 1024 / 1024}MB.` }, 413)
   }
 
+  // Compress PDF now so we know the real stored size before any checks
+  let fileData: ArrayBuffer | ReadableStream
+  let storedSize = file.size
+  let httpMeta: Record<string, string>
+
+  if (ext === 'pdf') {
+    const raw = await file.arrayBuffer()
+    const compressed = await gzipBuffer(raw)
+    fileData = compressed
+    storedSize = compressed.byteLength
+    httpMeta = { contentType: 'application/pdf', contentEncoding: 'gzip' }
+  } else {
+    fileData = file.stream()
+    httpMeta = { contentType: 'text/markdown; charset=utf-8' }
+  }
+
   // PDF count limit
   if (ext === 'pdf') {
     const [{ value: pdfCount }] = await db
@@ -87,6 +105,31 @@ router.post('/upload', requireAuth, async (c) => {
     }
   }
 
+  // R2 storage monitor — evict oldest PDF if approaching 10GB
+  if (ext === 'pdf') {
+    const [{ value: totalUsed }] = await db
+      .select({ value: sum(books.file_size_bytes) })
+      .from(books)
+
+    const used = Number(totalUsed ?? 0)
+
+    if (used + storedSize > R2_EVICT_THRESHOLD) {
+      // Find oldest PDF across all users
+      const [oldest] = await db
+        .select()
+        .from(books)
+        .where(eq(books.content_type, 'pdf'))
+        .orderBy(asc(books.created_at))
+        .limit(1)
+
+      if (oldest) {
+        const keysToDelete = [oldest.file_path, oldest.cover_path, oldest.text_path].filter(Boolean) as string[]
+        await Promise.all(keysToDelete.map(key => r2.delete(key)))
+        await db.delete(books).where(eq(books.id, oldest.id))
+      }
+    }
+  }
+
   // Unique slug
   let base = slugify(title)
   const existing = await db.select({ slug: books.slug }).from(books).where(eq(books.user_id, userId))
@@ -95,23 +138,9 @@ router.post('/upload', requireAuth, async (c) => {
   let i = 1
   while (taken.has(slug)) slug = `${base}-${i++}`
 
-  // Upload book file — compress PDFs with gzip before storing
+  // Upload to R2
   const fileKey = `${userId}/${slug}/file.${ext}`
-
-  if (ext === 'pdf') {
-    const raw = await file.arrayBuffer()
-    const compressed = await gzipBuffer(raw)
-    await r2.put(fileKey, compressed, {
-      httpMetadata: {
-        contentType: 'application/pdf',
-        contentEncoding: 'gzip',
-      },
-    })
-  } else {
-    await r2.put(fileKey, file.stream(), {
-      httpMetadata: { contentType: 'text/markdown; charset=utf-8' },
-    })
-  }
+  await r2.put(fileKey, fileData, { httpMetadata: httpMeta })
 
   // Upload cover to R2 (optional)
   let cover_path: string | null = null
@@ -136,6 +165,7 @@ router.post('/upload', requireAuth, async (c) => {
     file_path: fileKey,
     cover_path,
     text_path: null,
+    file_size_bytes: storedSize,
   })
 
   return c.json({ slug, title, author, content_type }, 201)
