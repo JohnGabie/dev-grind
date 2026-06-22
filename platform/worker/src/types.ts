@@ -1,5 +1,6 @@
 export interface Env {
   DB: D1Database
+  BOOKS: R2Bucket
   JWT_SECRET: string
   GOOGLE_CLIENT_ID: string
   ALLOWED_EMAILS: string  // comma-separated, empty = allow all

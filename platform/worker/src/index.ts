@@ -8,6 +8,7 @@ import progressRoutes from './routes/progress'
 import storeRoutes from './routes/store'
 import coursesRoutes from './routes/courses'
 import profileRoutes from './routes/profile'
+import booksRoutes from './routes/books'
 import type { AppEnv } from './types'
 
 const app = new Hono<AppEnv>()
@@ -29,5 +30,6 @@ app.route('/progress', progressRoutes)
 app.route('/store', storeRoutes)
 app.route('/courses', coursesRoutes)
 app.route('/profile', profileRoutes)
+app.route('/books', booksRoutes)
 
 export default app
