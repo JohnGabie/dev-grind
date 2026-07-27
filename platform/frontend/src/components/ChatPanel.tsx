@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react'
 import api from '../api/client'
+import { getAiConfig } from '../api/aiConfig'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -28,13 +29,18 @@ export function ChatPanel({ context, style }: {
     setMessages(prev => [...prev, { role: 'user', content: text }])
     setSending(true)
     try {
-      const { data } = await api.post('/chat', { message: text, context })
+      const cfg = getAiConfig()
+      if (!cfg.api_key) throw new Error('Configure sua chave de IA em Config para usar o chat.')
+      const { data } = await api.post('/chat', {
+        message: `${context}\n\n${text}`,
+        api_key:  cfg.api_key,
+        base_url: cfg.base_url,
+        model:    cfg.model,
+      })
       setMessages(prev => [...prev, { role: 'assistant', content: data.response }])
-    } catch {
-      setMessages(prev => [...prev, {
-        role: 'assistant',
-        content: '⚠ Chat não configurado ainda. Adicione `ANTHROPIC_API_KEY` ao `.env` do backend para ativar.',
-      }])
+    } catch (err: any) {
+      const detail = err?.response?.data?.detail ?? err?.message ?? 'Erro desconhecido.'
+      setMessages(prev => [...prev, { role: 'assistant', content: `⚠ ${detail}` }])
     } finally {
       setSending(false)
     }

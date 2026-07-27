@@ -9,6 +9,10 @@ import storeRoutes from './routes/store'
 import coursesRoutes from './routes/courses'
 import profileRoutes from './routes/profile'
 import booksRoutes from './routes/books'
+import tokensRoutes from './routes/tokens'
+import mcpRoutes from './routes/mcp'
+import chatRoutes from './routes/chat'
+import agentRoutes from './routes/agent'
 import type { AppEnv } from './types'
 
 const app = new Hono<AppEnv>()
@@ -22,6 +26,7 @@ app.use('*', cors({
 
 app.get('/', c => c.json({ status: 'ok', api: 'DevGrind' }))
 
+app.route('/auth/tokens', tokensRoutes)
 app.route('/auth', authRoutes)
 app.route('/exercises', exercisesRoutes)
 app.route('/submissions', submissionsRoutes)
@@ -31,5 +36,8 @@ app.route('/store', storeRoutes)
 app.route('/courses', coursesRoutes)
 app.route('/profile', profileRoutes)
 app.route('/books', booksRoutes)
+app.route('/chat', chatRoutes)
+app.route('/agent', agentRoutes)
+app.route('/mcp', mcpRoutes)
 
 export default app

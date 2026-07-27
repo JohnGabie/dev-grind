@@ -184,7 +184,7 @@ function IntegracoesSection() {
   const [newName, setNewName] = useState('Claude Code')
   const [freshToken, setFreshToken] = useState<Token | null>(null)
   const [copied, setCopied] = useState<string | null>(null)
-  const [serverUrl, setServerUrl] = useState('http://localhost:8000')
+  const [serverUrl, setServerUrl] = useState('http://localhost:8787')
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const createInputRef = useRef<HTMLInputElement>(null)
 

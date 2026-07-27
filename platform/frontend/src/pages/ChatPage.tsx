@@ -2,14 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import ReactMarkdown from 'react-markdown'
 import api from '../api/client'
-
-function getAiConfig() {
-  return {
-    api_key:  localStorage.getItem('study_ai_key')      ?? '',
-    base_url: localStorage.getItem('study_ai_base_url') ?? 'https://openrouter.ai/api/v1',
-    model:    localStorage.getItem('study_ai_model')    ?? 'anthropic/claude-opus-4-5',
-  }
-}
+import { getAiConfig } from '../api/aiConfig'
 
 interface Message {
   id: string

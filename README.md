@@ -112,6 +112,60 @@ The agent discards noisy signals before making decisions. Multiple weak signals 
 
 ---
 
+## Local development
+
+Requirements: Node 20+.
+
+### Worker + D1
+
+Two environments, both defined in `wrangler.toml`:
+
+| | Production (default) | Development (`--env dev`) |
+|---|---|---|
+| Worker | `devgrind-worker` | `devgrind-worker-dev` |
+| D1 | `study-platform` (legacy name of this project) | `grind-dev` |
+| R2 | `devgrind-books` | `devgrind-books-dev` |
+
+```bash
+cd platform/worker
+npm install
+cp .dev.vars.example .dev.vars          # JWT_SECRET, ENV, Google OAuth
+
+# fully local — D1/R2 simulated in .wrangler/state/ (gitignored, delete to reset)
+./node_modules/.bin/wrangler d1 migrations apply grind-dev --local
+npm run dev
+
+# or against the real dev resources on Cloudflare
+./node_modules/.bin/wrangler dev --env dev --remote
+```
+
+Schema changes go through `npm run db:generate` (Drizzle), then `migrations apply` with
+`--local`, `--env dev --remote`, and finally `--remote` for production.
+
+Two gotchas worth knowing:
+
+- Use `./node_modules/.bin/wrangler`, not `npx wrangler`. Outside `platform/worker` there is no
+  `package.json`, so `npx` tries to download wrangler and blocks on an install prompt.
+- `wrangler dev` in **local** mode needs the bundled workerd to support this project's
+  `compatibility_date` (2026-06-15), which requires wrangler ≥ 4.114 — and that in turn requires
+  **Node 22+**. On Node 20, use `--remote`, where the runtime is Cloudflare's own.
+
+### Frontend
+
+```bash
+cd platform/frontend
+npm install
+npm run dev                             # http://localhost:5173
+```
+
+Vite proxies `/api` to the Worker on `http://localhost:8787`; override with
+`VITE_PROXY_TARGET`.
+
+Login without Google OAuth: `POST /auth/dev` (blocked when `ENV=production`) — the login
+screen exposes it as "Entrar em modo dev".
+
+---
+
 ## Deployment
 
 | | Backend | Frontend |
@@ -120,6 +174,9 @@ The agent discards noisy signals before making decisions. Multiple weak signals 
 | **Source** | `platform/worker/` | `platform/frontend/` |
 | **Deploy** | `wrangler deploy` | `wrangler pages deploy dist` |
 | **Database** | D1 — `devgrind` | — |
+
+Worker secrets in production: `wrangler secret put JWT_SECRET` (and `GOOGLE_CLIENT_ID`,
+`ALLOWED_EMAILS`).
 
 ---
 

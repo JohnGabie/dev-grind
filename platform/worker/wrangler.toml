@@ -2,12 +2,29 @@ name = "devgrind-worker"
 main = "src/index.ts"
 compatibility_date = "2026-06-15"
 
+# Produção. `database_name` é o nome legado do projeto na Cloudflare — D1 não
+# suporta rename, então o nome fica como está; o binding resolve pelo id.
 [[d1_databases]]
 binding = "DB"
-database_name = "devgrind"
+database_name = "study-platform"
 database_id = "0a2833b8-c0dc-44d8-938b-568a9af0a5de"
 migrations_dir = "drizzle"
 
 [[r2_buckets]]
 binding = "BOOKS"
 bucket_name = "devgrind-books"
+
+# Ambiente de desenvolvimento: banco e bucket separados, mesmo schema.
+# Uso: wrangler dev --env dev --remote  ·  wrangler d1 migrations apply grind-dev --remote
+[env.dev]
+name = "devgrind-worker-dev"
+
+[[env.dev.d1_databases]]
+binding = "DB"
+database_name = "grind-dev"
+database_id = "ee898b86-dba6-4dd7-89fb-bef9dc9a0c98"
+migrations_dir = "drizzle"
+
+[[env.dev.r2_buckets]]
+binding = "BOOKS"
+bucket_name = "devgrind-books-dev"

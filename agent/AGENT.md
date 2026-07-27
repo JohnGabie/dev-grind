@@ -13,7 +13,7 @@ A cada execução às 6h, o agente:
 1. **Lê o estado do aluno**
    - `study-backend/student/profile.md` — lacunas ativas e pontos fortes
    - Últimas 3 sessões em `study-backend/student/sessions/`
-   - Banco: quantos exercícios completados nos últimos 7 dias via `GET /progress/summary`
+   - Plataforma: `get_context()`, `get_progress()` e `get_analytics()` via MCP
 
 2. **Calibra a geração**
    - 0 exercícios nos últimos 3 dias → 1 exercício de reengajamento (dificuldade baixa, prazer alto)
@@ -21,27 +21,22 @@ A cada execução às 6h, o agente:
    - Alta atividade (5+/dia) → 3 exercícios, aumentar dificuldade gradualmente
 
 3. **Gera exercícios**
-   - Seguindo o schema em `agent/exercise_schema.md`
-   - Cada exercício tem `rationale` explicando por que foi gerado
+   - `create_exercise()` — entra direto no banco, visível na hora
    - Referência ao livro relevante quando aplicável
 
-4. **Escreve os exercícios**
-   - Salva JSONs em `platform/backend/app/exercises/generated/YYYY-MM-DD/`
-   - Faz POST para `http://localhost:8000/exercises/load` para carregar no banco
-
-5. **Atualiza métricas**
-   - Registra em `study-backend/student/profile.md` seção "Métricas de Plataforma"
+4. **Atualiza o perfil e o dashboard**
+   - `update_profile()` / `add_profile_note()` com o que observou
+   - `write_insight()` com a mensagem do dia
    - Atualiza este arquivo (AGENT.md) com timestamp da última execução
 
 ---
 
 ## Protocolo de falha
 
-Se o backend não estiver rodando (POST falhar):
-- Salva os JSONs normalmente
-- Registra falha neste arquivo com timestamp
-- **Não** tenta reenviar em loop
-- Na próxima execução, verifica exercícios pendentes de carga e tenta novamente
+Se o MCP não estiver conectado ou as tools falharem:
+- Registra a falha neste arquivo com timestamp
+- **Não** tenta em loop, e **não** inventa dados de progresso
+- Na próxima execução, começa do zero lendo `get_context()`
 
 ---
 
@@ -53,25 +48,12 @@ Se o backend não estiver rodando (POST falhar):
 
 ---
 
-## Configuração local (Windows Task Scheduler)
+## Configuração
 
-O agente NÃO usa CCR remoto — acessa localhost:8000 e arquivos locais.
+O agente roda via Claude Code `/schedule` e fala com a plataforma pelo MCP `devgrind`
+(token pessoal gerado em Config). Como o Worker está na edge, não depende de nenhum
+servidor local ligado.
 
-**Tarefa registrada:** `StudyPlatformDailyAgent`
-**Script:** `agent/run_daily_agent.ps1`
-**Logs:** `agent/logs/YYYY-MM-DD.log`
-
-Para gerenciar:
-```powershell
-# Ver status
-schtasks /query /tn "StudyPlatformDailyAgent"
-
-# Rodar agora (teste)
-schtasks /run /tn "StudyPlatformDailyAgent"
-
-# Desabilitar
-schtasks /change /tn "StudyPlatformDailyAgent" /disable
-
-# Deletar
-schtasks /delete /tn "StudyPlatformDailyAgent" /f
+```
+claude mcp add --transport http devgrind <url-do-worker>/mcp
 ```

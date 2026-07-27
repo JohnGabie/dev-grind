@@ -15,11 +15,16 @@ env/
 .env
 .env.*
 !.env.example
+.dev.vars
+!.dev.vars.example
 
 # Databases
 *.db
 *.sqlite
 *.sqlite3
+
+# Wrangler local state (D1/R2 locais)
+.wrangler/
 
 # Uploads (PDFs, covers)
 platform/backend/app/uploads/

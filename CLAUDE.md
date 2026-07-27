@@ -1,26 +1,16 @@
 # CLAUDE.md — Arquiteto da DevGrind
 
 > Este arquivo é carregado automaticamente a cada sessão. É a única fonte de verdade
-> sobre COMO trabalhar. Para saber ONDE estamos, leia STATE.md e TASKS.md.
+> sobre COMO trabalhar. O estado real do projeto está no código e no `git log`.
 
 ---
 
-## BOOT SEQUENCE — Execute sempre ao iniciar uma sessão
+## BOOT SEQUENCE
 
-> Os arquivos de planejamento vivem no vault Obsidian em `vault-obsidian/`.
-
-```
-1. Read vault-obsidian/STATE.md      → o que existe vs o que não existe
-2. Read vault-obsidian/TASKS.md      → o que está pendente e o que está bloqueado
-3. Read vault-obsidian/DECISIONS.md  → por que as coisas foram feitas assim
-4. Read agent/AGENT.md               → estado do agente diário
-```
-
-Se STATE.md disser que uma feature está "done", verifique se o arquivo/diretório
-correspondente existe antes de assumir que está pronto. Estado declarado ≠ estado real.
-
-Após o boot: informe em uma linha — "Estado carregado. Fase X. Próxima tarefa: Y."
-Nenhuma outra ação até o usuário confirmar.
+O planejamento vive num vault Obsidian fora do repo (`vault-obsidian/`, gitignored).
+Se ele existir na máquina, leia `STATE.md`, `TASKS.md` e `DECISIONS.md`. Se não existir,
+não invente: leia o código. Estado declarado ≠ estado real — sempre confirme no repo
+antes de assumir que uma feature está pronta.
 
 ---
 
@@ -57,8 +47,10 @@ para saber o que está acontecendo no próprio código.
 
 | Camada | Tecnologia | Motivo |
 |--------|-----------|--------|
-| Backend | FastAPI + SQLite → PostgreSQL | Alinha com o que João aprende |
-| Frontend | React 18 + Vite + TypeScript | SPA simples |
+| Backend | Cloudflare Workers + Hono + D1 | Um só backend, deploy na edge |
+| ORM | Drizzle | SQL tipado, roda no Workers |
+| Storage | R2 (PDFs, capas, texto extraído) | Sem disco local |
+| Frontend | React 19 + Vite + TypeScript | SPA simples |
 | Editor | Monaco Editor | Mesmo do VS Code |
 | Execução de código | Pyodide (Python no browser) | Sem servidor de execução |
 | Fonte tipográfica | JetBrains Mono (única fonte) | Dev tool aesthetic, sem Syne/Outfit |
@@ -73,10 +65,8 @@ para saber o que está acontecendo no próprio código.
 ```
 devgrind/
 ├── CLAUDE.md               ← este arquivo (arquiteto)
-├── ARCHITECTURE.md         ← decisões técnicas detalhadas
-├── STATE.md                ← estado atual do build (SEMPRE atualizar)
-├── TASKS.md                ← fila de tarefas com dependências
-├── DECISIONS.md            ← log ADR (nunca deletar entradas)
+├── README.md               ← stack, setup local, deploy
+├── vault-obsidian/         ← STATE.md · TASKS.md · DECISIONS.md (fora do git)
 ├── study-backend/          ← conteúdo fonte — NÃO MODIFICAR estrutura
 │   ├── CLAUDE.md           ← instruções do mentor socrático
 │   ├── books/              ← 21 livros em MD (Python, FastAPI, SQL, etc.)
@@ -84,14 +74,14 @@ devgrind/
 │   ├── quizzes/            ← provas diagnósticas já feitas
 │   └── student/            ← perfil dinâmico + sessões
 ├── platform/
-│   ├── backend/            ← FastAPI (porta 8000)
-│   │   └── app/
-│   │       ├── main.py
-│   │       ├── models/     ← Exercise, TestCase, Submission, DailyProgress, User
-│   │       ├── routers/    ← exercises, submissions, progress, users, auth
-│   │       ├── services/   ← exercise_loader, progress_service
-│   │       ├── db/         ← database.py (SQLite)
-│   │       └── exercises/generated/  ← JSONs de exercícios (por data)
+│   ├── worker/             ← Hono + D1 (porta 8787) — ÚNICO backend
+│   │   ├── src/
+│   │   │   ├── index.ts    ← registro de rotas
+│   │   │   ├── db/         ← schema.ts (Drizzle), index.ts
+│   │   │   ├── lib/        ← tools.ts (registry MCP+chat), honor, rank, progress
+│   │   │   ├── middleware/ ← auth.ts (JWT)
+│   │   │   └── routes/     ← auth, exercises, submissions, books, store, mcp, chat…
+│   │   └── drizzle/        ← migrations
 │   └── frontend/           ← React + Vite (porta 5173)
 │       └── src/
 │           ├── pages/      ← Dashboard, Exercise, Profile, Courses, Login
@@ -118,17 +108,17 @@ Submission salva no banco com: status, test_results, time_spent, concepts
     ↓
 Agente executa a cada 6h via /schedule
     ↓
-Lê: GET /analytics/performance  → taxa de acerto por conceito
+Conecta no MCP da plataforma (/mcp, token pessoal)
+    ↓
+Chama: get_context() e get_profile()  → rank, streak, lacunas, estilo
 Lê: study-backend/memory/user_perfil.md  → quem é o aluno
 Lê: study-backend/memory/project_roadmap.md  → onde está no roadmap
 Lê: codewars_sync.py output  → o que já resolveu no CodeWars
     ↓
 Analisa: quais conceitos têm taxa < 60%? o que veio da sessão anterior?
     ↓
-Gera: 1-3 exercícios JSON focados nos gaps identificados
-    ↓
-Salva em: platform/backend/app/exercises/generated/YYYY-MM-DD/
-Chama: POST http://localhost:8000/exercises/load
+Cria: 1-3 exercícios via create_exercise() — já entram no D1
+Atualiza: update_profile() / add_profile_note() com o que observou
 Registra: agent/AGENT.md com timestamp e o que foi gerado
 ```
 
@@ -156,18 +146,13 @@ arch:separation-of-concerns, arch:error-handling, arch:naming
 3. Escreva o código mínimo que satisfaz o critério. Nada além.
 
 ### Ao concluir uma tarefa
-1. Marque `[done]` em TASKS.md
-2. Atualize STATE.md
-3. Se fecha uma fase: adicione ADR em DECISIONS.md
-
-### Quando o contexto estiver ficando longo
-1. Atualize STATE.md + TASKS.md antes de qualquer compactação
-2. Anote tarefas em progresso com contexto suficiente para retomar
+1. `npx tsc --noEmit` e `npm test` no worker — verde antes de dizer que acabou
+2. Se o vault existir: marque `[done]` em TASKS.md e atualize STATE.md
+3. Se a decisão muda arquitetura: registre em DECISIONS.md
 
 ### Quando bloqueado
-1. Escreva em TASKS.md seção BLOCKED: o que precisa + por quê está bloqueado
-2. Adicione ao DECISIONS.md como "PENDENTE — aguardando usuário"
-3. Não invente soluções que aumentam acoplamento
+1. Diga o que falta e por quê, em vez de inventar solução que aumenta acoplamento
+2. Se o vault existir, registre em TASKS.md seção BLOCKED
 
 ---
 
@@ -185,10 +170,10 @@ arch:separation-of-concerns, arch:error-handling, arch:naming
 
 - ❌ Exercícios de algoritmo puro (ordenação, busca binária) — foco é backend
 - ❌ Validação de resposta em tempo real por IA — agente opera em batch
-- ❌ Adicionar ANTHROPIC_API_KEY ao backend — agente roda via Claude Code /schedule
+- ❌ Guardar chave de IA no backend — o agente usa /schedule; o chat recebe a chave do usuário por request
+- ❌ Criar um segundo backend — o Worker é a única implementação do domínio
 - ❌ Copiar exercícios do CodeWars — CodeWars API é só para contexto de perfil
 - ❌ Modificar `study-backend/` exceto `student/profile.md` via agente
 - ❌ Usar Syne, Outfit ou qualquer fonte que não seja JetBrains Mono
-- ❌ Fazer commit sem atualizar STATE.md
-- ❌ Decidir arquitetura sem registrar em DECISIONS.md
+- ❌ Dizer que terminou sem rodar typecheck e testes
 - ❌ Confiar na conversa para reconstruir contexto — sempre leia os arquivos

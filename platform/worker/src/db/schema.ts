@@ -160,6 +160,17 @@ export const userInventory = sqliteTable('user_inventory', {
   equipped_slot: text('equipped_slot'),
 })
 
+// ─── agent_insights ───────────────────────────────────────────────────────────
+// Written by the daily agent through MCP, read by the dashboard.
+export const agentInsights = sqliteTable('agent_insights', {
+  id:           text('id').primaryKey(),
+  user_id:      text('user_id').notNull().references(() => users.id),
+  message:      text('message').notNull(),
+  highlights:   text('highlights').notNull().default('[]'),
+  gaps:         text('gaps').notNull().default('[]'),
+  generated_at: text('generated_at').notNull().default(sql`(CURRENT_TIMESTAMP)`),
+})
+
 // ─── personal_tokens ──────────────────────────────────────────────────────────
 export const personalTokens = sqliteTable('personal_tokens', {
   id:           text('id').primaryKey(),

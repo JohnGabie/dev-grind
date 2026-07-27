@@ -4,6 +4,7 @@ import { getDb } from '../db'
 import { exercises, submissions } from '../db/schema'
 import { requireAuth } from '../middleware/auth'
 import { recordAttempt } from '../lib/progress'
+import { awardHonor } from '../lib/honor'
 import type { AppEnv } from '../types'
 
 const router = new Hono<AppEnv>()
@@ -37,14 +38,16 @@ router.post('/', requireAuth, async (c) => {
     time_spent_seconds: body.time_spent_seconds ?? null,
   })
 
-  await recordAttempt(db, c.get('userId'), body.status === 'passed')
+  const passed = body.status === 'passed'
+  const honor_gained = passed ? await awardHonor(db, c.get('userId'), exercise.difficulty) : 0
+  await recordAttempt(db, c.get('userId'), passed)
 
-  return c.json({ id, exercise_id: body.exercise_id, status: body.status, submitted_at }, 201)
+  return c.json({ id, exercise_id: body.exercise_id, status: body.status, submitted_at, honor_gained }, 201)
 })
 
 // GET /submissions/exercise/:exercise_id
 router.get('/exercise/:exercise_id', requireAuth, async (c) => {
-  const exercise_id = c.req.param('exercise_id')
+  const exercise_id = c.req.param('exercise_id') ?? ''
   const db = getDb(c.env)
 
   const subs = await db.select().from(submissions)

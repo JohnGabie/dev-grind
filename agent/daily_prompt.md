@@ -15,22 +15,13 @@ Leia:
 
 ## 2. ESTADO ATUAL — O que o aluno fez
 
-Faça as seguintes chamadas HTTP (backend rodando em http://localhost:8000):
+Tudo vem pelo MCP da plataforma (`devgrind`, configurado com token pessoal em Config).
+Se o MCP não estiver conectado, pare e avise — não invente dados.
 
-```
-GET http://localhost:8000/analytics/performance
-```
-→ performance por conceito (attempted, passed, rate)
-
-```
-GET http://localhost:8000/progress/summary?days=7
-```
-→ streak, exercícios completados esta semana
-
-```
-GET http://localhost:8000/exercises
-```
-→ lista de exercícios existentes (para não repetir slugs)
+- `get_context()` → rank, honor, streak, total de exercícios
+- `get_analytics()` → taxa de acerto por conceito, com `reliable` marcando o que tem amostra
+- `get_progress()` → completados nos últimos 7 dias, breakdown diário
+- `get_exercises()` → exercícios existentes (para não repetir slugs)
 
 Depois execute:
 ```
@@ -44,8 +35,8 @@ python agent/codewars_sync.py --json
 
 ### 3a. Ler perfil atual
 
-Use a ferramenta MCP `get_profile` (via `POST http://localhost:8000/mcp` com Bearer token do agente,
-method `tools/call`, name `get_profile`) ou leia o perfil via `GET http://localhost:8000/profile/me`.
+`get_profile()`. Se `baseline_done` for false, não há perfil ainda — gere um exercício
+de reengajamento e registre a ausência de baseline no insight.
 
 ### 3b. Cruzar analytics com perfil
 
@@ -107,34 +98,19 @@ Para cada exercício, consulte o livro relevante em `study-backend/books/`:
 - Python avançado → `fluent_python.md`, `effective_python.md`
 - Arquitetura → `clean_code.md`, `architecture_patterns_python.md`
 
-**Schema obrigatório para cada exercício:**
-```json
-{
-  "id": "<uuid-v4>",
-  "title": "<título claro, max 60 chars>",
-  "slug": "<slug-unico-kebab-case>",
-  "difficulty": "8kyu|7kyu|6kyu|5kyu|4kyu",
-  "phase": 1,
-  "module": "<modulo>",
-  "tags": ["<tag1>"],
-  "concepts": ["<concept1>", "<concept2>"],
-  "description": "<markdown com contexto, exemplos, o que a função deve fazer>",
-  "rationale": "<por que este exercício agora — qual gap ele atinge>",
-  "stub": "<código Python com assinatura e pass>",
-  "solution": "<solução completa>",
-  "test_cases": [
-    {
-      "id": 1,
-      "description": "<o que este teste verifica>",
-      "input": "<JSON array de args: [arg1, arg2]>",
-      "expected": "<str do valor retornado>",
-      "visible": true
-    }
-  ],
-  "hints": ["<dica 1>"],
-  "generated_by": "agent",
-  "book_reference": "<Livro — Capítulo relevante>"
-}
+Crie cada um com `create_exercise()` — o slug é gerado a partir do título e o exercício
+já entra no banco, visível para o aluno na hora. Argumentos:
+
+```
+title           <título claro, max 60 chars>
+description     <markdown com contexto, exemplos, o que a função deve fazer>
+difficulty      8kyu|7kyu|6kyu|5kyu|4kyu
+tags            ["<tag1>"]
+concepts        ["<concept1>", "<concept2>"]
+stub            <código Python com assinatura e pass>
+hints           ["<dica 1>"]
+test_cases      [{description, input, expected, visible}]
+book_reference  <Livro — Capítulo relevante>
 ```
 
 **Regras críticas de test_cases:**
@@ -145,21 +121,7 @@ Para cada exercício, consulte o livro relevante em `study-backend/books/`:
 
 ---
 
-## 5. SALVAR E CARREGAR
-
-Salve cada JSON em:
-```
-platform/backend/app/exercises/generated/YYYY-MM-DD/<slug>.json
-```
-
-Chame:
-```
-POST http://localhost:8000/exercises/load
-```
-
----
-
-## 6. REGISTRAR
+## 5. REGISTRAR
 
 Atualize `agent/AGENT.md`:
 ```
@@ -175,9 +137,9 @@ Atualize `study-backend/memory/user_perfil.md` seção "Métricas de Plataforma"
 
 ---
 
-## 7. ESCREVER INSIGHT PARA O DASHBOARD
+## 6. ESCREVER INSIGHT PARA O DASHBOARD
 
-Escreva `agent/last_insight.json` com uma mensagem curta e direta para João ver no dashboard.
+Chame `write_insight()` com uma mensagem curta e direta para João ver no dashboard.
 
 **Regras:**
 - `message`: 1-2 frases, tom direto e encorajador. Cite streak se > 0. Mencione o gap mais crítico.
@@ -185,31 +147,20 @@ Escreva `agent/last_insight.json` com uma mensagem curta e direta para João ver
 - `gaps`: conceitos com rate < 0.6 e ≥ 5 tentativas (máx 3) — o que precisa de atenção
 - Se não há dados suficientes, `message` apenas diz isso sem alarmismo
 
-**Formato obrigatório:**
-```json
-{
-  "message": "<frase direta para João>",
-  "generated_at": "<YYYY-MM-DDTHH:MM:SS>",
-  "highlights": ["<conceito>", ...],
-  "gaps": ["<conceito>", ...]
-}
-```
-
 **Exemplo:**
-```json
-{
-  "message": "4 dias seguidos, bom ritmo. Seu ponto fraco esta semana é http:status-codes — adicionei 2 exercícios focados nisso.",
-  "generated_at": "2026-06-08T06:00:00",
-  "highlights": ["python:functions"],
-  "gaps": ["http:status-codes"]
-}
+```
+write_insight(
+  message: "4 dias seguidos, bom ritmo. Seu ponto fraco esta semana é http:status-codes — adicionei 2 exercícios focados nisso.",
+  highlights: ["python:functions"],
+  gaps: ["http:status-codes"]
+)
 ```
 
 ---
 
 ## Critério de sucesso
 
-1. JSONs gerados e salvos no diretório correto
-2. `POST /exercises/load` retornou `{"loaded": N}`
-3. `agent/AGENT.md` atualizado com timestamp
-4. `agent/last_insight.json` escrito com conteúdo válido
+1. `create_exercise()` retornou slug para cada exercício gerado
+2. `update_profile()` / `add_profile_note()` refletem o ciclo
+3. `write_insight()` gravou a mensagem do dia
+4. `agent/AGENT.md` atualizado com timestamp

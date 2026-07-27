@@ -1,61 +1,31 @@
 import { Hono } from 'hono'
-import { eq, desc, and, count, sum, asc } from 'drizzle-orm'
+import { desc, eq } from 'drizzle-orm'
 import { getDb } from '../db'
-import { books, userInventory, storeItems } from '../db/schema'
+import { books } from '../db/schema'
 import { requireAuth } from '../middleware/auth'
+import {
+  MAX_PDF_BYTES, deleteBookObjects, evictIfNearLimit, gunzipIfNeeded, gzip,
+  ownedBook, pdfCount, pdfSlotLimit, storeCoverFromUrl, uniqueSlug,
+} from '../lib/books'
 import type { AppEnv } from '../types'
 
 const router = new Hono<AppEnv>()
 
-const MAX_PDF_BYTES     = 20 * 1024 * 1024        // 20 MB per file
-const MAX_PDFS_PER_USER = 4
-const R2_LIMIT_BYTES    = 10 * 1024 * 1024 * 1024 // 10 GB global bucket limit
-const R2_EVICT_THRESHOLD = R2_LIMIT_BYTES * 0.90  // start evicting at 90%
-
-async function sha256Short(str: string): Promise<string> {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str))
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('').slice(0, 16)
-}
-
-function slugify(text: string): string {
-  return text
-    .toLowerCase()
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')
-    .slice(0, 80)
-}
-
-async function gzipBuffer(data: ArrayBuffer): Promise<ArrayBuffer> {
-  const cs = new CompressionStream('gzip')
-  const writer = cs.writable.getWriter()
-  writer.write(data)
-  writer.close()
-  return new Response(cs.readable).arrayBuffer()
-}
-
-async function getPdfSlotLimit(db: ReturnType<typeof getDb>, userId: string): Promise<number> {
-  const [{ value: extra }] = await db
-    .select({ value: count() })
-    .from(userInventory)
-    .innerJoin(storeItems, eq(userInventory.item_id, storeItems.id))
-    .where(and(eq(userInventory.user_id, userId), eq(storeItems.type, 'book_slot')))
-  return 4 + Math.min(Number(extra ?? 0), 4)
-}
+const coverUrlFor = (slug: string, coverPath: string | null) =>
+  coverPath ? `/books/${slug}/cover` : null
 
 // GET /books
 router.get('/', requireAuth, async (c) => {
   const db = getDb(c.env)
   const userId = c.get('userId')
 
-  const [rows, slotLimit] = await Promise.all([
+  const [rows, slot_limit] = await Promise.all([
     db.select().from(books).where(eq(books.user_id, userId)).orderBy(desc(books.created_at)),
-    getPdfSlotLimit(db, userId),
+    pdfSlotLimit(db, userId),
   ])
 
   return c.json({
-    slot_limit: slotLimit,
+    slot_limit,
     books: rows.map(b => ({
       slug: b.slug,
       title: b.title,
@@ -64,7 +34,7 @@ router.get('/', requireAuth, async (c) => {
       phase: b.phase,
       available: true,
       progress: 0,
-      cover_url: b.cover_path ? `/books/${b.slug}/cover` : null,
+      cover_url: coverUrlFor(b.slug, b.cover_path),
       content_type: b.content_type,
     })),
   })
@@ -76,124 +46,60 @@ router.post('/upload', requireAuth, async (c) => {
   const db = getDb(c.env)
   const r2 = c.env.BOOKS
 
-  const formData = await c.req.formData()
-  const file = formData.get('file') as File | null
-  const cover = formData.get('cover') as File | null
-  const coverUrl = (formData.get('cover_url') as string | null)?.trim() || null
-  const title = (formData.get('title') as string | null)?.trim()
-  const author = (formData.get('author') as string | null)?.trim()
-  const year = formData.get('year') as string | null
-  const phase = formData.get('phase') as string | null
+  const form = await c.req.formData()
+  const file = form.get('file') as File | null
+  const cover = form.get('cover') as File | null
+  const coverUrl = (form.get('cover_url') as string | null)?.trim() || null
+  const title = (form.get('title') as string | null)?.trim()
+  const author = (form.get('author') as string | null)?.trim()
+  const year = form.get('year') as string | null
+  const phase = form.get('phase') as string | null
 
   if (!file || !title || !author) {
     return c.json({ detail: 'file, title e author são obrigatórios' }, 400)
   }
 
-  const ext = file.name.toLowerCase().endsWith('.pdf') ? 'pdf' : 'md'
-  const content_type = ext === 'pdf' ? 'pdf' : 'markdown'
+  const isPdf = file.name.toLowerCase().endsWith('.pdf')
 
-  // Size limit (PDFs only)
-  if (ext === 'pdf' && file.size > MAX_PDF_BYTES) {
+  if (isPdf && file.size > MAX_PDF_BYTES) {
     return c.json({ detail: `PDF muito grande. Máximo permitido: ${MAX_PDF_BYTES / 1024 / 1024}MB.` }, 413)
   }
 
-  // Compress PDF now so we know the real stored size before any checks
-  let fileData: ArrayBuffer | ReadableStream
+  // Compress first so quota checks see the size that will actually be stored.
+  let body: ArrayBuffer | ReadableStream
   let storedSize = file.size
-  let httpMeta: Record<string, string>
+  let httpMetadata: Record<string, string>
 
-  if (ext === 'pdf') {
-    const raw = await file.arrayBuffer()
-    const compressed = await gzipBuffer(raw)
-    fileData = compressed
+  if (isPdf) {
+    const compressed = await gzip(await file.arrayBuffer())
+    body = compressed
     storedSize = compressed.byteLength
-    httpMeta = { contentType: 'application/pdf', contentEncoding: 'gzip' }
+    httpMetadata = { contentType: 'application/pdf', contentEncoding: 'gzip' }
   } else {
-    fileData = file.stream()
-    httpMeta = { contentType: 'text/markdown; charset=utf-8' }
+    body = file.stream()
+    httpMetadata = { contentType: 'text/markdown; charset=utf-8' }
   }
 
-  // PDF count limit (dynamic based on store purchases)
-  if (ext === 'pdf') {
-    const [{ value: pdfCount }, slotLimit] = await Promise.all([
-      db.select({ value: count() }).from(books)
-        .where(and(eq(books.user_id, userId), eq(books.content_type, 'pdf')))
-        .then(r => r[0]),
-      getPdfSlotLimit(db, userId),
-    ])
-
-    if (Number(pdfCount) >= slotLimit) {
-      return c.json({ detail: `Limite de ${slotLimit} PDFs atingido. Compre mais slots na loja.` }, 429)
+  if (isPdf) {
+    const [used, limit] = await Promise.all([pdfCount(db, userId), pdfSlotLimit(db, userId)])
+    if (used >= limit) {
+      return c.json({ detail: `Limite de ${limit} PDFs atingido. Compre mais slots na loja.` }, 429)
     }
+    await evictIfNearLimit(db, r2, storedSize)
   }
 
-  // R2 storage monitor — evict oldest PDF if approaching 10GB
-  if (ext === 'pdf') {
-    const [{ value: totalUsed }] = await db
-      .select({ value: sum(books.file_size_bytes) })
-      .from(books)
+  const slug = await uniqueSlug(db, userId, title)
+  const fileKey = `${userId}/${slug}/file.${isPdf ? 'pdf' : 'md'}`
+  await r2.put(fileKey, body, { httpMetadata })
 
-    const used = Number(totalUsed ?? 0)
-
-    if (used + storedSize > R2_EVICT_THRESHOLD) {
-      // Find oldest PDF across all users
-      const [oldest] = await db
-        .select()
-        .from(books)
-        .where(eq(books.content_type, 'pdf'))
-        .orderBy(asc(books.created_at))
-        .limit(1)
-
-      if (oldest) {
-        const keysToDelete = [oldest.file_path, oldest.cover_path, oldest.text_path].filter(Boolean) as string[]
-        await Promise.all(keysToDelete.map(key => r2.delete(key)))
-        await db.delete(books).where(eq(books.id, oldest.id))
-      }
-    }
-  }
-
-  // Unique slug
-  let base = slugify(title)
-  const existing = await db.select({ slug: books.slug }).from(books).where(eq(books.user_id, userId))
-  const taken = new Set(existing.map(r => r.slug))
-  let slug = base
-  let i = 1
-  while (taken.has(slug)) slug = `${base}-${i++}`
-
-  // Upload to R2
-  const fileKey = `${userId}/${slug}/file.${ext}`
-  await r2.put(fileKey, fileData, { httpMetadata: httpMeta })
-
-  // Upload cover to R2 — from uploaded file or remote URL
   let cover_path: string | null = null
   if (cover && cover.size > 0) {
-    const coverExt = cover.name.split('.').pop() ?? 'jpg'
-    const coverKey = `${userId}/${slug}/cover.${coverExt}`
-    await r2.put(coverKey, cover.stream(), {
+    cover_path = `${userId}/${slug}/cover.${cover.name.split('.').pop() ?? 'jpg'}`
+    await r2.put(cover_path, cover.stream(), {
       httpMetadata: { contentType: cover.type || 'image/jpeg' },
     })
-    cover_path = coverKey
   } else if (coverUrl) {
-    try {
-      const hash = await sha256Short(coverUrl)
-      // Check both extensions — reuse if already stored
-      const existingJpg = await r2.head(`covers/${hash}.jpg`)
-      const existingPng = !existingJpg ? await r2.head(`covers/${hash}.png`) : null
-      if (existingJpg) {
-        cover_path = `covers/${hash}.jpg`
-      } else if (existingPng) {
-        cover_path = `covers/${hash}.png`
-      } else {
-        const res = await fetch(coverUrl)
-        if (res.ok) {
-          const ct = res.headers.get('content-type') || 'image/jpeg'
-          const ext = ct.includes('png') ? 'png' : 'jpg'
-          const coverKey = `covers/${hash}.${ext}`
-          await r2.put(coverKey, res.body!, { httpMetadata: { contentType: ct } })
-          cover_path = coverKey
-        }
-      }
-    } catch { /* skip cover if fetch fails */ }
+    cover_path = await storeCoverFromUrl(r2, coverUrl)
   }
 
   await db.insert(books).values({
@@ -204,25 +110,20 @@ router.post('/upload', requireAuth, async (c) => {
     author,
     year: year ? parseInt(year) : null,
     phase: phase ? parseInt(phase) : null,
-    content_type,
+    content_type: isPdf ? 'pdf' : 'markdown',
     file_path: fileKey,
     cover_path,
     text_path: null,
     file_size_bytes: storedSize,
   })
 
-  return c.json({ slug, title, author, content_type }, 201)
+  return c.json({ slug, title, author, content_type: isPdf ? 'pdf' : 'markdown' }, 201)
 })
 
 // GET /books/:slug
 router.get('/:slug', requireAuth, async (c) => {
-  const db = getDb(c.env)
-  const userId = c.get('userId')
   const slug = c.req.param('slug') ?? ''
-
-  const [book] = await db.select().from(books)
-    .where(and(eq(books.slug, slug), eq(books.user_id, userId)))
-
+  const book = await ownedBook(getDb(c.env), c.get('userId'), slug)
   if (!book) return c.json({ error: 'not found' }, 404)
 
   let content: string | null = null
@@ -239,56 +140,30 @@ router.get('/:slug', requireAuth, async (c) => {
     phase: book.phase,
     content_type: book.content_type,
     content,
-    cover_url: book.cover_path ? `/books/${slug}/cover` : null,
+    cover_url: coverUrlFor(slug, book.cover_path),
     has_text: Boolean(book.text_path),
   })
 })
 
 // GET /books/:slug/pdf
 router.get('/:slug/pdf', requireAuth, async (c) => {
-  const db = getDb(c.env)
-  const userId = c.get('userId')
   const slug = c.req.param('slug') ?? ''
-
-  const [book] = await db.select().from(books)
-    .where(and(eq(books.slug, slug), eq(books.user_id, userId)))
-
+  const book = await ownedBook(getDb(c.env), c.get('userId'), slug)
   if (!book || book.content_type !== 'pdf') return c.json({ error: 'not found' }, 404)
 
   const obj = await c.env.BOOKS.get(book.file_path)
   if (!obj) return c.json({ error: 'file not found in storage' }, 404)
 
-  const buf = await obj.arrayBuffer()
-  const bytes = new Uint8Array(buf)
-  const isGzip = bytes[0] === 0x1f && bytes[1] === 0x8b
-
-  let finalBuf: ArrayBuffer = buf
-  if (isGzip) {
-    const ds = new DecompressionStream('gzip')
-    const writer = ds.writable.getWriter()
-    await writer.write(bytes)
-    await writer.close()
-    finalBuf = await new Response(ds.readable).arrayBuffer()
-  }
-
-  return new Response(finalBuf, {
-    headers: {
-      'Content-Type': 'application/pdf',
-      'Cache-Control': 'private, no-store',
-    },
+  return new Response(await gunzipIfNeeded(await obj.arrayBuffer()), {
+    headers: { 'Content-Type': 'application/pdf', 'Cache-Control': 'private, no-store' },
   })
 })
 
 // GET /books/:slug/cover
 router.get('/:slug/cover', requireAuth, async (c) => {
-  const db = getDb(c.env)
-  const userId = c.get('userId')
   const slug = c.req.param('slug') ?? ''
-
-  const [book] = await db.select().from(books)
-    .where(and(eq(books.slug, slug), eq(books.user_id, userId)))
-
-  if (!book || !book.cover_path) return c.json({ error: 'no cover' }, 404)
+  const book = await ownedBook(getDb(c.env), c.get('userId'), slug)
+  if (!book?.cover_path) return c.json({ error: 'no cover' }, 404)
 
   const obj = await c.env.BOOKS.get(book.cover_path)
   if (!obj) return c.json({ error: 'cover not found in storage' }, 404)
@@ -303,87 +178,50 @@ router.get('/:slug/cover', requireAuth, async (c) => {
 
 // GET /books/:slug/text?page=N
 router.get('/:slug/text', requireAuth, async (c) => {
-  const db = getDb(c.env)
   const userId = c.get('userId')
   const slug = c.req.param('slug') ?? ''
-
-  const [book] = await db.select().from(books)
-    .where(and(eq(books.slug, slug), eq(books.user_id, userId)))
+  const book = await ownedBook(getDb(c.env), userId, slug)
 
   if (!book) return c.json({ error: 'not found' }, 404)
   if (!book.text_path) return c.json({ error: 'text not extracted yet' }, 404)
 
   const page = parseInt(c.req.query('page') ?? '1')
-  const textKey = `${userId}/${slug}/text/page-${page}.json`
-  const obj = await c.env.BOOKS.get(textKey)
+  const obj = await c.env.BOOKS.get(`${userId}/${slug}/text/page-${page}.json`)
   if (!obj) return c.json({ error: 'page not found', pages: 0 }, 404)
 
   return c.json(await obj.json())
 })
 
-// POST /books/:slug/extract-text — not supported in Worker
-router.post('/:slug/extract-text', requireAuth, async (c) => {
-  return c.json({ error: 'Text extraction is not available in this environment. Use the PDF viewer directly.' }, 501)
-})
+// POST /books/:slug/extract-text — the Worker has no PDF parser; the viewer extracts client-side
+router.post('/:slug/extract-text', requireAuth, (c) =>
+  c.json({ error: 'Text extraction is not available in this environment. Use the PDF viewer directly.' }, 501))
 
-// POST /books/:slug/fetch-cover — client sends a resolved cover URL; worker stores it in R2
+// POST /books/:slug/fetch-cover — client resolves the URL, worker stores it in R2
 router.post('/:slug/fetch-cover', requireAuth, async (c) => {
   const db = getDb(c.env)
-  const userId = c.get('userId')
   const slug = c.req.param('slug') ?? ''
-  const r2 = c.env.BOOKS
-
-  const [book] = await db.select().from(books)
-    .where(and(eq(books.slug, slug), eq(books.user_id, userId)))
+  const book = await ownedBook(db, c.get('userId'), slug)
 
   if (!book) return c.json({ error: 'not found' }, 404)
-  if (book.cover_path) return c.json({ cover_url: `/books/${slug}/cover` })
+  if (book.cover_path) return c.json({ cover_url: coverUrlFor(slug, book.cover_path) })
 
-  const body = await c.req.json<{ cover_url?: string }>().catch(() => ({}))
-  const coverUrl = body.cover_url
-  if (!coverUrl) return c.json({ cover_url: null })
+  const { cover_url } = await c.req.json<{ cover_url?: string }>().catch(() => ({ cover_url: undefined }))
+  if (!cover_url) return c.json({ cover_url: null })
 
-  let cover_path: string | null = null
-  try {
-    const hash = await sha256Short(coverUrl)
-    const existingJpg = await r2.head(`covers/${hash}.jpg`)
-    const existingPng = !existingJpg ? await r2.head(`covers/${hash}.png`) : null
-    if (existingJpg) {
-      cover_path = `covers/${hash}.jpg`
-    } else if (existingPng) {
-      cover_path = `covers/${hash}.png`
-    } else {
-      const fetchRes = await fetch(coverUrl)
-      if (fetchRes.ok) {
-        const ct = fetchRes.headers.get('content-type') || 'image/jpeg'
-        const ext = ct.includes('png') ? 'png' : 'jpg'
-        const coverKey = `covers/${hash}.${ext}`
-        await r2.put(coverKey, fetchRes.body!, { httpMetadata: { contentType: ct } })
-        cover_path = coverKey
-      }
-    }
-  } catch { /* skip on error */ }
-
+  const cover_path = await storeCoverFromUrl(c.env.BOOKS, cover_url)
   if (!cover_path) return c.json({ cover_url: null })
 
   await db.update(books).set({ cover_path }).where(eq(books.id, book.id))
-  return c.json({ cover_url: `/books/${slug}/cover` })
+  return c.json({ cover_url: coverUrlFor(slug, cover_path) })
 })
 
 // DELETE /books/:slug
 router.delete('/:slug', requireAuth, async (c) => {
   const db = getDb(c.env)
-  const userId = c.get('userId')
-  const slug = c.req.param('slug') ?? ''
-  const r2 = c.env.BOOKS
-
-  const [book] = await db.select().from(books)
-    .where(and(eq(books.slug, slug), eq(books.user_id, userId)))
-
+  const book = await ownedBook(db, c.get('userId'), c.req.param('slug') ?? '')
   if (!book) return c.json({ error: 'not found' }, 404)
 
-  const keysToDelete = [book.file_path, book.cover_path, book.text_path].filter(Boolean) as string[]
-  await Promise.all(keysToDelete.map(key => r2.delete(key)))
+  await deleteBookObjects(c.env.BOOKS, book)
   await db.delete(books).where(eq(books.id, book.id))
 
   return c.json({ ok: true })
