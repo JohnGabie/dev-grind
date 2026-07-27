@@ -1,11 +1,11 @@
 import { env } from 'cloudflare:test'
 import { describe, expect, it, beforeEach } from 'vitest'
 import { sign } from 'hono/jwt'
-import { anon, authed, json, seedUser } from './helpers'
+import { anon, authed, json, resetDb, seedUser } from './helpers'
 
 describe('auth', () => {
   beforeEach(async () => {
-    await env.DB.exec('DELETE FROM users')
+    await resetDb()
   })
 
   it('serves a health check without auth', async () => {

@@ -1,6 +1,6 @@
 import { env } from 'cloudflare:test'
 import { describe, expect, it, beforeEach } from 'vitest'
-import { authed, json, seedExercise, seedUser, USER_ID } from './helpers'
+import { USER_ID, authed, json, resetDb, seedExercise, seedUser } from './helpers'
 
 async function honor(userId = USER_ID): Promise<number> {
   const row = await env.DB.prepare('SELECT honor FROM users WHERE id = ?').bind(userId).first<{ honor: number }>()
@@ -9,11 +9,7 @@ async function honor(userId = USER_ID): Promise<number> {
 
 describe('submissions', () => {
   beforeEach(async () => {
-    await env.DB.exec('DELETE FROM submissions')
-    await env.DB.exec('DELETE FROM daily_progress')
-    await env.DB.exec('DELETE FROM test_cases')
-    await env.DB.exec('DELETE FROM exercises')
-    await env.DB.exec('DELETE FROM users')
+    await resetDb()
     await seedUser()
   })
 

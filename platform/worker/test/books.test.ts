@@ -1,6 +1,6 @@
 import { env } from 'cloudflare:test'
 import { describe, expect, it, beforeEach } from 'vitest'
-import { authed, jwtFor, seedUser, USER_ID } from './helpers'
+import { USER_ID, authed, jwtFor, resetDb, seedStoreItem, seedUser } from './helpers'
 import { isSharedCover, slugify, uniqueSlug } from '../src/lib/books'
 import { getDb } from '../src/db'
 
@@ -14,9 +14,7 @@ const md = (text = '# hello') => new File([text], 'book.md', { type: 'text/markd
 
 describe('books', () => {
   beforeEach(async () => {
-    await env.DB.exec('DELETE FROM books')
-    await env.DB.exec('DELETE FROM user_inventory')
-    await env.DB.exec('DELETE FROM users')
+    await resetDb()
     await seedUser()
   })
 
@@ -40,8 +38,7 @@ describe('books', () => {
   })
 
   it('raises the slot limit after buying slots', async () => {
-    await env.DB.exec(`INSERT INTO store_items (id, name, type, category, price_coins, rarity, item_data)
-                       VALUES ('slot', 'Slot', 'book_slot', 'utility', 300, 'rare', '{}')`)
+    await seedStoreItem('slot', 300, 'book_slot')
     await env.DB.prepare('INSERT INTO user_inventory (user_id, item_id) VALUES (?, ?)')
       .bind(USER_ID, 'slot').run()
 

@@ -1,6 +1,6 @@
 import { env } from 'cloudflare:test'
 import { describe, expect, it, beforeEach } from 'vitest'
-import { authed, json, seedUser, USER_ID } from './helpers'
+import { USER_ID, authed, json, resetDb, seedStoreItem, seedUser } from './helpers'
 
 async function setCoins(coins: number) {
   await env.DB.prepare('UPDATE users SET coins = ? WHERE id = ?').bind(coins, USER_ID).run()
@@ -13,14 +13,10 @@ async function coins(): Promise<number> {
 
 describe('store', () => {
   beforeEach(async () => {
-    await env.DB.exec('DELETE FROM user_inventory')
-    await env.DB.exec('DELETE FROM store_items')
-    await env.DB.exec('DELETE FROM users')
+    await resetDb()
     await seedUser()
-    await env.DB.exec(`INSERT INTO store_items (id, name, type, category, price_coins, rarity, item_data)
-                       VALUES ('bg-free', 'Free', 'background', 'starfield', 0, 'free', '{}')`)
-    await env.DB.exec(`INSERT INTO store_items (id, name, type, category, price_coins, rarity, item_data)
-                       VALUES ('bg-paid', 'Paid', 'background', 'starfield', 500, 'rare', '{}')`)
+    await seedStoreItem('bg-free', 0)
+    await seedStoreItem('bg-paid', 500)
   })
 
   it('lists active items', async () => {

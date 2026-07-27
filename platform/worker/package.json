@@ -17,11 +17,13 @@
     "hono": "^4.12.25"
   },
   "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "^0.18.8",
     "@cloudflare/workers-types": "^4.20260615.1",
     "@types/better-sqlite3": "^7.6.13",
     "better-sqlite3": "^11.10.0",
     "drizzle-kit": "^0.31.1",
     "typescript": "^5.8.3",
+    "vitest": "^4.1.10",
     "wrangler": "^4.86.0"
   }
 }

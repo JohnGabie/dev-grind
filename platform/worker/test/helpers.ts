@@ -16,7 +16,10 @@ export async function authed(
   const { token, ...rest } = init
   const headers = new Headers(rest.headers)
   headers.set('Authorization', `Bearer ${token ?? await jwtFor()}`)
-  if (rest.body && !headers.has('Content-Type')) headers.set('Content-Type', 'application/json')
+  // FormData sets its own multipart boundary — never override it.
+  if (typeof rest.body === 'string' && !headers.has('Content-Type')) {
+    headers.set('Content-Type', 'application/json')
+  }
   return app.fetch(new Request(`http://test${path}`, { ...rest, headers }), env)
 }
 
@@ -27,9 +30,27 @@ export function json(body: unknown): RequestInit {
   return { method: 'POST', body: JSON.stringify(body), headers: { 'Content-Type': 'application/json' } }
 }
 
+/** Child tables first — users is referenced by most of the schema. */
+const TABLES_IN_FK_ORDER = [
+  'agent_insights', 'user_inventory', 'user_profiles', 'book_prefs', 'courses',
+  'personal_tokens', 'daily_progress', 'submissions', 'test_cases', 'exercises',
+  'books', 'store_items', 'users',
+]
+
+export async function resetDb() {
+  await env.DB.batch(TABLES_IN_FK_ORDER.map(t => env.DB.prepare(`DELETE FROM ${t}`)))
+}
+
 export async function seedUser(id = USER_ID, email = `${id}@test.dev`) {
   await env.DB.prepare('INSERT OR IGNORE INTO users (id, email, name) VALUES (?, ?, ?)')
     .bind(id, email, 'Test User').run()
+}
+
+export async function seedStoreItem(id: string, price = 0, type = 'background') {
+  await env.DB.prepare(
+    `INSERT INTO store_items (id, name, type, category, price_coins, rarity, item_data)
+     VALUES (?, ?, ?, 'starfield', ?, 'common', '{}')`,
+  ).bind(id, id, type, price).run()
 }
 
 export async function seedExercise(opts: Partial<{

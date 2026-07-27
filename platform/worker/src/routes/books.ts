@@ -46,7 +46,9 @@ router.post('/upload', requireAuth, async (c) => {
   const db = getDb(c.env)
   const r2 = c.env.BOOKS
 
-  const form = await c.req.formData()
+  const form = await c.req.formData().catch(() => null)
+  if (!form) return c.json({ detail: 'Envie os campos como multipart/form-data.' }, 400)
+
   const file = form.get('file') as File | null
   const cover = form.get('cover') as File | null
   const coverUrl = (form.get('cover_url') as string | null)?.trim() || null

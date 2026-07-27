@@ -1,19 +1,13 @@
 import { env } from 'cloudflare:test'
 import { describe, expect, it, beforeEach } from 'vitest'
-import { anon, authed, callTool, mcp, personalToken, seedExercise, seedUser, USER_ID } from './helpers'
+import { USER_ID, anon, authed, callTool, mcp, personalToken, resetDb, seedExercise, seedUser } from './helpers'
 import { TOOLS } from '../src/lib/tools'
 
 describe('mcp', () => {
   let token: string
 
   beforeEach(async () => {
-    await env.DB.exec('DELETE FROM agent_insights')
-    await env.DB.exec('DELETE FROM personal_tokens')
-    await env.DB.exec('DELETE FROM submissions')
-    await env.DB.exec('DELETE FROM user_profiles')
-    await env.DB.exec('DELETE FROM test_cases')
-    await env.DB.exec('DELETE FROM exercises')
-    await env.DB.exec('DELETE FROM users')
+    await resetDb()
     await seedUser()
     token = await personalToken()
   })
@@ -33,7 +27,7 @@ describe('mcp', () => {
   })
 
   it('rejects a revoked token', async () => {
-    await env.DB.exec('DELETE FROM personal_tokens')
+    await resetDb()
     const { status } = await mcp(token, 'tools/list')
     expect(status).toBe(401)
   })
