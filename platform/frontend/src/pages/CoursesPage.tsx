@@ -186,7 +186,7 @@ export default function CoursesPage() {
 
   return (
     <div style={{ height: '100%', overflowY: 'auto' }}>
-      <div style={{ maxWidth: 1080, margin: '0 auto', padding: pagePadding('52px 48px 72px', isMobile) }}>
+      <div style={{ maxWidth: 1080, margin: '0 auto', padding: pagePadding('52px 48px 72px', isMobile, true) }}>
 
         {/* Header */}
         <div className="fade-up" style={{ marginBottom: 44 }}>

@@ -122,7 +122,7 @@ export default function StorePage() {
       <div style={{
         width: 220, flexShrink: 0, height: '100%', overflowY: 'auto',
         borderRight: '1px solid var(--border)',
-        padding: '20px 16px 40px',
+        padding: pagePadding('20px 16px 40px', isMobile, true),
         display: 'flex', flexDirection: 'column', gap: 20,
       }}>
 
@@ -226,7 +226,7 @@ export default function StorePage() {
 
       {/* ── Conteúdo principal ───────────────────────────────────────── */}
       <div style={{ flex: 1, overflowY: 'auto' }}>
-        <div style={{ maxWidth: 1000, margin: '0 auto', padding: pagePadding('44px 44px 64px', isMobile) }}>
+        <div style={{ maxWidth: 1000, margin: '0 auto', padding: pagePadding('44px 44px 64px', isMobile, true) }}>
 
           {/* Heading */}
           <div style={{ marginBottom: 40 }}>

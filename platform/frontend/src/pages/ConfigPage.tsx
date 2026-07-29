@@ -642,7 +642,7 @@ export default function ConfigPage() {
   const isMobile = useMediaQuery(MOBILE_QUERY)
   return (
     <div style={{ height: '100%', overflowY: 'auto' }}>
-      <div style={{ maxWidth: 640, margin: '0 auto', padding: pagePadding('44px 40px 80px', isMobile) }}>
+      <div style={{ maxWidth: 640, margin: '0 auto', padding: pagePadding('44px 40px 80px', isMobile, true) }}>
         <h1 style={{
           margin: '0 0 36px', fontSize: 20, fontWeight: 800,
           letterSpacing: '-0.03em', color: 'var(--text)',

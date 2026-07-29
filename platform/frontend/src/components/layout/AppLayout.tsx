@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import Sidebar from './Sidebar'
-import MobileNav, { MOBILE_NAV_SPACE } from './MobileNav'
+import MobileNav from './MobileNav'
 import { useAuth } from '../../auth/AuthContext'
 import { ChatPanel } from '../ChatPanel'
 import { CosmeticsProvider } from '../../contexts/CosmeticsContext'
 import { useMediaQuery, MOBILE_QUERY } from '../../hooks/useMediaQuery'
+import { TOPBAR_SPACE, MOBILE_NAV_SPACE } from '../../lib/layout'
 import api from '../../api/client'
 
 // ── TopBar ───────────────────────────────────────────────────────────────────
@@ -34,7 +35,10 @@ function TopBar() {
     }}>
       {user && (
         <div style={{
-          height: 54,
+          // Altura e padding em longhand: um shorthand `padding` aqui apagaria
+          // o inset silenciosamente e só quebraria em iPhone com notch.
+          height: TOPBAR_SPACE,
+          paddingTop: 'env(safe-area-inset-top, 0px)',
           display: 'flex',
           alignItems: 'stretch',
           background: 'var(--bg-card)',
@@ -203,10 +207,17 @@ function ChatBubble() {
 }
 
 // ── Layout ───────────────────────────────────────────────────────────────────
+// Layout de altura fixa, com controles morando no rodapé: o editor de kata e o
+// chat. Neles a moldura tem de parar acima da dock, senão ela cobre os botões.
+// Todo o resto rola, vai até a borda de baixo — e reserva o espaço da dock no
+// próprio conteúdo, via pagePadding — para o fundo passar atrás dela.
+const FIXED_LAYOUT_PATHS = ['/exercise/', '/chats']
+
 export default function AppLayout() {
   const location = useLocation()
   const hideTopBar = location.pathname === '/profile'
   const isMobile = useMediaQuery(MOBILE_QUERY)
+  const isFixedLayout = FIXED_LAYOUT_PATHS.some(p => location.pathname.startsWith(p))
 
   return (
     <CosmeticsProvider>
@@ -216,10 +227,20 @@ export default function AppLayout() {
           flex: 1,
           overflow: 'hidden',
           position: 'relative',
-          paddingBottom: isMobile ? MOBILE_NAV_SPACE : 0,
+          paddingBottom: isMobile && isFixedLayout ? MOBILE_NAV_SPACE : 0,
         }}>
           {!hideTopBar && <TopBar />}
-          <div style={{ height: '100%', overflow: 'hidden' }}>
+          {/* Só os layouts de altura fixa cedem a faixa aqui — o header próprio
+              deles precisa começar abaixo do notch. As páginas de rolagem vão
+              até y=0 e reservam a faixa no conteúdo, via pagePadding, para o
+              fundo passar atrás do notch em vez de parar antes dele.
+              A faixa fica no wrapper e não no <main> porque o TopBar é absolute
+              contra o padding box do main: um padding-top ali o empurraria. */}
+          <div style={{
+            height: '100%',
+            overflow: 'hidden',
+            paddingTop: isMobile && !hideTopBar && isFixedLayout ? TOPBAR_SPACE : 0,
+          }}>
             <Outlet />
           </div>
         </main>

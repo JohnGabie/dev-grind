@@ -518,7 +518,7 @@ export default function KataListPage() {
       <div style={{
         width: 220, flexShrink: 0, height: '100%', overflowY: 'auto',
         borderRight: '1px solid var(--border)',
-        padding: '20px 16px 40px',
+        padding: pagePadding('20px 16px 40px', isMobile, true),
         display: 'flex', flexDirection: 'column', gap: 18,
       }}>
 
@@ -593,7 +593,7 @@ export default function KataListPage() {
       </div>
 
       {/* ── Kata list ────────────────────────────────────── */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: pagePadding('24px 26px 60px', isMobile) }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: pagePadding('24px 26px 60px', isMobile, true) }}>
 
         {(() => {
           const mode = searchParams.get('mode')

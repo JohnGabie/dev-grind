@@ -2,17 +2,13 @@ import { useEffect, useState } from 'react'
 import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { MOBILE_TABS, MOBILE_SHEET } from './navItems'
 import { useAuth } from '../../auth/AuthContext'
+import { DOCK_HEIGHT, DOCK_GAP, DOCK_SIDE_INSET, MOBILE_NAV_SPACE } from '../../lib/layout'
 
-const BAR_HEIGHT = 60
-const BAR_GAP = 14   // respiro entre a dock e a borda de baixo
-const SIDE_INSET = 12
-
-// Dock flutuante: reservar altura + o respiro + o home indicator do iPhone.
-export const MOBILE_NAV_SPACE =
-  `calc(${BAR_HEIGHT + BAR_GAP}px + env(safe-area-inset-bottom, 0px))`
+const BAR_HEIGHT = DOCK_HEIGHT
+const SIDE_INSET = DOCK_SIDE_INSET
 
 // Onde a base da dock se apoia — a folha "Mais" empilha logo acima dela.
-const DOCK_BOTTOM = `calc(${BAR_GAP}px + env(safe-area-inset-bottom, 0px))`
+const DOCK_BOTTOM = `calc(${DOCK_GAP}px + env(safe-area-inset-bottom, 0px))`
 
 const SHEET_PATHS = MOBILE_SHEET.map(i => i.to)
 

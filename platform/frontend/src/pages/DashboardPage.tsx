@@ -695,7 +695,7 @@ export default function DashboardPage() {
         position: 'relative',
         zIndex: 1,
       }}>
-      <div style={{ maxWidth: 1080, margin: '0 auto', padding: pagePadding('44px 56px 72px', isMobile), position: 'relative', zIndex: 1 }}>
+      <div style={{ maxWidth: 1080, margin: '0 auto', padding: pagePadding('44px 56px 72px', isMobile, true), position: 'relative', zIndex: 1 }}>
 
         {/* Header */}
         <div className="fade-up" style={{
