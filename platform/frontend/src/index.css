@@ -184,6 +184,22 @@ body {
   .fade-up, .fade-in { animation-duration: 1ms; }
 }
 
+/* ─── Linhas de Configurações no mobile ─────────────────── */
+/* O empilhamento e as larguras dos campos são inline no ConfigPage, porque essas
+   propriedades já vinham de lá e estilo inline vence folha sem !important.
+   Aqui ficam só as que ninguém declara inline — e que precisam alcançar
+   descendentes que a página não controla um a um. */
+@media (max-width: 768px) {
+  .cfg-ctrl { width: 100%; }
+  .cfg-ctrl > div { flex-wrap: wrap; }
+
+  /* Alvo de toque: 44px é o mínimo do HIG e da WCAG 2.5.5. Os chips vinham
+     com 30px e os campos com 40. */
+  .cfg-ctrl input,
+  .cfg-ctrl button,
+  .cfg-row button { min-height: 44px; }
+}
+
 /* ─── Mobile "Mais" sheet ───────────────────────────────── */
 @keyframes sheet-up {
   from { transform: translateY(12px); opacity: 0; }

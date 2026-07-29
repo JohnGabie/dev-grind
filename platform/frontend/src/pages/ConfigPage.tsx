@@ -26,6 +26,23 @@ function Group({ label, children }: { label: string; children: React.ReactNode }
   )
 }
 
+/** Campo de texto. No mobile ocupa a largura toda e sobe para 16px: abaixo
+ *  disso o iOS dá zoom no viewport ao focar, e o layout inteiro pula. */
+function fieldStyle(isMobile: boolean, width: number, accent = false): React.CSSProperties {
+  return {
+    width: isMobile ? '100%' : width,
+    minWidth: 0,
+    background: 'var(--bg)',
+    border: `1px solid ${accent ? 'rgba(34,211,238,0.4)' : 'var(--border)'}`,
+    borderRadius: 5,
+    padding: isMobile ? '10px 12px' : '6px 10px',
+    fontSize: isMobile ? 16 : 11,
+    outline: 'none',
+    color: 'var(--text)',
+    fontFamily: 'var(--f-mono)',
+  }
+}
+
 function Row({
   label, description, last = false, danger = false, children,
 }: {
@@ -35,12 +52,26 @@ function Row({
   danger?: boolean
   children?: React.ReactNode
 }) {
+  const isMobile = useMediaQuery(MOBILE_QUERY)
+
+  // No mobile a linha empilha. Lado a lado, o controle é flexShrink:0 e leva
+  // toda a largura — a coluna de texto colapsava para 0px e o rótulo com a
+  // descrição desapareciam. Empilhado, alignItems tem de ser stretch: em
+  // column ele governa o eixo horizontal, e center deixaria cada rótulo
+  // começando num ponto diferente conforme a largura do próprio texto.
   return (
-    <div style={{
-      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      gap: 24, padding: '14px 20px',
-      borderBottom: last ? 'none' : '1px solid var(--border)',
-    }}>
+    <div
+      className="cfg-row"
+      style={{
+        display: 'flex',
+        flexDirection: isMobile ? 'column' : 'row',
+        alignItems: isMobile ? 'stretch' : 'center',
+        justifyContent: isMobile ? 'flex-start' : 'space-between',
+        gap: isMobile ? 10 : 24,
+        padding: '14px 20px',
+        borderBottom: last ? 'none' : '1px solid var(--border)',
+      }}
+    >
       <div style={{ minWidth: 0 }}>
         <p style={{
           margin: '0 0 2px', fontSize: 13, fontWeight: 600,
@@ -55,7 +86,7 @@ function Row({
         )}
       </div>
       {children && (
-        <div style={{ flexShrink: 0 }}>{children}</div>
+        <div className="cfg-ctrl" style={{ flexShrink: 0 }}>{children}</div>
       )}
     </div>
   )
@@ -64,6 +95,7 @@ function Row({
 // ── Conta ─────────────────────────────────────────────────────────────────────
 
 function ContaSection() {
+  const isMobile = useMediaQuery(MOBILE_QUERY)
   const { user, logout } = useAuth()
   const navigate = useNavigate()
   const [editing, setEditing] = useState(false)
@@ -127,11 +159,7 @@ function ContaSection() {
               value={name}
               onChange={e => setName(e.target.value)}
               onKeyDown={e => { if (e.key === 'Enter') saveName(); if (e.key === 'Escape') { setEditing(false); setName(user?.name ?? '') } }}
-              style={{
-                width: 180, background: 'var(--bg)', border: '1px solid rgba(34,211,238,0.4)',
-                borderRadius: 5, padding: '6px 10px', fontSize: 12,
-                color: 'var(--text)', outline: 'none', fontFamily: 'var(--f-mono)',
-              }}
+              style={fieldStyle(isMobile, 180, true)}
             />
             <button onClick={saveName} style={btnCyan}>
               {saving ? '…' : saved ? '✓' : 'salvar'}
@@ -181,6 +209,7 @@ function ContaSection() {
 interface Token { id: string; name: string; created_at: string; last_used_at: string | null; token?: string }
 
 function IntegracoesSection() {
+  const isMobile = useMediaQuery(MOBILE_QUERY)
   const [tokens, setTokens] = useState<Token[]>([])
   const [creating, setCreating] = useState(false)
   const [newName, setNewName] = useState('Claude Code')
@@ -230,10 +259,15 @@ function IntegracoesSection() {
   return (
     <Group label="Integrações">
 
-      {/* MCP header row */}
-      <div style={{
-        display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
-        gap: 16, padding: '14px 20px', borderBottom: '1px solid var(--border)',
+      {/* MCP header row — mesma estrutura do Row, à mão, então precisa das
+          mesmas classes para empilhar no mobile. */}
+      <div className="cfg-row" style={{
+        display: 'flex',
+        flexDirection: isMobile ? 'column' : 'row',
+        alignItems: isMobile ? 'stretch' : 'flex-start',
+        justifyContent: isMobile ? 'flex-start' : 'space-between',
+        gap: isMobile ? 10 : 16,
+        padding: '14px 20px', borderBottom: '1px solid var(--border)',
       }}>
         <div>
           <p style={{ margin: '0 0 2px', fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>
@@ -243,7 +277,7 @@ function IntegracoesSection() {
             Conecte o Claude Code local à plataforma para acessar exercícios e progresso via tools.
           </p>
         </div>
-        <div style={{ display: 'flex', gap: 6, flexShrink: 0, paddingTop: 2 }}>
+        <div className="cfg-ctrl" style={{ display: 'flex', gap: 6, flexShrink: 0, paddingTop: 2 }}>
           <button onClick={downloadClaudeMd} style={btnGhost}>↓ CLAUDE.md</button>
           <button onClick={() => setCreating(v => !v)} style={creating ? btnGhost : btnCyan}>
             {creating ? '✕' : '+ token'}
@@ -411,6 +445,7 @@ const MODEL_HINTS: Record<string, string[]> = {
 }
 
 function IASection() {
+  const isMobile = useMediaQuery(MOBILE_QUERY)
   const [key, setKey]       = useState(() => ls('study_ai_key', ''))
   const [url, setUrl]       = useState(() => ls('study_ai_base_url', 'https://openrouter.ai/api/v1'))
   const [model, setModel]   = useState(() => ls('study_ai_model', 'anthropic/claude-opus-4-5'))
@@ -462,7 +497,7 @@ function IASection() {
 
       {/* Provider presets */}
       <Row label="Provedor" description="Use OpenRouter para acessar qualquer modelo com uma única chave.">
-        <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+        <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', justifyContent: isMobile ? 'flex-start' : 'flex-end' }}>
           {PRESETS.map(p => (
             <button
               key={p.url}
@@ -488,11 +523,7 @@ function IASection() {
           value={url}
           onChange={e => setUrl(e.target.value)}
           onBlur={() => save()}
-          style={{
-            width: 300, background: 'var(--bg)', border: '1px solid var(--border)',
-            borderRadius: 5, padding: '6px 10px', fontSize: 11, outline: 'none',
-            color: 'var(--text)', fontFamily: 'var(--f-mono)',
-          }}
+          style={fieldStyle(isMobile, 300)}
           onFocus={e => e.currentTarget.style.borderColor = 'rgba(34,211,238,0.4)'}
         />
       </Row>
@@ -506,11 +537,7 @@ function IASection() {
             onChange={e => setKey(e.target.value)}
             onBlur={() => save()}
             placeholder="sk-..."
-            style={{
-              width: 260, background: 'var(--bg)', border: '1px solid var(--border)',
-              borderRadius: 5, padding: '6px 10px', fontSize: 11, outline: 'none',
-              color: 'var(--text)', fontFamily: 'var(--f-mono)',
-            }}
+            style={fieldStyle(isMobile, 260)}
             onFocus={e => e.currentTarget.style.borderColor = 'rgba(34,211,238,0.4)'}
           />
           <button onClick={() => setShowKey(v => !v)} style={btnGhost}>
@@ -521,20 +548,16 @@ function IASection() {
 
       {/* Model */}
       <Row label="Modelo" description="Nome exato do modelo conforme a API do provedor." last>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: 'flex-end' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, alignItems: isMobile ? 'stretch' : 'flex-end' }}>
           <input
             value={model}
             onChange={e => setModel(e.target.value)}
             onBlur={() => save()}
-            style={{
-              width: 300, background: 'var(--bg)', border: '1px solid var(--border)',
-              borderRadius: 5, padding: '6px 10px', fontSize: 11, outline: 'none',
-              color: 'var(--text)', fontFamily: 'var(--f-mono)',
-            }}
+            style={fieldStyle(isMobile, 300)}
             onFocus={e => e.currentTarget.style.borderColor = 'rgba(34,211,238,0.4)'}
           />
           {hints.length > 0 && (
-            <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+            <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', justifyContent: isMobile ? 'flex-start' : 'flex-end' }}>
               {hints.map(h => (
                 <button
                   key={h}
