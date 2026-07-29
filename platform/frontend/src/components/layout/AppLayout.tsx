@@ -18,11 +18,11 @@ const DIFF_COLOR: Record<string, string> = {
 function TopBar() {
   const { user } = useAuth()
   const navigate = useNavigate()
-  const [stats, setStats] = useState<{ rank: string; honor: number; coins: number } | null>(null)
+  const [stats, setStats] = useState<{ rank: string; coins: number } | null>(null)
 
   useEffect(() => {
     api.get('/users/me/stats')
-      .then(r => setStats({ rank: r.data.rank, honor: r.data.honor, coins: r.data.coins ?? 0 }))
+      .then(r => setStats({ rank: r.data.rank, coins: r.data.coins ?? 0 }))
       .catch(() => {})
   }, [])
 
@@ -46,13 +46,13 @@ function TopBar() {
           overflow: 'hidden',
         }}>
 
-          {/* Honor */}
+          {/* Rank */}
           {stats && (
             <button
               onClick={() => navigate('/profile')}
               style={{
                 display: 'flex', alignItems: 'center',
-                padding: '0 18px',
+                padding: '0 16px',
                 background: 'none', border: 'none', cursor: 'pointer',
                 transition: 'background 130ms',
               }}
@@ -60,11 +60,15 @@ function TopBar() {
               onMouseLeave={e => (e.currentTarget.style.background = 'none')}
             >
               <span style={{
-                fontSize: 13, color: 'var(--muted)', fontFamily: 'var(--f-mono)',
-                letterSpacing: '-0.01em',
+                fontSize: 12, fontWeight: 800, fontFamily: 'var(--f-mono)',
+                padding: '4px 11px', borderRadius: 6,
+                background: `${rankColor}22`,
+                border: `1.5px solid ${rankColor}60`,
+                color: rankColor,
+                letterSpacing: '0.06em',
+                boxShadow: `0 0 10px ${rankColor}25`,
               }}>
-                {stats.honor.toLocaleString()}
-                <span style={{ opacity: 0.5, fontSize: 11, marginLeft: 5 }}>honor</span>
+                {stats.rank}
               </span>
             </button>
           )}
@@ -105,6 +109,7 @@ function TopBar() {
               width: 58,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               background: 'none', border: 'none', cursor: 'pointer',
+              borderLeft: '1px solid var(--border)',
               transition: 'background 130ms',
               padding: 0,
             }}
@@ -132,34 +137,6 @@ function TopBar() {
               </div>
             )}
           </button>
-
-          {/* Rank — ocupa a ponta que era do Sair (que vive em Configurações) */}
-          {stats && (
-            <button
-              onClick={() => navigate('/profile')}
-              style={{
-                display: 'flex', alignItems: 'center',
-                padding: '0 16px',
-                background: 'none', border: 'none', cursor: 'pointer',
-                borderLeft: '1px solid var(--border)',
-                transition: 'background 130ms',
-              }}
-              onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-hover)')}
-              onMouseLeave={e => (e.currentTarget.style.background = 'none')}
-            >
-              <span style={{
-                fontSize: 12, fontWeight: 800, fontFamily: 'var(--f-mono)',
-                padding: '4px 11px', borderRadius: 6,
-                background: `${rankColor}22`,
-                border: `1.5px solid ${rankColor}60`,
-                color: rankColor,
-                letterSpacing: '0.06em',
-                boxShadow: `0 0 10px ${rankColor}25`,
-              }}>
-                {stats.rank}
-              </span>
-            </button>
-          )}
         </div>
       )}
     </div>
