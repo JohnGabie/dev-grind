@@ -35,10 +35,12 @@ function StarLayer({ shadows, size, duration }: { shadows: string; size: number;
     boxShadow: shadows,
     animation: `animStar ${duration}s linear infinite`,
   }
+  // A classe existe para o guard de prefers-reduced-motion alcançar a animação,
+  // que é inline e por isso só cede a um !important com seletor.
   return (
     <>
-      <div style={style} />
-      <div style={{ ...style, top: 2000 }} />
+      <div className="bp-star" style={style} />
+      <div className="bp-star" style={{ ...style, top: 2000 }} />
     </>
   )
 }

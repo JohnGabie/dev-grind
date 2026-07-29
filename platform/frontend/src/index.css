@@ -175,6 +175,13 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .dock-pill, .tab-item, .tab-item svg, .tab-item span { transition-duration: 1ms; }
+
+  /* Os fundos decorativos rodam em loop infinito (estrelas, aurora, chuva).
+     Quem pede menos movimento fica com a arte parada, não sem arte. */
+  .bp-star, [class*="bp-"] { animation: none !important; }
+
+  /* Entradas viram corte seco: o estado final é o que importa. */
+  .fade-up, .fade-in { animation-duration: 1ms; }
 }
 
 /* ─── Mobile "Mais" sheet ───────────────────────────────── */
