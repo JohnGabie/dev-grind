@@ -2,6 +2,8 @@ import { useState, useMemo, useEffect, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../api/client'
 import AddBookModal from '../components/AddBookModal'
+import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
+import { pagePadding } from '../lib/layout'
 
 function EmptySlotCard({ onClick }: { onClick: () => void }) {
   const [hovered, setHovered] = useState(false)
@@ -339,6 +341,7 @@ function BookCard({ book, onClick, onDelete }: { book: Book; onClick: () => void
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 export default function BooksPage() {
+  const isMobile = useMediaQuery(MOBILE_QUERY)
   const navigate = useNavigate()
   const [books, setBooks] = useState<Book[]>([])
   const [slotLimit, setSlotLimit] = useState(4)
@@ -378,7 +381,7 @@ export default function BooksPage() {
         />
       )}
 
-      <div style={{ maxWidth: 1080, margin: '0 auto', padding: '52px 48px 72px' }}>
+      <div style={{ maxWidth: 1080, margin: '0 auto', padding: pagePadding('52px 48px 72px', isMobile) }}>
 
         {/* Header */}
         <div className="fade-up" style={{ marginBottom: 32 }}>

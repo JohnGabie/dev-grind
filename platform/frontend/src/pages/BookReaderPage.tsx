@@ -3,6 +3,8 @@ import { useParams, useNavigate } from 'react-router-dom'
 import ReactMarkdown from 'react-markdown'
 import api from '../api/client'
 import PdfViewer from '../components/PdfViewer'
+import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
+import { pagePadding } from '../lib/layout'
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 interface BookDetail {
@@ -130,6 +132,7 @@ function TocSidebar({ toc, onNavigate }: { toc: TocEntry[]; onNavigate: (id: str
 
 // ── Main component ────────────────────────────────────────────────────────────
 export default function BookReaderPage() {
+  const isMobile = useMediaQuery(MOBILE_QUERY)
   const { slug = '' } = useParams()
   const navigate = useNavigate()
 
@@ -383,7 +386,7 @@ export default function BookReaderPage() {
           <div
             ref={contentRef}
             onScroll={handleMdScroll}
-            style={{ flex: 1, overflowY: 'auto', padding: '36px 52px 80px' }}
+            style={{ flex: 1, overflowY: 'auto', padding: pagePadding('36px 52px 80px', isMobile) }}
           >
             <div style={{ maxWidth: 720, margin: '0 auto' }}>
               <ReactMarkdown components={MD_COMPONENTS as any}>{book.content ?? ''}</ReactMarkdown>
@@ -503,7 +506,7 @@ export default function BookReaderPage() {
                 </div>
 
                 {/* Page content */}
-                <div style={{ flex: 1, overflowY: 'auto', padding: '36px 52px 80px' }}>
+                <div style={{ flex: 1, overflowY: 'auto', padding: pagePadding('36px 52px 80px', isMobile) }}>
                   <div style={{ maxWidth: 720, margin: '0 auto' }}>
                     {textCacheRef.current.has(textNavPage) ? (
                       <ReactMarkdown components={MD_COMPONENTS as any}>

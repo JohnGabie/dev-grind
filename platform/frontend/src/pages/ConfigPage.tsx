@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../api/client'
 import { useAuth } from '../auth/AuthContext'
+import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
+import { pagePadding } from '../lib/layout'
 
 // ── Primitives ────────────────────────────────────────────────────────────────
 
@@ -637,9 +639,10 @@ const btnGhost: React.CSSProperties = {
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function ConfigPage() {
+  const isMobile = useMediaQuery(MOBILE_QUERY)
   return (
     <div style={{ height: '100%', overflowY: 'auto' }}>
-      <div style={{ maxWidth: 640, margin: '0 auto', padding: '44px 40px 80px' }}>
+      <div style={{ maxWidth: 640, margin: '0 auto', padding: pagePadding('44px 40px 80px', isMobile) }}>
         <h1 style={{
           margin: '0 0 36px', fontSize: 20, fontWeight: 800,
           letterSpacing: '-0.03em', color: 'var(--text)',

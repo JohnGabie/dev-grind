@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import api from '../api/client'
+import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
+import { pagePadding } from '../lib/layout'
 
 const PHASES = [
   {
@@ -175,6 +177,7 @@ function AiCourseCard({ course }: { course: AiCourse }) {
 }
 
 export default function CoursesPage() {
+  const isMobile = useMediaQuery(MOBILE_QUERY)
   const [aiCourses, setAiCourses] = useState<AiCourse[]>([])
 
   useEffect(() => {
@@ -183,7 +186,7 @@ export default function CoursesPage() {
 
   return (
     <div style={{ height: '100%', overflowY: 'auto' }}>
-      <div style={{ maxWidth: 1080, margin: '0 auto', padding: '52px 48px 72px' }}>
+      <div style={{ maxWidth: 1080, margin: '0 auto', padding: pagePadding('52px 48px 72px', isMobile) }}>
 
         {/* Header */}
         <div className="fade-up" style={{ marginBottom: 44 }}>

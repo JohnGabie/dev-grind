@@ -5,6 +5,8 @@ import { useAuth } from '../auth/AuthContext'
 import { BackgroundFooter } from '../components/BackgroundRenderer'
 import { useCosmetics } from '../contexts/CosmeticsContext'
 import api from '../api/client'
+import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
+import { pagePadding } from '../lib/layout'
 
 interface Exercise {
   id: string; title: string; slug: string
@@ -633,6 +635,7 @@ const MOCK_RECENT: HistoryItem[] = [
 ]
 
 export default function DashboardPage() {
+  const isMobile = useMediaQuery(MOBILE_QUERY)
   const { user } = useAuth()
   const { bg } = useCosmetics()
   const [exercises, setExercises] = useState<Exercise[]>([])
@@ -680,7 +683,7 @@ export default function DashboardPage() {
       <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 700, pointerEvents: 'none', zIndex: 0 }}>
         <BackgroundFooter height={700} config={bg('bg_dashboard')} />
       </div>
-      <div style={{ maxWidth: 1080, margin: '0 auto', padding: '44px 56px 72px', position: 'relative', zIndex: 1 }}>
+      <div style={{ maxWidth: 1080, margin: '0 auto', padding: pagePadding('44px 56px 72px', isMobile), position: 'relative', zIndex: 1 }}>
 
         {/* Header */}
         <div className="fade-up" style={{

@@ -2,6 +2,8 @@ import { useEffect, useState, useMemo, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import api from '../api/client'
 import { useAuth } from '../auth/AuthContext'
+import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
+import { pagePadding } from '../lib/layout'
 
 interface Exercise {
   id: string; title: string; slug: string
@@ -415,6 +417,7 @@ function relevanceScore(ex: Exercise, q: string): number {
 }
 
 export default function KataListPage() {
+  const isMobile = useMediaQuery(MOBILE_QUERY)
   const { user } = useAuth()
   const [searchParams] = useSearchParams()
   const [exercises, setExercises] = useState<Exercise[]>([])
@@ -590,7 +593,7 @@ export default function KataListPage() {
       </div>
 
       {/* ── Kata list ────────────────────────────────────── */}
-      <div style={{ flex: 1, overflowY: 'auto', padding: '24px 26px 60px' }}>
+      <div style={{ flex: 1, overflowY: 'auto', padding: pagePadding('24px 26px 60px', isMobile) }}>
 
         {(() => {
           const mode = searchParams.get('mode')

@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import api from '../api/client'
 import { useCosmetics } from '../contexts/CosmeticsContext'
 import { BackgroundBg } from '../components/BackgroundRenderer'
+import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
+import { pagePadding } from '../lib/layout'
 
 interface HeatmapDay { total: number; katas: number; books: number; courses: number }
 
@@ -616,6 +618,7 @@ const defaultAdjust: CoverAdjust = { x: 0, y: 0, scale: 1 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 export default function ProfilePage() {
+  const isMobile = useMediaQuery(MOBILE_QUERY)
   const { bg } = useCosmetics()
   const [stats, setStats] = useState<Stats | null>(null)
   const [coverUrl, setCoverUrl] = useState<string | null>(null)
@@ -781,7 +784,7 @@ export default function ProfilePage() {
             WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 50%)',
             maskImage: 'linear-gradient(to bottom, transparent 0%, black 50%)',
           }} />
-          <div style={{ position: 'relative', maxWidth: 1100, margin: '0 auto', padding: '0 48px 28px' }}>
+          <div style={{ position: 'relative', maxWidth: 1100, margin: '0 auto', padding: pagePadding('0 48px 28px', isMobile) }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
               {stats.user.avatar_url ? (
                 <img src={stats.user.avatar_url} alt="" style={{
@@ -1004,7 +1007,7 @@ export default function ProfilePage() {
       }} />
 
       {/* ── Main Content ─────────────────────────────────────────────────────── */}
-      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '32px 48px 80px' }}>
+      <div style={{ maxWidth: 1100, margin: '0 auto', padding: pagePadding('32px 48px 80px', isMobile) }}>
         <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 300px', gap: '0 40px', alignItems: 'start' }}>
 
           {/* Left column */}

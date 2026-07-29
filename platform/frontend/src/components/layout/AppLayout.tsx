@@ -16,7 +16,7 @@ const DIFF_COLOR: Record<string, string> = {
 }
 
 function TopBar() {
-  const { user, logout } = useAuth()
+  const { user } = useAuth()
   const navigate = useNavigate()
   const [stats, setStats] = useState<{ rank: string; honor: number; coins: number } | null>(null)
 
@@ -46,12 +46,12 @@ function TopBar() {
           overflow: 'hidden',
         }}>
 
-          {/* Rank + honor */}
+          {/* Honor */}
           {stats && (
             <button
               onClick={() => navigate('/profile')}
               style={{
-                display: 'flex', alignItems: 'center', gap: 12,
+                display: 'flex', alignItems: 'center',
                 padding: '0 18px',
                 background: 'none', border: 'none', cursor: 'pointer',
                 transition: 'background 130ms',
@@ -59,17 +59,6 @@ function TopBar() {
               onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-hover)')}
               onMouseLeave={e => (e.currentTarget.style.background = 'none')}
             >
-              <span style={{
-                fontSize: 12, fontWeight: 800, fontFamily: 'var(--f-mono)',
-                padding: '4px 11px', borderRadius: 6,
-                background: `${rankColor}22`,
-                border: `1.5px solid ${rankColor}60`,
-                color: rankColor,
-                letterSpacing: '0.06em',
-                boxShadow: `0 0 10px ${rankColor}25`,
-              }}>
-                {stats.rank}
-              </span>
               <span style={{
                 fontSize: 13, color: 'var(--muted)', fontFamily: 'var(--f-mono)',
                 letterSpacing: '-0.01em',
@@ -144,33 +133,33 @@ function TopBar() {
             )}
           </button>
 
-          {/* Logout */}
-          <button
-            onClick={() => { logout(); navigate('/login') }}
-            title="Sair"
-            style={{
-              width: 48,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'none', border: 'none', cursor: 'pointer',
-              color: 'var(--text)',
-              transition: 'color 130ms, background 130ms',
-              padding: 0,
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.color = 'var(--red)'
-              e.currentTarget.style.background = 'rgba(239,68,68,0.07)'
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.color = 'var(--text)'
-              e.currentTarget.style.background = 'none'
-            }}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-              <polyline points="16 17 21 12 16 7" />
-              <line x1="21" y1="12" x2="9" y2="12" />
-            </svg>
-          </button>
+          {/* Rank — ocupa a ponta que era do Sair (que vive em Configurações) */}
+          {stats && (
+            <button
+              onClick={() => navigate('/profile')}
+              style={{
+                display: 'flex', alignItems: 'center',
+                padding: '0 16px',
+                background: 'none', border: 'none', cursor: 'pointer',
+                borderLeft: '1px solid var(--border)',
+                transition: 'background 130ms',
+              }}
+              onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-hover)')}
+              onMouseLeave={e => (e.currentTarget.style.background = 'none')}
+            >
+              <span style={{
+                fontSize: 12, fontWeight: 800, fontFamily: 'var(--f-mono)',
+                padding: '4px 11px', borderRadius: 6,
+                background: `${rankColor}22`,
+                border: `1.5px solid ${rankColor}60`,
+                color: rankColor,
+                letterSpacing: '0.06em',
+                boxShadow: `0 0 10px ${rankColor}25`,
+              }}>
+                {stats.rank}
+              </span>
+            </button>
+          )}
         </div>
       )}
     </div>

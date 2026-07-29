@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import ReactMarkdown from 'react-markdown'
 import api from '../api/client'
 import { getAiConfig } from '../api/aiConfig'
+import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
+import { pagePadding } from '../lib/layout'
 
 interface Message {
   id: string
@@ -210,6 +212,7 @@ function MessageBubble({ msg, isNew }: { msg: Message; isNew?: boolean }) {
 
 // ── Página principal ──────────────────────────────────────────────────────────
 export default function ChatPage() {
+  const isMobile = useMediaQuery(MOBILE_QUERY)
   const navigate = useNavigate()
   const [aiConfig, setAiConfig] = useState(getAiConfig)
   const [convs, setConvs] = useState<Conversation[]>([])
@@ -462,7 +465,7 @@ export default function ChatPage() {
             <>
               {/* Messages */}
               <div style={{
-                flex: 1, overflowY: 'auto', padding: '28px 32px 24px',
+                flex: 1, overflowY: 'auto', padding: pagePadding('28px 32px 24px', isMobile),
                 display: 'flex', flexDirection: 'column', gap: 12,
                 position: 'relative', zIndex: 1,
               }}>

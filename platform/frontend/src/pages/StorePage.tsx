@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import api from '../api/client'
 import { BackgroundPreview } from '../components/BackgroundRenderer'
 import type { BgConfig } from '../components/StarfieldFooter'
+import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
+import { pagePadding } from '../lib/layout'
 
 interface StoreItem {
   id: string
@@ -41,6 +43,7 @@ function CoinIcon({ size = 13 }: { size?: number }) {
 type CategoryFilter = 'todos' | string
 
 export default function StorePage() {
+  const isMobile = useMediaQuery(MOBILE_QUERY)
   const navigate = useNavigate()
   const [items, setItems] = useState<StoreItem[]>([])
   const [coins, setCoins] = useState(0)
@@ -223,7 +226,7 @@ export default function StorePage() {
 
       {/* ── Conteúdo principal ───────────────────────────────────────── */}
       <div style={{ flex: 1, overflowY: 'auto' }}>
-        <div style={{ maxWidth: 1000, margin: '0 auto', padding: '44px 44px 64px' }}>
+        <div style={{ maxWidth: 1000, margin: '0 auto', padding: pagePadding('44px 44px 64px', isMobile) }}>
 
           {/* Heading */}
           <div style={{ marginBottom: 40 }}>
