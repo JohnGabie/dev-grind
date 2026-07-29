@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import Sidebar from './Sidebar'
+import MobileNav, { MOBILE_NAV_SPACE } from './MobileNav'
 import { useAuth } from '../../auth/AuthContext'
 import { ChatPanel } from '../ChatPanel'
 import { CosmeticsProvider } from '../../contexts/CosmeticsContext'
+import { useMediaQuery, MOBILE_QUERY } from '../../hooks/useMediaQuery'
 import api from '../../api/client'
 
 // ── TopBar ───────────────────────────────────────────────────────────────────
@@ -179,18 +181,23 @@ function TopBar() {
 function ChatBubble() {
   const location = useLocation()
   const [open, setOpen] = useState(false)
+  const isMobile = useMediaQuery(MOBILE_QUERY)
 
   const slug = location.pathname.startsWith('/exercise/')
     ? location.pathname.split('/exercise/')[1]
     : null
   const context = slug ? `kata:${slug}` : location.pathname === '/' ? 'dashboard' : 'general'
 
+  // No mobile a bolha sobe para não cobrir a tab bar.
+  const bubbleBottom = isMobile ? `calc(24px + ${MOBILE_NAV_SPACE})` : 24
+  const panelBottom = isMobile ? `calc(84px + ${MOBILE_NAV_SPACE})` : 84
+
   return (
     <>
       {open && (
         <div style={{
-          position: 'fixed', bottom: 84, right: 24, zIndex: 41,
-          width: 320, height: 420,
+          position: 'fixed', bottom: panelBottom, right: 24, zIndex: 41,
+          width: 'min(320px, calc(100vw - 48px))', height: 420,
           background: 'var(--bg-card)',
           border: '1px solid var(--border-lit)',
           borderRadius: 12,
@@ -205,7 +212,7 @@ function ChatBubble() {
         onClick={() => setOpen(o => !o)}
         title="Chat"
         style={{
-          position: 'fixed', bottom: 24, right: 24, zIndex: 42,
+          position: 'fixed', bottom: bubbleBottom, right: 24, zIndex: 42,
           width: 48, height: 48, borderRadius: '50%',
           background: open ? 'var(--cyan-faint)' : 'var(--bg-card)',
           border: `1px solid ${open ? 'var(--cyan)' : 'var(--cyan-glow)'}`,
@@ -233,17 +240,24 @@ function ChatBubble() {
 export default function AppLayout() {
   const location = useLocation()
   const hideTopBar = location.pathname === '/profile'
+  const isMobile = useMediaQuery(MOBILE_QUERY)
 
   return (
     <CosmeticsProvider>
       <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: 'var(--bg)' }}>
-        <Sidebar />
-        <main style={{ flex: 1, overflow: 'hidden', position: 'relative' }}>
+        {!isMobile && <Sidebar />}
+        <main style={{
+          flex: 1,
+          overflow: 'hidden',
+          position: 'relative',
+          paddingBottom: isMobile ? MOBILE_NAV_SPACE : 0,
+        }}>
           {!hideTopBar && <TopBar />}
           <div style={{ height: '100%', overflow: 'hidden' }}>
             <Outlet />
           </div>
         </main>
+        {isMobile && <MobileNav />}
         <ChatBubble />
       </div>
     </CosmeticsProvider>
