@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512" fill="none">
+  <rect width="512" height="512" fill="#0a0a0a"/>
+  <!-- Hexágono da Sidebar, a 60% do canvas para caber na zona segura do maskable -->
+  <g transform="translate(256 256) scale(9.6) translate(-16 -16)">
+    <path d="M16 3L29 10V22L16 29L3 22V10Z"
+          stroke="#22d3ee" stroke-width="1.5"
+          fill="rgba(34,211,238,0.10)"/>
+    <path d="M16 3V29M3 10L29 22M29 10L3 22"
+          stroke="#22d3ee" stroke-width="0.5" opacity="0.4"/>
+  </g>
+</svg>
