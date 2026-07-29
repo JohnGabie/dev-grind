@@ -19,6 +19,7 @@ const DIFF_COLOR: Record<string, string> = {
 function TopBar() {
   const { user } = useAuth()
   const navigate = useNavigate()
+  const location = useLocation()
   const [stats, setStats] = useState<{ rank: string; coins: number } | null>(null)
 
   useEffect(() => {
@@ -27,6 +28,9 @@ function TopBar() {
       .catch(() => {})
   }, [])
 
+  // Kyu e gcoin só no Dashboard — nas outras páginas a barra encolhe para o
+  // avatar. A cor do rank continua tingindo o anel do avatar em toda página.
+  const showStats = location.pathname === '/' && !!stats
   const rankColor = stats ? (DIFF_COLOR[stats.rank] || '#525252') : '#525252'
 
   return (
@@ -51,7 +55,7 @@ function TopBar() {
         }}>
 
           {/* Rank */}
-          {stats && (
+          {showStats && (
             <button
               onClick={() => navigate('/profile')}
               style={{
@@ -78,7 +82,7 @@ function TopBar() {
           )}
 
           {/* Coins */}
-          {stats && (
+          {showStats && (
             <button
               onClick={() => navigate('/store')}
               title="Grind Store"
@@ -113,7 +117,9 @@ function TopBar() {
               width: 58,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               background: 'none', border: 'none', cursor: 'pointer',
-              borderLeft: '1px solid var(--border)',
+              // Sem stats o avatar é o único filho: a divisória dobraria com a
+              // borda esquerda do próprio card.
+              borderLeft: showStats ? '1px solid var(--border)' : 'none',
               transition: 'background 130ms',
               padding: 0,
             }}
