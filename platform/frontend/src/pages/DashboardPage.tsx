@@ -679,10 +679,22 @@ export default function DashboardPage() {
   )
 
   return (
+    // Moldura fixa: o fundo animado se ancora nela e fica parado na tela.
+    // Só o wrapper de dentro rola — se o fundo estivesse dentro do scroller ele
+    // subiria com o conteúdo e deixaria a base da tela sem arte nenhuma.
     <div style={{ height: '100%', overflow: 'hidden', position: 'relative' }}>
       <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, height: 700, pointerEvents: 'none', zIndex: 0 }}>
         <BackgroundFooter height={700} config={bg('bg_dashboard')} />
       </div>
+      {/* O conteúdo passa de 900px no celular; sem isso o histórico ficava
+          inalcançável. O eixo X segue travado para o fundo não abrir barra. */}
+      <div style={{
+        height: '100%',
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        position: 'relative',
+        zIndex: 1,
+      }}>
       <div style={{ maxWidth: 1080, margin: '0 auto', padding: pagePadding('44px 56px 72px', isMobile), position: 'relative', zIndex: 1 }}>
 
         {/* Header */}
@@ -875,6 +887,7 @@ export default function DashboardPage() {
         </div>
 
 
+      </div>
       </div>
     </div>
   )
