@@ -182,6 +182,9 @@ body {
 
   /* Entradas viram corte seco: o estado final é o que importa. */
   .fade-up, .fade-in { animation-duration: 1ms; }
+
+  /* O painel de filtros abre e fecha na hora, sem a expansão. */
+  .filtros-collapse { transition-duration: 1ms; }
 }
 
 /* ─── Linhas de Configurações no mobile ─────────────────── */

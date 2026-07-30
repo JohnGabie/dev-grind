@@ -52,14 +52,19 @@ const PROGRESS_OPTIONS: { value: ProgressKey; label: string }[] = [
   { value: 'completed',     label: 'completados' },
 ]
 
+// Os dois Filter* aparecem dentro e fora do sheet e não recebem props de
+// layout; consultar a media query direto evita furar a assinatura deles.
+const isMobileVP = () => window.matchMedia(MOBILE_QUERY).matches
+
 // ── FilterSelect (single-select dropdown) ───────────────────────────────────
 function FilterSelect<T extends string>({
-  label, value, options, onChange,
+  label, value, options, onChange, hideLabel = false,
 }: {
   label: string
   value: T
   options: { value: T; label: string }[]
   onChange: (v: T) => void
+  hideLabel?: boolean
 }) {
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -76,16 +81,18 @@ function FilterSelect<T extends string>({
 
   return (
     <div ref={ref} style={{ position: 'relative' }}>
-      <p style={{
-        fontSize: 9, fontWeight: 700, letterSpacing: '0.12em',
-        textTransform: 'uppercase', color: 'var(--muted)', margin: '0 0 6px',
-      }}>
-        {label}
-      </p>
+      {!hideLabel && (
+        <p style={{
+          fontSize: 9, fontWeight: 700, letterSpacing: '0.12em',
+          textTransform: 'uppercase', color: 'var(--muted)', margin: '0 0 6px',
+        }}>
+          {label}
+        </p>
+      )}
       <button
         onClick={() => setOpen(o => !o)}
         style={{
-          width: '100%', height: 30, padding: '0 10px',
+          width: '100%', height: isMobileVP() ? 44 : 30, padding: '0 10px',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           background: 'var(--bg)', border: `1px solid ${open ? 'var(--border-lit)' : 'var(--border)'}`,
           borderRadius: 5, color: 'var(--text)', cursor: 'pointer',
@@ -203,7 +210,7 @@ function FilterMultiSelect({
       <button
         onClick={() => setOpen(o => !o)}
         style={{
-          width: '100%', height: 30, padding: '0 10px',
+          width: '100%', height: isMobileVP() ? 44 : 30, padding: '0 10px',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           background: 'var(--bg)', border: `1px solid ${open ? 'var(--border-lit)' : 'var(--border)'}`,
           borderRadius: 5, color: values.size > 0 ? 'var(--text)' : 'var(--muted)', cursor: 'pointer',
@@ -289,12 +296,12 @@ function FilterMultiSelect({
 }
 
 // ── HexBadge ─────────────────────────────────────────────────────────────────
-function HexBadge({ rank }: { rank: string }) {
+function HexBadge({ rank, size = 54 }: { rank: string; size?: number }) {
   const color = DIFF_COLOR[rank] || '#9b9b9b'
   const num = rank.replace('kyu', '')
   return (
-    <div style={{ width: 54, height: 54, flexShrink: 0, position: 'relative' }}>
-      <svg width="54" height="54" viewBox="0 0 54 54">
+    <div style={{ width: size, height: size, flexShrink: 0, position: 'relative' }}>
+      <svg width={size} height={size} viewBox="0 0 54 54">
         <polygon points="27,2 51,14 51,40 27,52 3,40 3,14"
           fill={`${color}14`} stroke={color} strokeWidth="1.5" />
       </svg>
@@ -321,7 +328,7 @@ function StatusDot({ status }: { status: string }) {
   )
 }
 
-function KataCard({ ex, query }: { ex: Exercise; query: string }) {
+function KataCard({ ex, query, isMobile }: { ex: Exercise; query: string; isMobile: boolean }) {
   const navigate = useNavigate()
   const [hovered, setHovered] = useState(false)
   const color = DIFF_COLOR[ex.difficulty] || '#9b9b9b'
@@ -332,7 +339,7 @@ function KataCard({ ex, query }: { ex: Exercise; query: string }) {
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
-        display: 'flex', alignItems: 'flex-start', gap: 16,
+        display: 'flex', alignItems: 'flex-start', gap: isMobile ? 12 : 16,
         width: '100%', textAlign: 'left', cursor: 'pointer',
         padding: '14px 16px',
         background: hovered ? 'var(--bg-hover)' : 'var(--bg-card)',
@@ -341,7 +348,7 @@ function KataCard({ ex, query }: { ex: Exercise; query: string }) {
         transition: 'background 120ms, border-color 120ms',
       }}
     >
-      <HexBadge rank={ex.difficulty} />
+      <HexBadge rank={ex.difficulty} size={isMobile ? 44 : 54} />
 
       <div style={{ flex: 1, minWidth: 0, paddingTop: 2 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 5 }}>
@@ -391,6 +398,9 @@ function KataCard({ ex, query }: { ex: Exercise; query: string }) {
         </div>
       </div>
 
+      {/* A seta só muda de cor no hover, e no toque hover não existe. O card
+          inteiro já é tocável, então no mobile ela é 13px + gap de decoração. */}
+      {!isMobile && (
       <div style={{ paddingTop: 18, flexShrink: 0 }}>
         <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
           stroke={hovered ? color : 'var(--border-lit)'}
@@ -400,6 +410,7 @@ function KataCard({ ex, query }: { ex: Exercise; query: string }) {
           <polyline points="12 5 19 12 12 19" />
         </svg>
       </div>
+      )}
     </button>
   )
 }
@@ -427,6 +438,8 @@ export default function KataListPage() {
   const [progress, setProgress] = useState<ProgressKey>('all')
   const [diffFilter, setDiffFilter] = useState<Set<string>>(new Set())
   const [tagFilter, setTagFilter] = useState<Set<string>>(new Set())
+  const [filtrosAbertos, setFiltrosAbertos] = useState(false)
+  const [overflowLivre, setOverflowLivre] = useState(false)
   const modeApplied = useRef(false)
 
   useEffect(() => {
@@ -511,143 +524,263 @@ export default function KataListPage() {
     </div>
   )
 
-  return (
-    <div style={{ height: '100%', display: 'flex', overflow: 'hidden' }}>
+  const filterCount = diffFilter.size + tagFilter.size + (progress !== 'all' ? 1 : 0)
 
-      {/* ── Filter sidebar ──────────────────────────────── */}
+  // Travar o overflow antes de virar o estado cobre os dois sentidos: abrindo,
+  // ele é liberado no transitionend; fechando, fica travado.
+  const toggleFiltros = () => {
+    setOverflowLivre(false)
+    setFiltrosAbertos(v => !v)
+  }
+
+  const buscaBox = (
+    <>
+{/* Search */}
+  <div style={{ position: 'relative' }}>
+    <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
+      stroke="var(--muted)" strokeWidth="2" strokeLinecap="round"
+      style={{ position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
+      <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
+    </svg>
+    <input
+      type="text" placeholder="buscar por nome, tag..."
+      value={search} onChange={e => setSearch(e.target.value)}
+      style={{
+        width: '100%', paddingLeft: isMobile ? 34 : 28, paddingRight: search ? 28 : 10,
+        height: isMobile ? 44 : 30,
+        fontSize: isMobile ? 16 : 12,
+        boxSizing: 'border-box',
+        background: 'var(--bg)', border: '1px solid var(--border)',
+        borderRadius: 5, color: 'var(--text)',
+        fontFamily: 'var(--f-mono)', outline: 'none',
+        transition: 'border-color 120ms',
+      }}
+      onFocus={e => e.currentTarget.style.borderColor = 'var(--border-lit)'}
+      onBlur={e => e.currentTarget.style.borderColor = 'var(--border)'}
+    />
+    {search && (
+      <button onClick={() => setSearch('')}
+        style={{
+          position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
+          background: 'none', border: 'none', cursor: 'pointer',
+          color: 'var(--muted)', fontSize: 14, lineHeight: 1, padding: 0,
+        }}>×</button>
+    )}
+  </div>
+    </>
+  )
+  const ordenar = (<>
+{/* Sort By */}
+  <FilterSelect
+    label="ordenar"
+    hideLabel={isMobile}
+    value={sort}
+    options={SORT_OPTIONS}
+    onChange={v => setSort(v as SortKey)}
+  />
+  </>)
+  const filtrosDoSheet = (<>
+{/* Progress */}
+  <FilterSelect
+    label="progresso"
+    value={progress}
+    options={PROGRESS_OPTIONS}
+    onChange={v => setProgress(v as ProgressKey)}
+  />
+{/* Difficulty */}
+  <FilterMultiSelect
+    label="dificuldade"
+    values={diffFilter}
+    options={diffOptions}
+    onChange={setDiffFilter}
+    placeholder="todas"
+  />
+{/* Tags */}
+  {allTags.length > 0 && (
+    <FilterMultiSelect
+      label="tags"
+      values={tagFilter}
+      options={tagOptions}
+      onChange={setTagFilter}
+      placeholder="todas"
+      searchable
+    />
+  )}
+  </>)
+
+  const cabecalho = (<>
+{(() => {
+  const mode = searchParams.get('mode')
+  const labels: Record<string, { label: string; color: string }> = {
+    rankup:   { label: 'Rank Up — desafios acima do seu nível', color: 'var(--cyan)' },
+    warmup:   { label: 'Warm-up — fáceis, não tentados',        color: 'var(--green)' },
+    practice: { label: 'Praticar — já completados',             color: '#a855f7' },
+  }
+  const m = mode ? labels[mode] : null
+  return m ? (
+    <div style={{
+      marginBottom: 16, padding: '8px 14px', borderRadius: 5,
+      background: m.color + '0f', border: `1px solid ${m.color}25`,
+      fontSize: 11, color: m.color, fontFamily: 'var(--f-mono)',
+      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+    }}>
+      <span>{m.label}</span>
+      <button onClick={resetAll} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', fontSize: 11, padding: 0, opacity: 0.7 }}>
+        limpar
+      </button>
+    </div>
+  ) : null
+})()}
+
+<div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 18 }}>
+  <h1 style={{ fontSize: 16, fontWeight: 800, margin: 0, letterSpacing: '-0.02em' }}>
+    kata library
+  </h1>
+  <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+    {hasFilters && (
+      <button onClick={resetAll}
+        style={{ fontSize: 10, color: 'var(--muted)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'var(--f-mono)' }}>
+        limpar filtros
+      </button>
+    )}
+    <span style={{ fontSize: 10, color: 'var(--muted)', fontFamily: 'var(--f-mono)' }}>
+      {filtered.length}{hasFilters ? ` / ${exercises.length}` : ''} katas
+    </span>
+  </div>
+</div>
+
+  </>)
+
+  const lista = (<>
+{filtered.length === 0 ? (
+  <div style={{ padding: '40px 0', textAlign: 'center' }}>
+    <p style={{ fontSize: 13, color: 'var(--muted)', margin: 0 }}>
+      {exercises.length === 0 ? 'nenhum kata disponível ainda.' : 'nenhum resultado.'}
+    </p>
+  </div>
+) : (
+  <div>
+    {filtered.map(ex => <KataCard key={ex.id} ex={ex} query={search} isMobile={isMobile} />)}
+  </div>
+)}
+  </>)
+
+  // ── Desktop: coluna de filtros fixa ao lado da lista ───────────────────────
+  if (!isMobile) return (
+    <div style={{ height: '100%', display: 'flex', overflow: 'hidden' }}>
       <div style={{
         width: 220, flexShrink: 0, height: '100%', overflowY: 'auto',
         borderRight: '1px solid var(--border)',
         padding: pagePadding('20px 16px 40px', isMobile, true),
         display: 'flex', flexDirection: 'column', gap: 18,
       }}>
-
-        {/* Search */}
-        <div style={{ position: 'relative' }}>
-          <svg width="11" height="11" viewBox="0 0 24 24" fill="none"
-            stroke="var(--muted)" strokeWidth="2" strokeLinecap="round"
-            style={{ position: 'absolute', left: 9, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
-            <circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" />
-          </svg>
-          <input
-            type="text" placeholder="buscar por nome, tag..."
-            value={search} onChange={e => setSearch(e.target.value)}
-            style={{
-              width: '100%', paddingLeft: 28, paddingRight: search ? 28 : 10,
-              height: 30, fontSize: 12, boxSizing: 'border-box',
-              background: 'var(--bg)', border: '1px solid var(--border)',
-              borderRadius: 5, color: 'var(--text)',
-              fontFamily: 'var(--f-mono)', outline: 'none',
-              transition: 'border-color 120ms',
-            }}
-            onFocus={e => e.currentTarget.style.borderColor = 'var(--border-lit)'}
-            onBlur={e => e.currentTarget.style.borderColor = 'var(--border)'}
-          />
-          {search && (
-            <button onClick={() => setSearch('')}
-              style={{
-                position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
-                background: 'none', border: 'none', cursor: 'pointer',
-                color: 'var(--muted)', fontSize: 14, lineHeight: 1, padding: 0,
-              }}>×</button>
-          )}
-        </div>
-
-        {/* Sort By */}
-        <FilterSelect
-          label="ordenar"
-          value={sort}
-          options={SORT_OPTIONS}
-          onChange={v => setSort(v as SortKey)}
-        />
-
-        {/* Progress */}
-        <FilterSelect
-          label="progresso"
-          value={progress}
-          options={PROGRESS_OPTIONS}
-          onChange={v => setProgress(v as ProgressKey)}
-        />
-
-        {/* Difficulty */}
-        <FilterMultiSelect
-          label="dificuldade"
-          values={diffFilter}
-          options={diffOptions}
-          onChange={setDiffFilter}
-          placeholder="todas"
-        />
-
-        {/* Tags */}
-        {allTags.length > 0 && (
-          <FilterMultiSelect
-            label="tags"
-            values={tagFilter}
-            options={tagOptions}
-            onChange={setTagFilter}
-            placeholder="todas"
-            searchable
-          />
-        )}
-
+        {buscaBox}
+        {ordenar}
+        {filtrosDoSheet}
       </div>
-
-      {/* ── Kata list ────────────────────────────────────── */}
       <div style={{ flex: 1, overflowY: 'auto', padding: pagePadding('24px 26px 60px', isMobile, true) }}>
+        {cabecalho}
+        {lista}
+      </div>
+    </div>
+  )
 
-        {(() => {
-          const mode = searchParams.get('mode')
-          const labels: Record<string, { label: string; color: string }> = {
-            rankup:   { label: 'Rank Up — desafios acima do seu nível', color: 'var(--cyan)' },
-            warmup:   { label: 'Warm-up — fáceis, não tentados',        color: 'var(--green)' },
-            practice: { label: 'Praticar — já completados',             color: '#a855f7' },
-          }
-          const m = mode ? labels[mode] : null
-          return m ? (
-            <div style={{
-              marginBottom: 16, padding: '8px 14px', borderRadius: 5,
-              background: m.color + '0f', border: `1px solid ${m.color}25`,
-              fontSize: 11, color: m.color, fontFamily: 'var(--f-mono)',
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            }}>
-              <span>{m.label}</span>
-              <button onClick={resetAll} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', fontSize: 11, padding: 0, opacity: 0.7 }}>
-                limpar
-              </button>
-            </div>
-          ) : null
-        })()}
+  // ── Mobile: uma coluna. A coluna de filtros custava 220px de 375 (59%) e
+  //    sobravam 155px para o card, o que colapsava o título para 0px. Aqui ela
+  //    vira um painel colapsável atrás de um botão de 44px, que empurra a lista
+  //    em vez de cobri-la. Ordenar fica fora: troca-se a ordem muito mais vezes
+  //    do que se restringe o conjunto, e enterrá-la custaria duas interações.
+  return (
+    <div style={{ height: '100%', overflowY: 'auto', overflowX: 'hidden' }}>
+      <div style={{ padding: pagePadding('24px 26px 60px', isMobile, true) }}>
 
-        <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 18 }}>
-          <h1 style={{ fontSize: 16, fontWeight: 800, margin: 0, letterSpacing: '-0.02em' }}>
-            kata library
-          </h1>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-            {hasFilters && (
-              <button onClick={resetAll}
-                style={{ fontSize: 10, color: 'var(--muted)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'var(--f-mono)' }}>
-                limpar filtros
-              </button>
+        {cabecalho}
+
+        <div style={{ marginBottom: 10 }}>{buscaBox}</div>
+
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button
+            onClick={toggleFiltros}
+            aria-expanded={filtrosAbertos}
+            style={{
+              flexShrink: 0, height: 44, padding: '0 14px',
+              display: 'flex', alignItems: 'center', gap: 7,
+              background: filtrosAbertos || filterCount ? 'var(--cyan-faint)' : 'var(--bg)',
+              border: `1px solid ${filtrosAbertos || filterCount ? 'var(--cyan-glow)' : 'var(--border)'}`,
+              borderRadius: 5, cursor: 'pointer',
+              color: filtrosAbertos || filterCount ? 'var(--cyan)' : 'var(--text)',
+              fontSize: 12, fontFamily: 'var(--f-mono)',
+              transition: 'background 130ms, border-color 130ms, color 130ms',
+            }}
+          >
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              strokeWidth="2" strokeLinecap="round">
+              <line x1="4" y1="6" x2="20" y2="6" /><line x1="7" y1="12" x2="17" y2="12" />
+              <line x1="10" y1="18" x2="14" y2="18" />
+            </svg>
+            filtros
+            {filterCount > 0 && (
+              <span style={{
+                minWidth: 17, height: 17, borderRadius: 9, padding: '0 5px',
+                background: 'var(--cyan)', color: 'var(--bg)',
+                fontSize: 10, fontWeight: 800,
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                {filterCount}
+              </span>
             )}
-            <span style={{ fontSize: 10, color: 'var(--muted)', fontFamily: 'var(--f-mono)' }}>
-              {filtered.length}{hasFilters ? ` / ${exercises.length}` : ''} katas
-            </span>
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              strokeWidth="2.5" strokeLinecap="round"
+              style={{
+                transition: 'transform 260ms cubic-bezier(0.4, 0, 0.2, 1)',
+                transform: filtrosAbertos ? 'rotate(180deg)' : 'none',
+              }}>
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </button>
+          <div style={{ flex: 1, minWidth: 0 }}>{ordenar}</div>
+        </div>
+
+        {/* Colapsável. grid-template-rows 0fr→1fr anima para a altura real do
+            conteúdo, sem precisar de um max-height mágico. */}
+        <div
+          className="filtros-collapse"
+          onTransitionEnd={() => setOverflowLivre(filtrosAbertos)}
+          style={{
+            display: 'grid',
+            gridTemplateRows: filtrosAbertos ? '1fr' : '0fr',
+            transition: 'grid-template-rows 260ms cubic-bezier(0.4, 0, 0.2, 1)',
+          }}
+        >
+          {/* O overflow só é liberado no fim da abertura: os dropdowns de
+              dificuldade e tags são absolute e ficariam cortados enquanto o
+              painel cresce, ou apareceriam inteiros de saída se ficasse
+              visible desde o começo. */}
+          <div style={{ minHeight: 0, overflow: overflowLivre ? 'visible' : 'hidden' }}>
+            <div style={{
+              display: 'flex', flexDirection: 'column', gap: 16,
+              padding: '16px 0 4px',
+            }}>
+              {filtrosDoSheet}
+              {filterCount > 0 && (
+                <button
+                  onClick={resetAll}
+                  style={{
+                    alignSelf: 'flex-start', minHeight: 44,
+                    background: 'none', border: 'none', cursor: 'pointer',
+                    color: 'var(--muted)', fontSize: 11, fontFamily: 'var(--f-mono)',
+                    padding: 0,
+                  }}
+                >
+                  limpar tudo
+                </button>
+              )}
+            </div>
           </div>
         </div>
 
-        {filtered.length === 0 ? (
-          <div style={{ padding: '40px 0', textAlign: 'center' }}>
-            <p style={{ fontSize: 13, color: 'var(--muted)', margin: 0 }}>
-              {exercises.length === 0 ? 'nenhum kata disponível ainda.' : 'nenhum resultado.'}
-            </p>
-          </div>
-        ) : (
-          <div>
-            {filtered.map(ex => <KataCard key={ex.id} ex={ex} query={search} />)}
-          </div>
-        )}
+        <div style={{ marginTop: 18 }}>{lista}</div>
       </div>
-
     </div>
   )
 }
