@@ -162,11 +162,17 @@ function ChatBubble() {
   const slug = location.pathname.startsWith('/exercise/')
     ? location.pathname.split('/exercise/')[1]
     : null
+
+  // A tela de resolver tem as ações no rodapé e chat próprio na barra de cima;
+  // a bolha caía em cima do botão "enviar".
+  const naTelaDeResolver = location.pathname.endsWith('/solve')
   const context = slug ? `kata:${slug}` : location.pathname === '/' ? 'dashboard' : 'general'
 
   // No mobile a bolha sobe para não cobrir a tab bar.
   const bubbleBottom = isMobile ? `calc(24px + ${MOBILE_NAV_SPACE})` : 24
   const panelBottom = isMobile ? `calc(84px + ${MOBILE_NAV_SPACE})` : 84
+
+  if (naTelaDeResolver) return null
 
   return (
     <>
@@ -217,13 +223,16 @@ function ChatBubble() {
 // chat. Neles a moldura tem de parar acima da dock, senão ela cobre os botões.
 // Todo o resto rola, vai até a borda de baixo — e reserva o espaço da dock no
 // próprio conteúdo, via pagePadding — para o fundo passar atrás dela.
-const FIXED_LAYOUT_PATHS = ['/exercise/', '/chats']
+const FIXED_LAYOUT_PATHS = ['/chats']
 
 export default function AppLayout() {
   const location = useLocation()
   const hideTopBar = location.pathname === '/profile'
   const isMobile = useMediaQuery(MOBILE_QUERY)
+  // A tela de resolver é a única de /exercise com altura fixa; a página
+  // "sobre" rola como qualquer outra.
   const isFixedLayout = FIXED_LAYOUT_PATHS.some(p => location.pathname.startsWith(p))
+    || location.pathname.endsWith('/solve')
 
   return (
     <CosmeticsProvider>

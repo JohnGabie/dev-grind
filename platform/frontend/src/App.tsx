@@ -5,6 +5,7 @@ import AppLayout from './components/layout/AppLayout'
 import LoginPage from './pages/LoginPage'
 import DashboardPage from './pages/DashboardPage'
 import ExercisePage from './pages/ExercisePage'
+import ExerciseAboutPage from './pages/ExerciseAboutPage'
 import KataListPage from './pages/KataListPage'
 import ProfilePage from './pages/ProfilePage'
 import CoursesPage from './pages/CoursesPage'
@@ -25,7 +26,8 @@ export default function App() {
           <Route path="/" element={<PrivateRoute><AppLayout /></PrivateRoute>}>
             <Route index element={<DashboardPage />} />
             <Route path="exercise" element={<KataListPage />} />
-            <Route path="exercise/:slug" element={<ExercisePage />} />
+            <Route path="exercise/:slug" element={<ExerciseAboutPage />} />
+            <Route path="exercise/:slug/solve" element={<ExercisePage />} />
             <Route path="profile" element={<ProfilePage />} />
             <Route path="courses" element={<CoursesPage />} />
             <Route path="chats" element={<ChatPage />} />
