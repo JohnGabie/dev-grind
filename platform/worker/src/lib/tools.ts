@@ -674,14 +674,14 @@ export const TOOLS: ToolDef[] = [
   },
   {
     name: 'create_course',
-    description: 'Create a personalized course for the user. Courses can be created incrementally — set is_complete=false to leave it open for more modules later (use append_course_modules). The module format is flexible; use whatever structure best serves the content.',
+    description: 'Create a lesson-path course. Each module is a section with lessons. Each lesson has steps. A step type is text, fill, browser, or terminal. text: {type, body}. fill: {type, prompt, file?, parts: [{text} or {blank, size: s|m|l}], choices?}. Fixed tokens like let, = and ; are text parts. Each blank is an input in the line, and size sets how wide the empty box is. browser: {type, prompt, starter}. terminal: {type, prompt, expect}. A lesson is required unless it sets optional to boolean true. optional is a property of the lesson, not a step type. Absence means required. Use append_course_modules to add sections later.',
     inputSchema: {
       type: 'object',
       properties: {
         title: { type: 'string' },
         book_slug: { type: 'string', description: 'Book the course is based on (optional)' },
         description: { type: 'string' },
-        modules: { type: 'array', description: 'Initial list of course modules. Format is flexible.', items: { type: 'object' } },
+        modules: { type: 'array', description: 'Sections. Each: {title, lessons: [{title, optional?: true, steps: [text|fill|browser|terminal]}]}', items: { type: 'object' } },
         is_complete: { type: 'boolean', description: 'False = course is still being built (default). True = all modules are ready.' },
       },
       required: ['title', 'description', 'modules'],
@@ -690,12 +690,12 @@ export const TOOLS: ToolDef[] = [
   },
   {
     name: 'append_course_modules',
-    description: 'Add more modules to an existing in-progress course. Use the course id returned by create_course.',
+    description: 'Add more modules to an existing in-progress course. Use the course id returned by create_course. Lessons may set optional: true, same as create_course. Absence means required.',
     inputSchema: {
       type: 'object',
       properties: {
         course_id: { type: 'string', description: 'Course id from create_course' },
-        modules: { type: 'array', description: 'New modules to append. Same flexible format as create_course.', items: { type: 'object' } },
+        modules: { type: 'array', description: 'New modules to append. Same format as create_course, including optional: true on a lesson.', items: { type: 'object' } },
         is_complete: { type: 'boolean', description: 'Set true to mark the course as finished after this append.' },
       },
       required: ['course_id', 'modules', 'is_complete'],

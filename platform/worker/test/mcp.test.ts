@@ -156,6 +156,51 @@ describe('mcp', () => {
     expect(content.error).toMatch(/not found or not yours/)
   })
 
+  it('stores optional true only when the lesson sets boolean true', async () => {
+    const created = await callTool(token, 'create_course', {
+      title: 'Curso teste',
+      description: 'desc',
+      is_complete: false,
+      modules: [{
+        title: 'Seção',
+        lessons: [
+          { title: 'Obrigatória', steps: [{ type: 'text', body: 'a' }] },
+          { title: 'Um extra', optional: true, steps: [{ type: 'text', body: 'b' }] },
+        ],
+      }],
+    })
+
+    const res = await authed('/courses')
+    expect(res.status).toBe(200)
+    const rows = await res.json<Array<{ id: string; modules: Array<{ lessons: Array<Record<string, unknown>> }> }>>()
+    const course = rows.find(row => row.id === created.id)
+    expect(course?.modules[0].lessons[0].optional).toBeUndefined()
+    expect(course?.modules[0].lessons[1].optional).toBe(true)
+
+    await callTool(token, 'append_course_modules', {
+      course_id: created.id,
+      is_complete: false,
+      modules: [{ title: 'Mais', lessons: [{ title: 'Extra 2', optional: true, steps: [{ type: 'text', body: 'c' }] }] }],
+    })
+    const again = await authed('/courses')
+    const rows2 = await again.json<Array<{ id: string; modules: Array<{ lessons: Array<Record<string, unknown>> }> }>>()
+    const updated = rows2.find(row => row.id === created.id)
+    expect(updated?.modules[1].lessons[0].optional).toBe(true)
+
+    const list = await mcp(token, 'tools/list')
+    const tools = list.body.result.tools as Array<{
+      name: string
+      description: string
+      inputSchema: { properties: { modules?: { description: string } } }
+    }>
+    const create = tools.find(tool => tool.name === 'create_course')
+    const append = tools.find(tool => tool.name === 'append_course_modules')
+    expect(create?.description).toContain('A lesson is required unless it sets optional to boolean true. optional is a property of the lesson, not a step type. Absence means required.')
+    expect(append?.description).toContain('Lessons may set optional: true, same as create_course. Absence means required.')
+    expect(create?.inputSchema.properties.modules?.description).toContain('optional?: true')
+    expect(append?.inputSchema.properties.modules?.description).toContain('optional: true')
+  })
+
   it('keeps the tool registry and the claude-md instructions in sync', async () => {
     const res = await authed('/auth/tokens/claude-md')
     const text = await res.text()
