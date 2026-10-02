@@ -1,6 +1,7 @@
 import { useEffect, useState, type CSSProperties } from 'react'
 import api from '../api/client'
 import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
+import SkillPath from '../components/SkillPath'
 import { asCourse, type Course, type FillPart, type Lesson, type Step } from '../lib/courseModel'
 import { pagePadding } from '../lib/layout'
 
@@ -400,35 +401,17 @@ export default function CoursesPage() {
         ))}
 
         {course && !lesson && (
-          <div style={{ maxWidth: 640 }}>
+          <div>
             <button onClick={() => setOpenId(null)} style={{ background: 'none', border: 'none', color: 'var(--cyan)', cursor: 'pointer', padding: 0, marginBottom: 18 }}>
               ← cursos
             </button>
             <h1 style={{ fontSize: 32, margin: '0 0 22px' }}>{course.title}</h1>
-            {course.sections.map(section => (
-              <div key={section.title} style={{ marginBottom: 22 }}>
-                <p style={{ fontSize: 12, letterSpacing: '0.06em', textTransform: 'uppercase', color: 'var(--faint)', margin: '0 0 8px' }}>{section.title}</p>
-                {section.lessons.map((item, li) => {
-                  const key = `${item.sectionIndex}-${item.lessonIndex}`
-                  const done = course.completed.includes(key)
-                  return (
-                    <button
-                      key={key}
-                      onClick={() => setLessonKey(key)}
-                      className="card"
-                      style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%', textAlign: 'left', padding: '14px 16px', marginBottom: 8, cursor: 'pointer', background: 'transparent', color: 'var(--text)', borderColor: done ? 'var(--green)' : undefined }}
-                    >
-                      <span>{String(li + 1).padStart(2, '0')}  {item.title}</span>
-                      {done && (
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-label="feita">
-                          <polyline points="20 6 9 17 4 12" />
-                        </svg>
-                      )}
-                    </button>
-                  )
-                })}
-              </div>
-            ))}
+            <SkillPath
+              courseId={course.id}
+              sections={course.sections}
+              completed={course.completed}
+              onOpen={setLessonKey}
+            />
           </div>
         )}
 
