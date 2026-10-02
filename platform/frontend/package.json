@@ -8,7 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "node --experimental-strip-types --test src/lib/skillPath.test.ts"
+    "test": "node --experimental-strip-types --test src/lib/skillPath.test.ts src/lib/courseModel.test.ts"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
