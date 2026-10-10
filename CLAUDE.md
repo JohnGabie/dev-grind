@@ -190,10 +190,11 @@ Diga o que falta e por quê, em vez de inventar solução que aumenta acoplament
 O Linear guarda só o que fica para depois. O que estamos fazendo agora não vira issue: vive na
 conversa, na spec e no commit. Skill global `linear` (time `DEV`, projeto `DevGrind`). Nunca escreva
 a API key em arquivo, comando ou conversa. Se `py -3` falhar, use o Python 3.14 do win-sandbox-lab.
-- **Crie issue só quando**: (a) achou um bug e não dá para corrigir agora, por falta de contexto ou
-  por estar em outra branch; (b) surgiu trabalho que fica para depois da tarefa atual (ideia,
-  melhoria, passo seguinte). Não crie para a tarefa em curso, para o que já foi feito, nem para
-  tudo que passa pela cabeça. Na dúvida, não crie e pergunte. Busque (`issues --query`) antes.
+- **Crie issue só quando**: (a) achou um bug ou problema que precisa ser feito separado: corrigir
+  agora misturaria outro assunto na tarefa e no commit atuais, poluiria o contexto ou pede outra
+  branch; (b) surgiu trabalho que fica para depois da tarefa atual (ideia, melhoria, passo seguinte).
+  Não crie para a tarefa em curso, para o que já foi feito, nem para tudo que passa pela cabeça.
+  Na dúvida, não crie e pergunte. Busque (`issues --query`) antes.
 - Issue = título com resultado concreto + um label de Area + um de tipo (`Bug`, `Feature`,
   `Improvement`) + prioridade. Na descrição: o que viu, por que ficou para depois e, se houver,
   `Spec:` com o caminho em `docs/superpowers/` e `Branch:`. Spec e plano ficam no repo.
