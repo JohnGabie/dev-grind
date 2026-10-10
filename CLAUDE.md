@@ -176,6 +176,17 @@ Autorizado: commite sem perguntar quando uma unidade de trabalho estiver pronta.
 ### Quando bloqueado
 Diga o que falta e por quê, em vez de inventar solução que aumenta acoplamento.
 
+### Backlog no Linear
+Bugs, features futuras e melhorias vivem no Linear (time `DEV`, projeto `DevGrind`), pela skill
+global `linear`. Nunca escreva a API key em arquivo, comando ou conversa. Se `py -3` falhar, use
+o Python 3.14 do win-sandbox-lab para rodar o script.
+- Crie issue quando achar bug que não vai corrigir agora, adiar uma ideia ou notar uma melhoria.
+  Falha fora do escopo vira issue, não fica só na conversa. Busque (`issues --query`) antes de criar.
+- Issue = título com resultado concreto + um label de Area + um de tipo (`Bug`, `Feature`,
+  `Improvement`) + prioridade. Na descrição: `Tipo:`, `Spec:` com o caminho em `docs/superpowers/`
+  e `Branch:` quando houver. Spec e plano ficam no repo; a issue aponta pelo caminho e pelo label `spec:<tema>`.
+- Quadro: Backlog = não agora; Todo = só a próxima, uma; In Progress ao começar; Done ao fazer merge.
+
 ---
 
 ## PRINCÍPIOS DE CÓDIGO
@@ -197,7 +208,6 @@ Diga o que falta e por quê, em vez de inventar solução que aumenta acoplament
 - ❌ Copiar exercícios do CodeWars — CodeWars API é só para contexto de perfil
 - ❌ Modificar `study-backend/` exceto `student/profile.md` via agente
 - ❌ Usar Syne, Outfit ou qualquer fonte que não seja JetBrains Mono
-- ❌ Dizer que terminou sem rodar typecheck e testes
 - ❌ Começar a implementar na mesma resposta em que escreveu a spec
 - ❌ Repassar "testes passaram" de um subagente sem ter rodado de novo
 - ❌ Confiar na conversa para reconstruir contexto — sempre leia os arquivos
