@@ -645,10 +645,18 @@ export default function DashboardPage() {
   const [insightIdx, setInsightIdx] = useState(0)
   const [recentItems, setRecentItems] = useState<HistoryItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [rank, setRank] = useState<string | null>(null)
+  const navigate = useNavigate()
 
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'bom dia' : hour < 18 ? 'boa tarde' : 'boa noite'
   const firstName = user?.name?.split(' ')[0] ?? ''
+
+  // No mobile não há barra de topo: o kyu entra na faixa de stats.
+  useEffect(() => {
+    if (!isMobile) return
+    api.get('/users/me/stats').then(r => setRank(r.data.rank)).catch(() => {})
+  }, [isMobile])
 
   useEffect(() => {
     Promise.all([
@@ -717,6 +725,22 @@ export default function DashboardPage() {
             display: 'flex', alignItems: 'center', gap: 8,
             marginBottom: 32, flexWrap: 'wrap',
           }}>
+            {isMobile && rank && (() => {
+              const c = DIFF_COLOR[rank] || '#525252'
+              return (
+                <button
+                  onClick={() => navigate('/profile')}
+                  aria-label={`Rank ${rank}, abrir perfil`}
+                  style={{
+                    height: 28, padding: '0 12px', cursor: 'pointer',
+                    fontSize: 12, fontWeight: 800, fontFamily: 'var(--f-mono)', letterSpacing: '0.06em',
+                    color: c, background: `${c}22`, border: `1px solid ${c}60`, borderRadius: 20,
+                  }}
+                >
+                  {rank}
+                </button>
+              )
+            })()}
             {[
               { icon: '🔥', val: `${summary.current_streak}d`, label: 'streak', accent: summary.current_streak > 0 ? 'var(--cyan)' : undefined },
               { icon: '✓',  val: summary.completed_last_7_days, label: 'essa semana', accent: undefined },
