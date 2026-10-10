@@ -253,8 +253,13 @@ export default function ExercisePage() {
           </span>
         </div>
 
-        <span style={{ fontWeight: 600, fontSize: 13, color: 'var(--text)', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-          {exercise.title}
+        <span style={{ fontWeight: 600, fontSize: 13, color: 'var(--text)', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{exercise.title}</span>
+          {(exercise.user_status === 'completed' || allPassed) && (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-label="feito" style={{ flexShrink: 0 }}>
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          )}
         </span>
 
         {pyLoading && (
@@ -446,8 +451,14 @@ export default function ExercisePage() {
         <span style={{
           fontWeight: 600, fontSize: 13, color: 'var(--text)', flex: 1, minWidth: 0,
           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+          display: 'flex', alignItems: 'center', gap: 8,
         }}>
-          {exercise.title}
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{exercise.title}</span>
+          {(exercise.user_status === 'completed' || allPassed) && (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-label="feito" style={{ flexShrink: 0 }}>
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          )}
         </span>
 
         {/* O enunciado tem página própria, mas relê-lo no meio do código não

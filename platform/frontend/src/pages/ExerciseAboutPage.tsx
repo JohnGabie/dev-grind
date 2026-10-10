@@ -134,8 +134,14 @@ export default function ExerciseAboutPage() {
           <h1 style={{
             fontSize: isMobile ? 19 : 22, fontWeight: 800, margin: '2px 0 8px',
             letterSpacing: '-0.02em', lineHeight: 1.25, color: 'var(--text)',
+            display: 'flex', alignItems: 'center', gap: 8,
           }}>
-            {exercise.title}
+            <span>{exercise.title}</span>
+            {exercise.user_status === 'completed' && (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-label="feito">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            )}
           </h1>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
             <span className="f-mono" style={{ fontSize: 11, color: 'var(--muted)' }}>

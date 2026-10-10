@@ -95,7 +95,8 @@ router.get('/:slug', requireAuth, async (c) => {
     .where(eq(testCases.exercise_id, ex.id))
     .orderBy(asc(testCases.order))
 
-  return c.json({ ...publicExercise(ex), test_cases: tcs })
+  const counts = await countsByExercise(db, c.get('userId'))
+  return c.json({ ...withStatus(ex, counts.get(ex.id)), test_cases: tcs })
 })
 
 export default router

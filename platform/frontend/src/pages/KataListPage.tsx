@@ -332,6 +332,7 @@ function KataCard({ ex, query, isMobile }: { ex: Exercise; query: string; isMobi
   const navigate = useNavigate()
   const [hovered, setHovered] = useState(false)
   const color = DIFF_COLOR[ex.difficulty] || '#9b9b9b'
+  const done = ex.user_status === 'completed'
 
   return (
     <button
@@ -343,7 +344,7 @@ function KataCard({ ex, query, isMobile }: { ex: Exercise; query: string; isMobi
         width: '100%', textAlign: 'left', cursor: 'pointer',
         padding: '14px 16px',
         background: hovered ? 'var(--bg-hover)' : 'var(--bg-card)',
-        border: `1px solid ${hovered ? 'var(--border-lit)' : 'var(--border)'}`,
+        border: `1px solid ${done ? 'var(--green)' : hovered ? 'var(--border-lit)' : 'var(--border)'}`,
         borderRadius: 6, marginBottom: 5,
         transition: 'background 120ms, border-color 120ms',
       }}
@@ -400,17 +401,21 @@ function KataCard({ ex, query, isMobile }: { ex: Exercise; query: string; isMobi
 
       {/* A seta só muda de cor no hover, e no toque hover não existe. O card
           inteiro já é tocável, então no mobile ela é 13px + gap de decoração. */}
-      {!isMobile && (
       <div style={{ paddingTop: 18, flexShrink: 0 }}>
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
-          stroke={hovered ? color : 'var(--border-lit)'}
-          strokeWidth="2" strokeLinecap="round"
-          style={{ transition: 'stroke 120ms', display: 'block' }}>
-          <line x1="5" y1="12" x2="19" y2="12" />
-          <polyline points="12 5 19 12 12 19" />
-        </svg>
+        {done ? (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-label="feito">
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        ) : !isMobile ? (
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none"
+            stroke={hovered ? color : 'var(--border-lit)'}
+            strokeWidth="2" strokeLinecap="round"
+            style={{ transition: 'stroke 120ms', display: 'block' }}>
+            <line x1="5" y1="12" x2="19" y2="12" />
+            <polyline points="12 5 19 12 12 19" />
+          </svg>
+        ) : null}
       </div>
-      )}
     </button>
   )
 }
