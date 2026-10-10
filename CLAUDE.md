@@ -164,14 +164,24 @@ raiz e só então corrija. Explique a causa em uma frase para o João.
 5. Se a decisão muda arquitetura: registre na spec da feature.
 
 ### Autocommit
-Autorizado: commite sem perguntar quando uma unidade de trabalho estiver pronta. Nunca faça push.
+Autorizado: commite sem perguntar quando uma unidade de trabalho estiver pronta. Push só para `backup/*` (seção abaixo), nunca para a branch de trabalho, `dev` ou `main`.
 1. **Pronta** = faz uma coisa só, typecheck e testes do que tocou verdes. Quebrado ou pela metade não se commita.
 2. **Atômico**: um motivo por commit. Misturou feature, fix e docs, separe.
 3. **Só em branch de trabalho** (`feat/…`, `fix/…`). Nunca em `main`; em `dev` só se o usuário pedir.
 4. **Stage explícito** por caminho. Sem `git add -A`/`.`. Fora do commit: segredos, `.env`, `.dev.vars`, `node_modules`, artefatos de build, screenshots e arquivos que o usuário editou à mão sem relação com a tarefa.
 5. **Mensagem**: imperativo, português, resume o porquê em ≤ 72 caracteres, no estilo do `git log`. Corpo só se o porquê não for óbvio.
-6. **Histórico é do usuário**: sem `--amend`, `--no-verify`, `reset --hard`, `push --force`. Hook falhou, corrija a causa e faça um commit novo.
+6. **Histórico é do usuário**: sem `--amend`, `--no-verify`, `reset --hard`, `push --force`. Hook falhou, corrija a causa e faça um commit novo. Única exceção: `--force-with-lease` em `backup/*`.
 7. Diga o hash e a mensagem ao final.
+
+### Backup automático (autopush)
+Cópia descartável da branch de trabalho `<b>` em `backup/<b>`, local e em `origin`. Só existe para não perder trabalho.
+1. **Quando**: antes e depois de cada compactação de contexto; e se o último backup de `<b>` tem mais de 24h ou não existe, conferido ao iniciar a sessão e a cada commit.
+2. **Como** (não mexe em árvore nem índice; arquivos untracked e ignorados ficam de fora):
+   `s=$(git stash create); git branch -f backup/<b> ${s:-HEAD}; git push --force-with-lease origin backup/<b>`
+   Inclui os commits e o trabalho ainda não commitado. Não substitui o commit: o que está pronto continua indo pela regra acima.
+3. **Só `backup/*`**: nunca push comum nem force em outra branch. Não faça backup de `main`, `dev` nem de uma `backup/*`.
+4. **Limpeza**: quando `<b>` entrar em `dev` (`git merge-base --is-ancestor <b> dev`) ou o usuário der a branch por encerrada, apague só `backup/<b>`, local e remoto: `git branch -D backup/<b>` e `git push origin --delete backup/<b>`. Use o nome completo, conferindo que começa com `backup/` e que não é a branch atual. Nunca com glob nem variável vazia. A branch de trabalho só se apaga se o usuário pedir.
+5. Diga em uma linha que fez backup (branch e hora). Falha de rede ou permissão: avise e siga, sem insistir.
 
 ### Quando bloqueado
 Diga o que falta e por quê, em vez de inventar solução que aumenta acoplamento.
