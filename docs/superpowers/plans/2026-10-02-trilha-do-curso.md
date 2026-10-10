@@ -10,6 +10,8 @@
 
 **Spec:** `docs/superpowers/specs/2026-09-29-trilha-do-curso.md`
 
+**Status (2026-10-10):** Tasks 1-5 implemented and committed. Manual pass done in the browser: HTML lanes `right,right,center,right,left` and Python lanes `left,center,left,center` match; reload keeps nodes in place. Cases 5 and 6 (optional lesson, parser hole) are covered by node tests only. Geometry was later scaled 1.5x in `feat/course-lesson-progress` (`NODE 84`, `V_STEP 192`, `BRANCH 144`, `LANE_X 72/210/348`); the lane walk and salt are unchanged, so no course map reordered. The frozen numbers in "Global Constraints" below are the original ones.
+
 ## Global Constraints
 
 - The path is `mainLanes(courseId, n)` plus `courseBranchSide`. No `Math.random()`, no `crypto.getRandomValues`, no `Date`, no D1 write, no `localStorage`.
@@ -84,7 +86,7 @@ Label stack locked by this plan, because the spec gives the 18px gap and not the
 
 The page does not import this module yet.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `platform/frontend/src/lib/skillPath.test.ts`:
 
@@ -152,7 +154,7 @@ describe('frozen source', () => {
 })
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run from `platform/frontend`:
 
@@ -162,7 +164,7 @@ node --experimental-strip-types --test src/lib/skillPath.test.ts
 
 Expected: FAIL. Node cannot resolve `./skillPath.ts` (`ERR_MODULE_NOT_FOUND`).
 
-- [ ] **Step 3: Write the frozen module**
+- [x] **Step 3: Write the frozen module**
 
 Create `platform/frontend/src/lib/skillPath.ts`. Do not reformat the arithmetic. `Math.imul` and `>>> 0` are part of the result.
 
@@ -252,7 +254,7 @@ export function branchPlacement(
 }
 ```
 
-- [ ] **Step 4: Point the frontend test script at this file and keep it out of `tsc -b`**
+- [x] **Step 4: Point the frontend test script at this file and keep it out of `tsc -b`**
 
 In `platform/frontend/package.json`, add this script next to the others:
 
@@ -266,7 +268,7 @@ In `platform/frontend/tsconfig.app.json`, add this sibling of `"include"`:
 "exclude": ["src/**/*.test.ts"]
 ```
 
-- [ ] **Step 5: Run the test and the typecheck**
+- [x] **Step 5: Run the test and the typecheck**
 
 From `platform/frontend`:
 
@@ -277,7 +279,7 @@ npx tsc -b
 
 Expected: the node test passes (HTML seed `906121739`, Python seed `2245293992`, both lane lists, both sides, both connector strings). `tsc -b` exits 0. The page still does not import the module.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add platform/frontend/src/lib/skillPath.ts platform/frontend/src/lib/skillPath.test.ts platform/frontend/package.json platform/frontend/tsconfig.app.json
@@ -308,7 +310,7 @@ git commit -m "Congelar mainLanes e a geometria da trilha"
 
 `asCourse` still returns `null` when no lesson has a recognized step. A section with no drawn lesson is omitted and does not renumber later sections. `completed_lessons` is still copied onto `course.completed`. `is_complete` is still not copied.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Create `platform/frontend/src/lib/courseModel.test.ts`:
 
@@ -393,7 +395,7 @@ describe('asCourse', () => {
 })
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 From `platform/frontend`:
 
@@ -403,7 +405,7 @@ node --experimental-strip-types --test src/lib/courseModel.test.ts
 
 Expected: FAIL with `ERR_MODULE_NOT_FOUND` for `./courseModel.ts`.
 
-- [ ] **Step 3: Move the parser and store the raw index**
+- [x] **Step 3: Move the parser and store the raw index**
 
 Create `platform/frontend/src/lib/courseModel.ts` with the types and `asStep` below. Leave `flat`, `matches`, `chipStyle`, `BLANK_CH`, `blankAnswers`, `StepView`, and `LessonPlayer` in the page. `asStep` is the function that is in `CoursesPage.tsx` today, moved unchanged.
 
@@ -545,7 +547,7 @@ const key = `${item.sectionIndex}-${item.lessonIndex}`
 
 Leave `String(li + 1).padStart(2, '0')` until Task 4 deletes that list.
 
-- [ ] **Step 4: Teach `npm test` to run both files**
+- [x] **Step 4: Teach `npm test` to run both files**
 
 In `platform/frontend/package.json`, set:
 
@@ -553,7 +555,7 @@ In `platform/frontend/package.json`, set:
 "test": "node --experimental-strip-types --test src/lib/skillPath.test.ts src/lib/courseModel.test.ts"
 ```
 
-- [ ] **Step 5: Run the tests and the typecheck**
+- [x] **Step 5: Run the tests and the typecheck**
 
 From `platform/frontend`:
 
@@ -564,7 +566,7 @@ npx tsc -b
 
 Expected: both files pass. The hole course yields keys `1-1` and `1-2`. Only the lesson with `optional: true` is optional. `tsc -b` exits 0. HTML and Python are not modified.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add platform/frontend/src/lib/courseModel.ts platform/frontend/src/lib/courseModel.test.ts platform/frontend/src/pages/CoursesPage.tsx platform/frontend/package.json
@@ -594,7 +596,7 @@ git commit -m "Guardar o índice cru da lição no parser do curso"
 
 `y` on a section title is the top of the 16px line. `x` is the center. `placeSkillPath` does not read `is_complete`.
 
-- [ ] **Step 1: Append the failing placement tests**
+- [x] **Step 1: Append the failing placement tests**
 
 Append this to `platform/frontend/src/lib/skillPath.test.ts`. Add `placeSkillPath` and `type PathLesson` to the import from `./skillPath.ts`.
 
@@ -781,7 +783,7 @@ describe('placeSkillPath', () => {
 })
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 From `platform/frontend`:
 
@@ -791,7 +793,7 @@ npm test
 
 Expected: FAIL. `placeSkillPath` is not exported (`SyntaxError` or a missing-export error from the test file). The Task 1 assertions still pass up to that import error. If the import fails the whole file, that is the expected red run.
 
-- [ ] **Step 3: Implement placement without editing the frozen walk**
+- [x] **Step 3: Implement placement without editing the frozen walk**
 
 Append the following to `platform/frontend/src/lib/skillPath.ts`. Do not change `fnv1a`, `mix`, `mainLanes`, `courseBranchSide`, `mainNodeY`, `connector`, `branchPlacement`, or the constants above.
 
@@ -1015,7 +1017,7 @@ export function placeSkillPath(courseId: string, lessons: readonly PathLesson[],
 
 There is no stroke on an all-optional course. `mainLanes` returns `[]`, and there is no parent node to connect to. Positions still use `branchPlacement` around `LANE_X.center`.
 
-- [ ] **Step 4: Run the tests and the typecheck**
+- [x] **Step 4: Run the tests and the typecheck**
 
 From `platform/frontend`:
 
@@ -1026,7 +1028,7 @@ npx tsc -b
 
 Expected: PASS, including the Task 1 lock (HTML `right,right,center,right,left`, Python `left,center,left,center`). `tsc -b` exits 0. `noUnusedLocals` must stay clean.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add platform/frontend/src/lib/skillPath.ts platform/frontend/src/lib/skillPath.test.ts
@@ -1066,7 +1068,7 @@ If it is not, replace it with that. Do not use `si` or `li` from the filtered ar
 
 The component calls `onOpen` with the raw key. It does not call `mainLanes`. It does not fetch. Disabled states are `locked` and `optional-locked`.
 
-- [ ] **Step 1: Write the failing source contract**
+- [x] **Step 1: Write the failing source contract**
 
 Create `platform/frontend/src/components/SkillPath.contract.test.ts`:
 
@@ -1115,7 +1117,7 @@ Add the file to the `test` script in `platform/frontend/package.json`:
 "test": "node --experimental-strip-types --test src/lib/skillPath.test.ts src/lib/courseModel.test.ts src/components/SkillPath.contract.test.ts"
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 From `platform/frontend`:
 
@@ -1125,7 +1127,7 @@ npm test
 
 Expected: FAIL while reading `SkillPath.tsx` (`ENOENT`). The lib tests are unchanged and would pass on their own.
 
-- [ ] **Step 3: Write the painter**
+- [x] **Step 3: Write the painter**
 
 Create `platform/frontend/src/components/SkillPath.tsx`:
 
@@ -1330,7 +1332,7 @@ Replace the whole `course && !lesson` block (the `div` with `maxWidth: 640`, the
 
 Do not change the card list, `LessonPlayer`, `StepView`, the `dataset.courseLesson` effect, or the POST. Do not pass `is_complete`. The page column stays `maxWidth: 1080` with `pagePadding('40px 48px 72px', isMobile, true)`.
 
-- [ ] **Step 4: Run the tests and the typecheck**
+- [x] **Step 4: Run the tests and the typecheck**
 
 From `platform/frontend`:
 
@@ -1341,7 +1343,7 @@ npx tsc -b
 
 Expected: PASS. `padStart` is gone from `CoursesPage.tsx`. `tsc -b` exits 0.
 
-- [ ] **Step 5: Check the two local courses in the browser**
+- [x] **Step 5: Check the two local courses in the browser**
 
 Start the app only if a port is down. From `platform/worker`: `npm run dev` (http://127.0.0.1:8787). From `platform/frontend`: `npm run dev` (http://localhost:5173). Do not start `npm run dev` at the repo root.
 
@@ -1355,7 +1357,7 @@ Check both a desktop width and a 390px width:
 4. Open a finished HTML lesson. The footer, the fill, and the raised chat bubble behave as before. Back on the map, the chat bubble sits at its normal offset because `dataset.courseLesson` is empty.
 5. Do not insert a course into the local D1 for the hole or the optional branch. Those two cases are the unit tests in Tasks 2 and 3.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add platform/frontend/src/components/SkillPath.tsx platform/frontend/src/components/SkillPath.contract.test.ts platform/frontend/src/pages/CoursesPage.tsx platform/frontend/package.json
@@ -1377,7 +1379,7 @@ git commit -m "Desenhar a trilha no curso aberto"
 
 This task does not touch the local sqlite or the HTML and Python rows. The Vitest database is wiped in `beforeEach`.
 
-- [ ] **Step 1: Write the failing test**
+- [x] **Step 1: Write the failing test**
 
 Add this `it` inside the existing `describe('mcp')` in `platform/worker/test/mcp.test.ts`:
 
@@ -1428,7 +1430,7 @@ it('stores optional true only when the lesson sets boolean true', async () => {
 })
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 From `platform/worker`:
 
@@ -1438,7 +1440,7 @@ npx vitest run test/mcp.test.ts
 
 Expected: FAIL on the `toContain` assertions. The `GET /courses` assertions can already pass, because `run` stores the JSON as given. Do not add validation to make the test pass.
 
-- [ ] **Step 3: Change only the description strings**
+- [x] **Step 3: Change only the description strings**
 
 Replace `create_course.description` with:
 
@@ -1466,7 +1468,7 @@ modules: { type: 'array', description: 'New modules to append. Same format as cr
 
 Leave both `run` functions as they are. Step types in these strings stay `text`, `fill`, `browser`, and `terminal`. The create description keeps the spec sentence `optional to boolean true`. Do not rewrite it so the colon form `optional: true` appears there. That colon form is the append description and the append schema, which the test already checks.
 
-- [ ] **Step 4: Run the worker typecheck and the worker tests**
+- [x] **Step 4: Run the worker typecheck and the worker tests**
 
 From `platform/worker`:
 
@@ -1477,7 +1479,7 @@ npm test
 
 Expected: both exit 0. The new test sees `optional: true` only on the lessons that set it. The registry sync test still passes because tool names did not change.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add platform/worker/src/lib/tools.ts platform/worker/test/mcp.test.ts
