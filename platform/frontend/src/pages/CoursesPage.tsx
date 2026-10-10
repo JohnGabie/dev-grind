@@ -407,10 +407,12 @@ export default function CoursesPage() {
 
         {course && !lesson && (
           <div>
-            <button onClick={() => setOpenId(null)} style={{ background: 'none', border: 'none', color: 'var(--cyan)', cursor: 'pointer', padding: 0, marginBottom: 18 }}>
-              ← cursos
-            </button>
-            <h1 style={{ fontSize: 32, margin: '0 0 22px' }}>{course.title}</h1>
+            <div style={{ position: 'sticky', top: 0, zIndex: 5, background: 'var(--bg)', padding: '12px 0 10px', marginBottom: 12 }}>
+              <button onClick={() => setOpenId(null)} style={{ background: 'none', border: 'none', color: 'var(--cyan)', cursor: 'pointer', padding: 0, marginBottom: 10 }}>
+                ← cursos
+              </button>
+              <h1 style={{ fontSize: 32, margin: 0 }}>{course.title}</h1>
+            </div>
             <SkillPath
               courseId={course.id}
               sections={course.sections}
