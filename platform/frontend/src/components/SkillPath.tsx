@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import {
   placeSkillPath,
   FRACTION_GAP,
@@ -22,6 +23,10 @@ function openable(state: NodeState): boolean {
 
 function dimmed(state: NodeState): boolean {
   return state === 'locked' || state === 'optional-locked'
+}
+
+function fade(color: string, faded: boolean): string {
+  return faded ? `color-mix(in srgb, ${color} 40%, var(--bg))` : color
 }
 
 function borderColor(state: NodeState): string {
@@ -111,6 +116,14 @@ export default function SkillPath({
     partsDone: partsDone[`${lesson.sectionIndex}-${lesson.lessonIndex}`] ?? 0,
   })))
   const map = placeSkillPath(courseId, lessons, completed)
+  const required = lessons.filter(lesson => !lesson.optional)
+  const previousTitle = new Map(required.slice(1).map((lesson, index) => [lesson.key, required[index].title]))
+  const targetKey = (map.nodes.find(n => n.state === 'current') ?? map.nodes.find(n => n.state === 'optional-open') ?? map.nodes[0])?.key
+  const targetRef = useRef<HTMLSpanElement>(null)
+
+  useEffect(() => {
+    targetRef.current?.scrollIntoView({ block: 'center', inline: 'center', behavior: 'auto' })
+  }, [courseId])
 
   return (
     <div style={{ width: 'fit-content', maxWidth: '100%', marginInline: 'auto', overflowX: 'auto' }}>
@@ -183,7 +196,6 @@ export default function SkillPath({
                 fontFamily: 'var(--font)',
                 textAlign: 'left',
                 cursor: locked ? 'default' : 'pointer',
-                opacity: faded ? 0.4 : 1,
               }}
             >
               {node.parts > 1 && (
@@ -196,13 +208,13 @@ export default function SkillPath({
                   fontFamily: 'var(--font)',
                   fontSize: 16,
                   lineHeight: '22px',
-                  color: ratio === 0 ? (locked ? 'var(--muted)' : 'var(--cyan)') : 'var(--green)',
+                  color: fade(ratio === 0 ? (locked ? 'var(--muted)' : 'var(--cyan)') : 'var(--green)', faded),
                   background: 'var(--bg)',
                 }}>
                   {node.partsDone}/{node.parts}
                 </span>
               )}
-              <span style={{
+              <span ref={node.key === targetKey ? targetRef : undefined} style={{
                 display: 'grid',
                 placeItems: 'center',
                 flexShrink: 0,
@@ -211,12 +223,12 @@ export default function SkillPath({
                 height: NODE,
                 borderRadius: NODE_RADIUS,
                 background: 'var(--bg-card)',
-                border: node.parts > 1 ? 'none' : `3px solid ${borderColor(node.state)}`,
+                border: node.parts > 1 ? 'none' : `3px solid ${fade(borderColor(node.state), faded)}`,
                 boxShadow: node.state === 'current' ? '0 0 0 6px var(--cyan-glow)' : 'none',
               }}>
                 {node.parts > 1 && (
                   <svg width={NODE} height={NODE} viewBox={`0 0 ${NODE} ${NODE}`} style={{ position: 'absolute', inset: 0 }} aria-hidden="true">
-                    <path d={RING_PATH} fill="none" stroke={ratio >= 1 ? 'var(--green)' : locked ? 'var(--border)' : 'var(--cyan)'} strokeWidth={RING_STROKE} />
+                    <path d={RING_PATH} fill="none" stroke={ratio >= 1 ? 'var(--green)' : locked ? fade('var(--border)', faded) : 'var(--cyan)'} strokeWidth={RING_STROKE} />
                     {ratio > 0 && (
                       <path
                         d={RING_PATH}
@@ -250,7 +262,7 @@ export default function SkillPath({
                   fontFamily: 'var(--font)',
                   fontSize: 20,
                   lineHeight: `${LABEL_TITLE_H}px`,
-                  color: faded ? 'var(--muted)' : 'var(--text)',
+                  color: fade(faded ? 'var(--muted)' : 'var(--text)', faded),
                   background: 'var(--bg)',
                 }}>
                   {node.title}
@@ -268,7 +280,7 @@ export default function SkillPath({
                       fontFamily: 'var(--font)',
                       fontSize: 18,
                       lineHeight: '24px',
-                      color: 'var(--muted)',
+                      color: fade('var(--muted)', faded),
                       background: 'var(--bg)',
                     }}
                   >
@@ -284,10 +296,25 @@ export default function SkillPath({
                     lineHeight: `${OPTIONAL_WORD_H}px`,
                     letterSpacing: '0.06em',
                     textTransform: 'uppercase',
-                    color: 'var(--muted)',
+                    color: fade('var(--muted)', faded),
                     background: 'var(--bg)',
                   }}>
                     opcional
+                  </span>
+                )}
+                {locked && !node.optional && (
+                  <span style={{
+                    display: 'block',
+                    marginTop: OPTIONAL_WORD_GAP,
+                    fontFamily: 'var(--font)',
+                    fontSize: 14,
+                    lineHeight: '20px',
+                    color: 'var(--muted)',
+                    background: 'var(--bg)',
+                  }}>
+                    {previousTitle.get(node.key)
+                      ? `Termine «${previousTitle.get(node.key)}» para liberar`
+                      : 'Termine a lição anterior para liberar'}
                   </span>
                 )}
               </span>
