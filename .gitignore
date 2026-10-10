@@ -68,3 +68,6 @@ study-backend/
 
 # Personal notes
 patterns to save/
+
+# Playwright MCP output
+.playwright-mcp/
