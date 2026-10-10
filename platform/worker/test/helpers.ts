@@ -32,7 +32,7 @@ export function json(body: unknown): RequestInit {
 
 /** Child tables first — users is referenced by most of the schema. */
 const TABLES_IN_FK_ORDER = [
-  'agent_insights', 'user_inventory', 'user_profiles', 'book_prefs', 'courses',
+  'agent_insights', 'user_inventory', 'user_profiles', 'book_prefs', 'course_lesson_progress', 'courses',
   'personal_tokens', 'daily_progress', 'submissions', 'test_cases', 'exercises',
   'books', 'store_items', 'users',
 ]

@@ -123,6 +123,18 @@ export const courses = sqliteTable('courses', {
   created_at:  text('created_at').notNull().default(sql`(CURRENT_TIMESTAMP)`),
 })
 
+export const courseLessonProgress = sqliteTable('course_lesson_progress', {
+  id:           integer('id').primaryKey({ autoIncrement: true }),
+  user_id:      text('user_id').notNull().references(() => users.id),
+  course_id:    text('course_id').notNull().references(() => courses.id),
+  lesson_key:   text('lesson_key').notNull(),
+  parts_done:   integer('parts_done').notNull().default(0),
+  finished:     integer('finished', { mode: 'boolean' }).notNull().default(true),
+  completed_at: text('completed_at').notNull().default(sql`(CURRENT_TIMESTAMP)`),
+}, (t) => [
+  uniqueIndex('uq_course_lesson_user').on(t.user_id, t.course_id, t.lesson_key),
+])
+
 // ─── user_profiles ────────────────────────────────────────────────────────────
 export const userProfiles = sqliteTable('user_profiles', {
   id:              text('id').primaryKey(),
