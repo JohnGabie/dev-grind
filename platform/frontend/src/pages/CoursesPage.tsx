@@ -1,4 +1,4 @@
-import { useEffect, useState, type CSSProperties } from 'react'
+import { useEffect, useRef, useState, type CSSProperties, type RefObject } from 'react'
 import api from '../api/client'
 import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
 import SkillPath from '../components/SkillPath'
@@ -13,10 +13,12 @@ function matches(given: string, expected: string) {
   return flat(given) === flat(expected)
 }
 
-const chipStyle = (on: boolean): CSSProperties => ({
+const chipStyle = (on: boolean, mobile: boolean): CSSProperties => ({
   fontFamily: 'var(--f-mono)',
+  fontVariantLigatures: 'none',
   fontSize: 14,
   padding: '8px 12px',
+  minHeight: mobile ? 44 : undefined,
   borderRadius: 8,
   cursor: 'pointer',
   border: on ? '1px solid var(--cyan)' : '1px solid var(--border)',
@@ -39,6 +41,8 @@ function StepView({
   onChange,
   onBlank,
   onClear,
+  onSubmit,
+  inputRef,
 }: {
   step: Step
   value: string
@@ -48,9 +52,12 @@ function StepView({
   onChange: (value: string) => void
   onBlank: (index: number, value: string) => void
   onClear: () => void
+  onSubmit: () => void
+  inputRef: RefObject<HTMLInputElement | null>
 }) {
   const isMobile = useMediaQuery(MOBILE_QUERY)
   const [activeBlank, setActiveBlank] = useState(0)
+  const [termFocus, setTermFocus] = useState(false)
 
   if (step.type === 'text') {
     return (
@@ -76,14 +83,15 @@ function StepView({
           gridTemplateColumns: showPreview && !isMobile ? '1fr 1fr' : '1fr',
           gap: 12,
           alignItems: 'stretch',
-          minHeight: 300,
+          minHeight: isMobile && showPreview ? undefined : 300,
+          order: isMobile && showPreview ? 2 : 0,
         }}>
-          <div style={{ display: 'flex', flexDirection: 'column', minHeight: 300, borderRadius: 10, border: wrong ? '1px solid #f07178' : '1px solid var(--border)', overflow: 'hidden' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', minHeight: isMobile && showPreview ? undefined : 300, borderRadius: 10, border: wrong ? '1px solid #f07178' : '1px solid var(--border)', overflow: 'hidden' }}>
             <div style={{ padding: '8px 12px', fontSize: 12, color: 'var(--muted)', borderBottom: '1px solid var(--border)' }}>
               {step.file}
             </div>
             <pre style={{
-              margin: 0, padding: '14px 16px', flex: 1, minHeight: 220,
+              margin: 0, padding: '14px 16px', flex: 1, minHeight: isMobile && showPreview ? undefined : 220,
               background: 'rgba(255,255,255,0.03)',
               fontFamily: 'var(--f-mono)', fontSize: 14, lineHeight: 1.7, whiteSpace: 'pre-wrap',
             }}>
@@ -103,8 +111,10 @@ function StepView({
                   padding: '0 6px',
                   borderRadius: 6,
                   fontFamily: 'var(--f-mono)',
+                  fontVariantLigatures: 'none',
                   fontSize: 14,
                   lineHeight: 1.5,
+                  minHeight: isMobile ? 44 : undefined,
                   color: blankTone === 'ok' ? 'var(--green)' : blankTone === 'bad' ? '#f07178' : 'var(--cyan)',
                   background: blankTone === 'ok' ? 'rgba(63,185,80,0.16)' : blankTone === 'bad' ? 'rgba(240,113,120,0.14)' : 'rgba(68,188,211,0.08)',
                   border: blankTone === 'ok'
@@ -137,7 +147,7 @@ function StepView({
               <button
                 onClick={onClear}
                 disabled={!filled}
-                style={{ background: 'none', border: 'none', color: filled ? 'var(--muted)' : 'var(--faint)', cursor: filled ? 'pointer' : 'default', padding: 0, fontSize: 12 }}
+                style={{ background: 'none', border: 'none', color: filled ? 'var(--muted)' : 'var(--faint)', cursor: filled ? 'pointer' : 'default', padding: 0, fontSize: 12, minHeight: isMobile ? 44 : undefined, minWidth: isMobile ? 44 : undefined }}
               >
                 limpar
               </button>
@@ -148,16 +158,22 @@ function StepView({
               title="preview"
               sandbox=""
               srcDoc={page}
-              style={{ width: '100%', minHeight: 300, height: '100%', borderRadius: 10, border: '1px solid var(--border)', background: '#fff' }}
+              style={{
+                width: '100%',
+                minHeight: isMobile ? 120 : 300,
+                height: isMobile ? 140 : '100%',
+                maxHeight: isMobile ? 140 : undefined,
+                borderRadius: 10, border: '1px solid var(--border)', background: '#fff',
+              }}
             />
           )}
         </div>
         {step.choices.length > 0 && (
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center' }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, justifyContent: 'center', order: isMobile && showPreview ? 1 : 0 }}>
             {step.choices.map(choice => (
               <button
                 key={choice}
-                style={chipStyle(blanks.includes(choice))}
+                style={chipStyle(blanks.includes(choice), isMobile)}
                 onClick={() => onBlank(Math.min(activeBlank, Math.max(blanks.length - 1, 0)), flat(choice))}
               >
                 {choice}
@@ -200,15 +216,24 @@ function StepView({
       <p style={{ margin: 0, fontSize: 18, lineHeight: 1.5, textAlign: 'center' }}>{step.prompt}</p>
       <div style={{
         width: '100%', maxWidth: 560, minHeight: 160, borderRadius: 10, padding: 16,
-        background: '#0d1117', border: '1px solid var(--border)', fontFamily: 'var(--f-mono)',
+        background: '#0d1117', fontFamily: 'var(--f-mono)',
+        border: wrong ? '1px solid #f07178' : termFocus ? '1px solid var(--cyan)' : '1px solid var(--border)',
+        boxShadow: termFocus ? '0 0 0 1px var(--cyan)' : 'none',
       }}>
         <div style={{ color: 'var(--green)', marginBottom: 8 }}>$</div>
         <input
+          ref={inputRef}
           value={value}
+          aria-label="comando"
           onChange={e => onChange(e.target.value)}
+          onKeyDown={e => { if (e.key === 'Enter') onSubmit() }}
+          onFocus={() => setTermFocus(true)}
+          onBlur={() => setTermFocus(false)}
+          spellCheck={false}
           style={{
             width: '100%', border: 'none', background: 'transparent', color: 'var(--text)',
-            fontFamily: 'var(--f-mono)', fontSize: 15, outline: 'none',
+            fontFamily: 'var(--f-mono)', fontVariantLigatures: 'none', fontSize: 15, outline: 'none',
+            minHeight: isMobile ? 44 : undefined,
           }}
         />
       </div>
@@ -220,6 +245,7 @@ function LessonPlayer({
   courseTitle,
   lesson,
   initialIndex,
+  reviewing,
   onBack,
   onComplete,
   onPart,
@@ -227,6 +253,7 @@ function LessonPlayer({
   courseTitle: string
   lesson: Lesson
   initialIndex: number
+  reviewing: boolean
   onBack: () => void
   onComplete: () => void
   onPart: (partsDone: number) => void
@@ -239,6 +266,12 @@ function LessonPlayer({
   const [passed, setPassed] = useState(false)
   const last = index === lesson.steps.length - 1
   const needsCheck = step.type === 'fill' || step.type === 'terminal'
+  const scrollRef = useRef<HTMLDivElement>(null)
+  const terminalRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    scrollRef.current?.scrollTo(0, 0)
+  }, [index])
 
   const changeValue = (next: string) => {
     setValue(next)
@@ -255,8 +288,7 @@ function LessonPlayer({
   const retry = () => {
     setWrong(false)
     setPassed(false)
-    if (step.type === 'fill') setBlanks(blankAnswers(step).map(() => ''))
-    if (step.type === 'terminal') setValue('')
+    if (step.type === 'terminal') terminalRef.current?.focus()
   }
 
   const goNext = () => {
@@ -271,8 +303,13 @@ function LessonPlayer({
       setPassed(true)
       return
     }
-    if (step.type === 'terminal' && !matches(value, step.expect)) {
-      setWrong(true)
+    if (step.type === 'terminal' && !passed) {
+      if (!matches(value, step.expect)) {
+        setWrong(true)
+        return
+      }
+      setWrong(false)
+      setPassed(true)
       return
     }
     setWrong(false)
@@ -290,14 +327,15 @@ function LessonPlayer({
   }
 
   const isMobile = useMediaQuery(MOBILE_QUERY)
+  const statusText = wrong ? 'Ainda não. Confira o que está em vermelho.' : passed ? 'Certo!' : ''
 
   return (
     <div style={{ flex: 1, minHeight: 0, width: '100%', display: 'flex', flexDirection: 'column' }}>
-      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
+      <div ref={scrollRef} style={{ flex: 1, minHeight: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
         <div style={{ maxWidth: 1080, width: '100%', margin: '0 auto', padding: pagePadding('24px 48px 12px', isMobile, true), flex: 1, display: 'flex', flexDirection: 'column' }}>
           <div style={{ maxWidth: 860, width: '100%', margin: '0 auto', flex: 1, display: 'flex', flexDirection: 'column' }}>
             <div style={{ flexShrink: 0 }}>
-              <button onClick={onBack} style={{ background: 'none', border: 'none', color: 'var(--cyan)', cursor: 'pointer', padding: 0, marginBottom: 14 }}>
+              <button onClick={onBack} style={{ background: 'none', border: 'none', color: 'var(--cyan)', cursor: 'pointer', padding: 0, marginBottom: 14, minHeight: isMobile ? 44 : undefined }}>
                 ← {courseTitle}
               </button>
               <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
@@ -307,6 +345,9 @@ function LessonPlayer({
                     background: i <= index ? 'var(--cyan)' : 'rgba(255,255,255,0.12)',
                   }} />
                 ))}
+              </div>
+              <div style={{ fontSize: 12, color: 'var(--muted)' }}>
+                {lesson.title} · passo {index + 1} de {lesson.steps.length}{reviewing ? ' · revisão' : ''}
               </div>
             </div>
             <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '28px 0' }}>
@@ -321,6 +362,8 @@ function LessonPlayer({
                   onChange={changeValue}
                   onBlank={changeBlank}
                   onClear={() => changeBlank(-1, '')}
+                  onSubmit={wrong ? retry : goNext}
+                  inputRef={terminalRef}
                 />
               </div>
             </div>
@@ -329,6 +372,12 @@ function LessonPlayer({
       </div>
       <div style={{ width: '100%', borderTop: `1px solid ${wrong ? '#f07178' : 'var(--border)'}` }}>
         <div style={{ padding: pagePadding('14px 48px 14px', isMobile, false) }}>
+          <div
+            role="status"
+            style={{ fontSize: 13, textAlign: 'right', marginBottom: statusText ? 8 : 0, color: wrong ? '#f07178' : 'var(--green)' }}
+          >
+            {statusText}
+          </div>
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
             <button
               onClick={wrong ? retry : goNext}
@@ -352,6 +401,8 @@ export default function CoursesPage() {
   const isMobile = useMediaQuery(MOBILE_QUERY)
   const [courses, setCourses] = useState<Course[]>([])
   const [loadError, setLoadError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [reloadKey, setReloadKey] = useState(0)
   const [openId, setOpenId] = useState<string | null>(null)
   const [lessonKey, setLessonKey] = useState<string | null>(null)
 
@@ -362,7 +413,14 @@ export default function CoursesPage() {
         setCourses(rows.map(asCourse).filter((course): course is Course => course !== null))
       })
       .catch(() => setLoadError('Não foi possível carregar os cursos.'))
-  }, [])
+      .finally(() => setLoading(false))
+  }, [reloadKey])
+
+  const reload = () => {
+    setLoadError(null)
+    setLoading(true)
+    setReloadKey(key => key + 1)
+  }
 
   const course = courses.find(item => item.id === openId) ?? null
   const lesson = course?.sections.flatMap(section => section.lessons.map(item => ({
@@ -384,9 +442,18 @@ export default function CoursesPage() {
         maxWidth: 1080, width: '100%', margin: '0 auto',
         padding: pagePadding('40px 48px 72px', isMobile, true),
       }}>
-        {loadError && <p style={{ color: 'var(--muted)' }}>{loadError}</p>}
+        {loadError && (
+          <div>
+            <p style={{ color: 'var(--muted)' }}>{loadError}</p>
+            <button onClick={reload} style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--cyan)', cursor: 'pointer', padding: '8px 14px', minHeight: isMobile ? 44 : undefined }}>
+              tentar de novo
+            </button>
+          </div>
+        )}
 
-        {!course && !loadError && courses.length === 0 && (
+        {!course && !loadError && loading && <p style={{ color: 'var(--muted)' }}>Carregando…</p>}
+
+        {!course && !loadError && !loading && courses.length === 0 && (
           <p style={{ color: 'var(--muted)' }}>Nenhum curso neste formato ainda.</p>
         )}
 
@@ -408,7 +475,7 @@ export default function CoursesPage() {
         {course && !lesson && (
           <div>
             <div style={{ position: 'sticky', top: 0, zIndex: 5, background: 'var(--bg)', padding: '12px 0 10px', marginBottom: 12 }}>
-              <button onClick={() => setOpenId(null)} style={{ background: 'none', border: 'none', color: 'var(--cyan)', cursor: 'pointer', padding: 0, marginBottom: 10 }}>
+              <button onClick={() => setOpenId(null)} style={{ background: 'none', border: 'none', color: 'var(--cyan)', cursor: 'pointer', padding: 0, marginBottom: isMobile ? 0 : 10, minHeight: isMobile ? 44 : undefined }}>
                 ← cursos
               </button>
               <h1 style={{ fontSize: 32, margin: 0 }}>{course.title}</h1>
@@ -430,6 +497,7 @@ export default function CoursesPage() {
           courseTitle={course.title}
           lesson={lesson.item}
           initialIndex={course.completed.includes(lesson.key) ? 0 : (course.parts[lesson.key] ?? 0)}
+          reviewing={course.completed.includes(lesson.key)}
           onBack={() => setLessonKey(null)}
           onPart={count => {
             if (course.completed.includes(lesson.key)) return
