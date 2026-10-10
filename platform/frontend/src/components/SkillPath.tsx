@@ -148,7 +148,7 @@ export default function SkillPath({
               lineHeight: '24px',
               letterSpacing: '0.06em',
               textTransform: 'uppercase',
-              color: 'var(--faint)',
+              color: 'var(--muted)',
               whiteSpace: 'nowrap',
               pointerEvents: 'none',
             }}
