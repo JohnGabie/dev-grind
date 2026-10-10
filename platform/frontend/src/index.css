@@ -193,6 +193,11 @@ body {
    Aqui ficam só as que ninguém declara inline — e que precisam alcançar
    descendentes que a página não controla um a um. */
 @media (max-width: 768px) {
+  /* A trilha de 3px comia largura do layout só de um lado e deixava a margem
+     direita maior que a esquerda. No toque a rolagem já é indicada pelo sistema. */
+  ::-webkit-scrollbar { display: none; }
+  * { scrollbar-width: none; }
+
   .cfg-ctrl { width: 100%; }
   .cfg-ctrl > div { flex-wrap: wrap; }
 

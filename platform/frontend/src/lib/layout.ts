@@ -1,4 +1,5 @@
-export const MOBILE_GUTTER = 16
+/** Margem lateral das páginas no mobile. 16 deixava o conteúdo colado na borda. */
+export const MOBILE_GUTTER = 20
 
 /**
  * Altura do TopBar. Só existe no desktop: no mobile o perfil abre pela folha
@@ -23,7 +24,7 @@ const MOBILE_TOP_GAP = MOBILE_GUTTER
  *  páginas depende dela — deixar nos dois lugares é garantir que divirjam. */
 export const DOCK_HEIGHT = 60
 export const DOCK_GAP = 14
-export const DOCK_SIDE_INSET = 12
+export const DOCK_SIDE_INSET = MOBILE_GUTTER
 
 /** Altura da dock, o respiro até a borda e o home indicator do iPhone. */
 export const MOBILE_NAV_SPACE =
