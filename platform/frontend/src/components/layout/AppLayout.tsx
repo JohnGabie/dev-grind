@@ -157,7 +157,16 @@ function TopBar() {
 function ChatBubble() {
   const location = useLocation()
   const [open, setOpen] = useState(false)
+  const [lessonDock, setLessonDock] = useState(false)
   const isMobile = useMediaQuery(MOBILE_QUERY)
+
+  useEffect(() => {
+    const sync = () => setLessonDock(document.body.dataset.courseLesson === '1')
+    sync()
+    const observer = new MutationObserver(sync)
+    observer.observe(document.body, { attributes: true, attributeFilter: ['data-course-lesson'] })
+    return () => observer.disconnect()
+  }, [])
 
   const slug = location.pathname.startsWith('/exercise/')
     ? location.pathname.split('/exercise/')[1]
@@ -169,8 +178,12 @@ function ChatBubble() {
   const context = slug ? `kata:${slug}` : location.pathname === '/' ? 'dashboard' : 'general'
 
   // No mobile a bolha sobe para não cobrir a tab bar.
-  const bubbleBottom = isMobile ? `calc(24px + ${MOBILE_NAV_SPACE})` : 24
-  const panelBottom = isMobile ? `calc(84px + ${MOBILE_NAV_SPACE})` : 84
+  const bubbleBottom = lessonDock
+    ? (isMobile ? `calc(96px + ${MOBILE_NAV_SPACE})` : 96)
+    : (isMobile ? `calc(24px + ${MOBILE_NAV_SPACE})` : 24)
+  const panelBottom = lessonDock
+    ? (isMobile ? `calc(156px + ${MOBILE_NAV_SPACE})` : 156)
+    : (isMobile ? `calc(84px + ${MOBILE_NAV_SPACE})` : 84)
 
   if (naTelaDeResolver) return null
 

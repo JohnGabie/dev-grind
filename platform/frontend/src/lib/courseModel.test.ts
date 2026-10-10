@@ -71,6 +71,37 @@ describe('asCourse', () => {
     assert.deepEqual(step.choices, ['a'])
   })
 
+  it('uses a written description, otherwise the first text step', () => {
+    const course = asCourse({
+      id: 'blurbs',
+      title: 'Blurbs',
+      modules: [{
+        title: 'S',
+        lessons: [
+          { title: 'Escrita', description: '  direto  ', steps: [{ type: 'text', body: 'corpo' }] },
+          { title: 'Corpo', steps: [{ type: 'text', body: '  primeiro  ' }, { type: 'text', body: 'segundo' }] },
+          { title: 'Sem', steps: [{ type: 'fill', prompt: 'p', parts: [{ text: 'x' }], choices: [] }] },
+          { title: 'Vazio', description: '   ', steps: [{ type: 'text', body: 'cai aqui' }] },
+        ],
+      }],
+    })
+    const lessons = course?.sections[0].lessons ?? []
+    assert.equal(lessons[0].description, 'direto')
+    assert.equal(lessons[1].description, 'primeiro')
+    assert.equal(lessons[2].description, '')
+    assert.equal(lessons[3].description, 'cai aqui')
+  })
+
+  it('keeps integer part counts', () => {
+    const course = asCourse({
+      id: 'parts',
+      title: 'Parts',
+      modules: [{ title: 'S', lessons: [{ title: 'A', steps: [{ type: 'text', body: 'a' }, { type: 'text', body: 'b' }] }] }],
+      lesson_parts: { '0-0': 1, '0-9': 'nope' },
+    })
+    assert.deepEqual(course?.parts, { '0-0': 1 })
+  })
+
   it('returns null when nothing can be drawn', () => {
     assert.equal(asCourse({ id: 'vazio', title: 'Vazio', modules: [] }), null)
     assert.equal(asCourse({ id: 'ruim', title: 'Ruim', modules: 'nope' }), null)

@@ -219,15 +219,19 @@ function StepView({
 function LessonPlayer({
   courseTitle,
   lesson,
+  initialIndex,
   onBack,
   onComplete,
+  onPart,
 }: {
   courseTitle: string
   lesson: Lesson
+  initialIndex: number
   onBack: () => void
   onComplete: () => void
+  onPart: (partsDone: number) => void
 }) {
-  const [index, setIndex] = useState(0)
+  const [index, setIndex] = useState(() => Math.min(Math.max(0, initialIndex), Math.max(0, lesson.steps.length - 1)))
   const step = lesson.steps[index]
   const [value, setValue] = useState(() => step.type === 'browser' ? step.starter : '')
   const [blanks, setBlanks] = useState<string[]>(() => step.type === 'fill' ? blankAnswers(step).map(() => '') : [])
@@ -278,6 +282,7 @@ function LessonPlayer({
       onBack()
       return
     }
+    onPart(index + 1)
     const next = lesson.steps[index + 1]
     setIndex(index + 1)
     setValue(next.type === 'browser' ? next.starter : '')
@@ -410,6 +415,7 @@ export default function CoursesPage() {
               courseId={course.id}
               sections={course.sections}
               completed={course.completed}
+              partsDone={course.parts}
               onOpen={setLessonKey}
             />
           </div>
@@ -421,7 +427,20 @@ export default function CoursesPage() {
           key={lesson.key}
           courseTitle={course.title}
           lesson={lesson.item}
+          initialIndex={course.completed.includes(lesson.key) ? 0 : (course.parts[lesson.key] ?? 0)}
           onBack={() => setLessonKey(null)}
+          onPart={count => {
+            if (course.completed.includes(lesson.key)) return
+            const previous = course.parts[lesson.key] ?? 0
+            setCourses(list => list.map(item => item.id === course.id
+              ? { ...item, parts: { ...item.parts, [lesson.key]: count } }
+              : item))
+            api.post(`/courses/${course.id}/lessons/${lesson.key}/progress`, { parts_done: count }).catch(() => {
+              setCourses(list => list.map(item => item.id === course.id
+                ? { ...item, parts: { ...item.parts, [lesson.key]: previous } }
+                : item))
+            })
+          }}
           onComplete={() => {
             if (!lessonKey || course.completed.includes(lessonKey)) return
             const key = lessonKey
