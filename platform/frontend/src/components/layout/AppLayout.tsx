@@ -6,7 +6,7 @@ import { useAuth } from '../../auth/AuthContext'
 import { ChatPanel } from '../ChatPanel'
 import { CosmeticsProvider } from '../../contexts/CosmeticsContext'
 import { useMediaQuery, MOBILE_QUERY } from '../../hooks/useMediaQuery'
-import { TOPBAR_SPACE, MOBILE_NAV_SPACE } from '../../lib/layout'
+import { TOPBAR_SPACE, MOBILE_TOP_INSET, MOBILE_NAV_SPACE } from '../../lib/layout'
 import api from '../../api/client'
 
 // ── TopBar ───────────────────────────────────────────────────────────────────
@@ -21,7 +21,6 @@ function TopBar() {
   const navigate = useNavigate()
   const location = useLocation()
   const [stats, setStats] = useState<{ rank: string; coins: number } | null>(null)
-  const isMobile = useMediaQuery(MOBILE_QUERY)
 
   useEffect(() => {
     api.get('/users/me/stats')
@@ -31,9 +30,7 @@ function TopBar() {
 
   // Kyu e gcoin só no Dashboard — nas outras páginas a barra encolhe para o
   // avatar. A cor do rank continua tingindo o anel do avatar em toda página.
-  // No mobile a barra é só o avatar: o card com kyu e gcoin ocupava 201 dos 390px
-  // e é padrão de desktop. O kyu continua no anel do avatar e na página de perfil.
-  const showStats = location.pathname === '/' && !!stats && !isMobile
+  const showStats = location.pathname === '/' && !!stats
   const rankColor = stats ? (DIFF_COLOR[stats.rank] || '#525252') : '#525252'
 
   return (
@@ -48,13 +45,12 @@ function TopBar() {
           paddingTop: 'env(safe-area-inset-top, 0px)',
           display: 'flex',
           alignItems: 'stretch',
-          background: isMobile ? 'none' : 'var(--bg-card)',
-          borderLeft: isMobile ? 'none' : '1px solid var(--border)',
-          borderBottom: isMobile ? 'none' : '1px solid var(--border)',
+          background: 'var(--bg-card)',
+          borderLeft: '1px solid var(--border)',
+          borderBottom: '1px solid var(--border)',
           borderTop: 'none',
           borderRight: 'none',
-          borderRadius: isMobile ? 0 : '0 0 0 14px',
-          paddingRight: isMobile ? 8 : 0,
+          borderRadius: '0 0 0 14px',
           overflow: 'hidden',
         }}>
 
@@ -118,7 +114,7 @@ function TopBar() {
             onClick={() => navigate('/profile')}
             title={user.name}
             style={{
-              width: isMobile ? 48 : 58,
+              width: 58,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               background: 'none', border: 'none', cursor: 'pointer',
               // Sem stats o avatar é o único filho: a divisória dobraria com a
@@ -248,7 +244,7 @@ export default function AppLayout() {
           position: 'relative',
           paddingBottom: isMobile && isFixedLayout ? MOBILE_NAV_SPACE : 0,
         }}>
-          {!hideTopBar && <TopBar />}
+          {!isMobile && !hideTopBar && <TopBar />}
           {/* Só os layouts de altura fixa cedem a faixa aqui — o header próprio
               deles precisa começar abaixo do notch. As páginas de rolagem vão
               até y=0 e reservam a faixa no conteúdo, via pagePadding, para o
@@ -258,7 +254,7 @@ export default function AppLayout() {
           <div style={{
             height: '100%',
             overflow: 'hidden',
-            paddingTop: isMobile && !hideTopBar && isFixedLayout ? TOPBAR_SPACE : 0,
+            paddingTop: isMobile && !hideTopBar && isFixedLayout ? MOBILE_TOP_INSET : 0,
           }}>
             <Outlet />
           </div>
