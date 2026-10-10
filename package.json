@@ -1,0 +1,7 @@
+{
+  "name": "dev-grind",
+  "private": true,
+  "scripts": {
+    "dev": "node -e \"const {spawn}=require('child_process');for(const cwd of ['platform/worker','platform/frontend'])spawn('npm',['run','dev'],{cwd,stdio:'inherit',shell:true})\""
+  }
+}
