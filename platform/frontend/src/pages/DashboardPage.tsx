@@ -7,6 +7,7 @@ import { useCosmetics } from '../contexts/CosmeticsContext'
 import api from '../api/client'
 import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
 import { pagePadding } from '../lib/layout'
+import DashboardMobile from '../mobile/dashboard/DashboardMobile'
 
 interface Exercise {
   id: string; title: string; slug: string
@@ -637,7 +638,7 @@ const MOCK_RECENT: HistoryItem[] = [
   },
 ]
 
-export default function DashboardPage() {
+function DashboardDesktop() {
   const isMobile = useMediaQuery(MOBILE_QUERY)
   const { user } = useAuth()
   const { bg } = useCosmetics()
@@ -918,4 +919,9 @@ export default function DashboardPage() {
       </div>
     </div>
   )
+}
+
+export default function DashboardPage() {
+  const isMobile = useMediaQuery(MOBILE_QUERY)
+  return isMobile ? <DashboardMobile /> : <DashboardDesktop />
 }
