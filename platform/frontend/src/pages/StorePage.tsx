@@ -111,25 +111,26 @@ export default function StorePage() {
 
   if (loading) return (
     <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <span style={{ color: 'var(--muted)', fontFamily: 'var(--f-mono)', fontSize: 11 }}>_</span>
+      <span style={{ color: 'var(--muted)', fontFamily: 'var(--f-mono)', fontSize: 'var(--fs-sm)' }}>_</span>
     </div>
   )
 
   return (
-    <div style={{ height: '100%', display: 'flex', overflow: 'hidden' }}>
+    <div style={{ height: '100%', display: 'flex', flexDirection: isMobile ? 'column' : 'row', overflowX: 'hidden', overflowY: isMobile ? 'auto' : 'hidden' }}>
 
       {/* ── Sidebar esquerda ─────────────────────────────────────────── */}
       <div style={{
-        width: 220, flexShrink: 0, height: '100%', overflowY: 'auto',
-        borderRight: '1px solid var(--border)',
-        padding: pagePadding('20px 16px 40px', isMobile, true),
+        width: isMobile ? '100%' : 220, flexShrink: 0, height: isMobile ? 'auto' : '100%', overflowY: isMobile ? 'visible' : 'auto',
+        borderRight: isMobile ? 'none' : '1px solid var(--border)',
+        boxSizing: isMobile ? 'border-box' : undefined,
+        padding: isMobile ? 'calc(20px + env(safe-area-inset-top, 0px)) 20px var(--sp-3)' : pagePadding('20px 16px 40px', isMobile, true),
         display: 'flex', flexDirection: 'column', gap: 20,
       }}>
 
         {/* Título + GrindCoin */}
         <div>
           <p style={{
-            fontSize: 9, fontWeight: 700, letterSpacing: '0.12em',
+            fontSize: isMobile ? 'var(--fs-xs)' : 9, fontWeight: 700, letterSpacing: '0.12em',
             textTransform: 'uppercase', color: 'var(--muted)',
             fontFamily: 'var(--f-mono)', margin: '0 0 10px',
           }}>
@@ -146,7 +147,7 @@ export default function StorePage() {
               <div style={{ fontSize: 17, fontWeight: 800, fontFamily: 'var(--f-mono)', color: '#fbbf24', lineHeight: 1 }}>
                 {coins.toLocaleString()}
               </div>
-              <div style={{ fontSize: 8, color: 'rgba(251,191,36,0.45)', letterSpacing: '0.09em', fontFamily: 'var(--f-mono)', marginTop: 1 }}>
+              <div style={{ fontSize: isMobile ? 'var(--fs-xs)' : 8, color: 'rgba(251,191,36,0.45)', letterSpacing: '0.09em', fontFamily: 'var(--f-mono)', marginTop: 1 }}>
                 GRIND COINS
               </div>
             </div>
@@ -167,7 +168,7 @@ export default function StorePage() {
             onChange={e => setSearch(e.target.value)}
             style={{
               width: '100%', paddingLeft: 28, paddingRight: search ? 28 : 10,
-              height: 30, fontSize: 12, boxSizing: 'border-box',
+              height: isMobile ? 'var(--ctl-md)' : 30, fontSize: isMobile ? 'var(--fs-input)' : 12, boxSizing: 'border-box',
               background: 'var(--bg)', border: '1px solid var(--border)',
               borderRadius: 5, color: 'var(--text)',
               fontFamily: 'var(--f-mono)', outline: 'none',
@@ -181,7 +182,8 @@ export default function StorePage() {
               style={{
                 position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
                 background: 'none', border: 'none', cursor: 'pointer',
-                color: 'var(--muted)', fontSize: 14, lineHeight: 1, padding: 0,
+                color: 'var(--muted)', fontSize: isMobile ? 'var(--fs-base)' : 14, lineHeight: 1, padding: 0,
+                minWidth: isMobile ? 'var(--ctl-icon)' : undefined, minHeight: isMobile ? 'var(--ctl-icon)' : undefined,
               }}>×</button>
           )}
         </div>
@@ -189,13 +191,13 @@ export default function StorePage() {
         {/* Categoria */}
         <div>
           <p style={{
-            fontSize: 9, fontWeight: 700, letterSpacing: '0.12em',
+            fontSize: isMobile ? 'var(--fs-xs)' : 9, fontWeight: 700, letterSpacing: '0.12em',
             textTransform: 'uppercase', color: 'var(--muted)',
             fontFamily: 'var(--f-mono)', margin: '0 0 8px',
           }}>
             categoria
           </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <div style={{ display: 'flex', flexDirection: isMobile ? 'row' : 'column', gap: isMobile ? 'var(--sp-2)' : 2, overflowX: isMobile ? 'auto' : undefined, paddingBottom: isMobile ? 'var(--sp-2)' : undefined }}>
             {(['todos', ...categories] as CategoryFilter[]).map(cat => {
               const isActive = catFilter === cat
               return (
@@ -203,13 +205,16 @@ export default function StorePage() {
                   key={cat}
                   onClick={() => setCatFilter(cat)}
                   style={{
-                    width: '100%', textAlign: 'left',
-                    padding: '6px 10px',
-                    borderRadius: 5, border: 'none', cursor: 'pointer',
+                    width: isMobile ? undefined : '100%', textAlign: 'left',
+                    padding: isMobile ? '0 var(--sp-3)' : '6px 10px',
+                    minHeight: isMobile ? 'var(--ctl-chip)' : undefined,
+                    flexShrink: isMobile ? 0 : undefined,
+                    whiteSpace: isMobile ? 'nowrap' : undefined,
+                    borderRadius: isMobile ? 'var(--radius-md)' : 5, border: 'none', cursor: 'pointer',
                     background: isActive ? 'rgba(34,211,238,0.08)' : 'transparent',
                     borderLeft: `3px solid ${isActive ? 'var(--cyan)' : 'transparent'}`,
                     color: isActive ? 'var(--cyan)' : 'var(--muted)',
-                    fontSize: 12, fontFamily: 'var(--f-mono)',
+                    fontSize: isMobile ? 'var(--fs-sm)' : 12, fontFamily: 'var(--f-mono)',
                     transition: 'background 120ms, color 120ms, border-left-color 120ms',
                   }}
                   onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'var(--bg-hover)' }}
@@ -225,18 +230,18 @@ export default function StorePage() {
       </div>
 
       {/* ── Conteúdo principal ───────────────────────────────────────── */}
-      <div style={{ flex: 1, overflowY: 'auto' }}>
-        <div style={{ maxWidth: 1000, margin: '0 auto', padding: pagePadding('44px 44px 64px', isMobile, true) }}>
+      <div style={{ flex: 1, overflowY: isMobile ? 'visible' : 'auto' }}>
+        <div style={{ maxWidth: 1000, margin: '0 auto', padding: pagePadding(isMobile ? '20px 44px 64px' : '44px 44px 64px', isMobile) }}>
 
           {/* Heading */}
           <div style={{ marginBottom: 40 }}>
-            <p style={{ fontSize: 11, color: 'var(--cyan)', marginBottom: 8, fontWeight: 500, letterSpacing: '0.06em', fontFamily: 'var(--f-mono)' }}>
+            <p style={{ fontSize: 'var(--fs-sm)', color: 'var(--cyan)', marginBottom: 8, fontWeight: 500, letterSpacing: '0.06em', fontFamily: 'var(--f-mono)' }}>
               // cosméticos
             </p>
-            <h1 style={{ fontSize: 36, fontWeight: 800, margin: '0 0 8px', letterSpacing: '-0.03em', color: 'var(--text)' }}>
+            <h1 style={{ fontSize: isMobile ? 'var(--fs-xl)' : 36, fontWeight: 800, margin: '0 0 8px', letterSpacing: '-0.03em', color: 'var(--text)' }}>
               grind store
             </h1>
-            <p style={{ margin: 0, fontSize: 12, color: 'var(--muted)', lineHeight: 1.7 }}>
+            <p style={{ margin: 0, fontSize: isMobile ? 'var(--fs-sm)' : 12, color: 'var(--muted)', lineHeight: 1.7 }}>
               {totalOwned}/{backgrounds.length} variantes adquiridas
             </p>
           </div>
@@ -244,7 +249,7 @@ export default function StorePage() {
           {/* ── Utilidades ───────────────────────────────────────────── */}
           {utilities.length > 0 && (
             <div style={{ marginBottom: 52 }}>
-              <p style={{ fontSize: 10, fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)', fontFamily: 'var(--f-mono)', margin: '0 0 16px' }}>
+              <p style={{ fontSize: 'var(--fs-xs)', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'var(--muted)', fontFamily: 'var(--f-mono)', margin: '0 0 16px' }}>
                 utilidades
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -273,16 +278,16 @@ export default function StorePage() {
 
                       {/* Info */}
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ margin: '0 0 3px', fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>{item.name}</p>
-                        <p style={{ margin: 0, fontSize: 11, color: 'var(--muted)', lineHeight: 1.5 }}>{item.description}</p>
+                        <p style={{ margin: '0 0 3px', fontSize: isMobile ? 'var(--fs-base)' : 14, fontWeight: 700, color: 'var(--text)' }}>{item.name}</p>
+                        <p style={{ margin: 0, fontSize: 'var(--fs-sm)', color: 'var(--muted)', lineHeight: 1.5 }}>{item.description}</p>
                       </div>
 
                       {/* Count */}
                       <div style={{ textAlign: 'center', flexShrink: 0 }}>
                         <p style={{ margin: '0 0 2px', fontSize: 18, fontWeight: 800, fontFamily: 'var(--f-mono)', color: atMax ? 'var(--green)' : 'var(--text)' }}>
-                          {item.owned_count}<span style={{ fontSize: 12, color: 'var(--muted)', fontWeight: 400 }}>/{item.max_purchases}</span>
+                          {item.owned_count}<span style={{ fontSize: isMobile ? 'var(--fs-sm)' : 12, color: 'var(--muted)', fontWeight: 400 }}>/{item.max_purchases}</span>
                         </p>
-                        <p style={{ margin: 0, fontSize: 9, color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>compras</p>
+                        <p style={{ margin: 0, fontSize: isMobile ? 'var(--fs-xs)' : 9, color: 'var(--muted)', letterSpacing: '0.08em', textTransform: 'uppercase' }}>compras</p>
                       </div>
 
                       {/* Buy button */}
@@ -292,7 +297,8 @@ export default function StorePage() {
                         style={{
                           flexShrink: 0, display: 'flex', alignItems: 'center', gap: 6,
                           padding: '8px 16px', borderRadius: 7, cursor: atMax || !canAfford ? 'not-allowed' : 'pointer',
-                          fontSize: 12, fontWeight: 700, fontFamily: 'var(--f-mono)',
+                          fontSize: isMobile ? 'var(--fs-sm)' : 12, fontWeight: 700, fontFamily: 'var(--f-mono)',
+                          minHeight: isMobile ? 'var(--ctl-primary)' : undefined,
                           border: '1px solid',
                           borderColor: atMax ? 'var(--border)' : canAfford ? 'rgba(168,85,247,0.4)' : 'var(--border)',
                           background: atMax ? 'transparent' : canAfford ? 'rgba(168,85,247,0.1)' : 'transparent',
@@ -320,7 +326,7 @@ export default function StorePage() {
           {/* Grid */}
           {entries.length === 0 ? (
             <div style={{ textAlign: 'center', paddingTop: 60 }}>
-              <p style={{ color: 'var(--muted)', fontFamily: 'var(--f-mono)', fontSize: 12 }}>
+              <p style={{ color: 'var(--muted)', fontFamily: 'var(--f-mono)', fontSize: isMobile ? 'var(--fs-sm)' : 12 }}>
                 nenhum item encontrado
               </p>
             </div>
@@ -392,17 +398,17 @@ export default function StorePage() {
                     {/* Info */}
                     <div style={{ padding: '12px 14px 14px' }}>
                       <p style={{
-                        margin: '0 0 3px', fontSize: 14, fontWeight: 800,
+                        margin: '0 0 3px', fontSize: isMobile ? 'var(--fs-base)' : 14, fontWeight: 800,
                         letterSpacing: '-0.02em', color: 'var(--text)',
                       }}>
                         {CATEGORY_LABEL[category] ?? category}
                       </p>
                       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                        <span style={{ fontSize: 10, color: 'var(--muted)', fontFamily: 'var(--f-mono)' }}>
+                        <span style={{ fontSize: 'var(--fs-xs)', color: 'var(--muted)', fontFamily: 'var(--f-mono)' }}>
                           {variants.length} variantes · {ownedCount} suas
                         </span>
                         <span style={{
-                          fontSize: 10, fontWeight: 700, fontFamily: 'var(--f-mono)',
+                          fontSize: 'var(--fs-xs)', fontWeight: 700, fontFamily: 'var(--f-mono)',
                           color: 'var(--muted)', display: 'flex', alignItems: 'center', gap: 3,
                         }}>
                           {allFree ? 'grátis' : <><CoinIcon size={9} />variado</>}
