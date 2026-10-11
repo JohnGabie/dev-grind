@@ -1,3 +1,5 @@
+import { useMediaQuery } from '../hooks/useMediaQuery'
+import { NARROW_QUERY } from './screen'
 import type { KeyboardEvent, ReactNode } from 'react'
 
 export interface WindowTab { id: string; label: string }
@@ -16,6 +18,7 @@ interface WindowFrameProps {
 const DOTS = ['var(--red)', 'var(--yellow)', 'var(--green)']
 
 export default function WindowFrame({ title, children, onClick, ariaLabel, tabs, activeTab, onTab, footer }: WindowFrameProps) {
+  const narrow = useMediaQuery(NARROW_QUERY)
   const onKeyDown = (e: KeyboardEvent) => {
     if (e.target === e.currentTarget && onClick && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); onClick() }
   }
@@ -57,7 +60,7 @@ export default function WindowFrame({ title, children, onClick, ariaLabel, tabs,
                   }}
                 >
                   <span style={{
-                    height: 'var(--ctl-chip)', display: 'inline-flex', alignItems: 'center', padding: '0 var(--sp-3)',
+                    height: 'var(--ctl-chip)', display: 'inline-flex', alignItems: 'center', padding: narrow ? '0 var(--sp-2)' : '0 var(--sp-3)',
                     color: active ? 'var(--text)' : 'var(--muted)', whiteSpace: 'nowrap', boxSizing: 'border-box',
                     borderBottom: `2px solid ${active ? 'var(--cyan)' : 'transparent'}`,
                   }}>
