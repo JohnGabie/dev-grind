@@ -56,7 +56,7 @@ describe('geometry', () => {
 
 describe('frozen source', () => {
   it('does not call Math.random and keeps the freeze comment', () => {
-    const source = readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'skillPath.ts'), 'utf8')
+    const source = readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'skillPath.ts'), 'utf8').replace(/\r\n/g, '\n')
     assert.equal(source.startsWith('// Frozen. Changing the salt, Step, or the constants moves every course map.\n'), true)
     assert.equal(source.includes('Math.random'), false)
   })
