@@ -23,6 +23,8 @@ João, in his words:
 
 | Topic | Decision |
 |---|---|
+| Dashboard header | **Kept as is**: the greeting, the cyan name and the date. Only size and spacing follow the scale. |
+| Profile identity | **Kept as is**: photo, cover, kyu number and the progress circle. Mobile means resize and re-space, not redesign. |
 | Dashboard hierarchy | **Status first**: header, status card, next action, analysis collapsed, history |
 | Profile, visible without a tap | Identity + rank progress, activity heatmap, badges |
 | Profile, collapsible rows | Bio, social links |
@@ -42,7 +44,8 @@ João, in his words:
 
 ### Surfaces and tone (applies to both screens)
 
-- At most **two raised surfaces per screen** (`--bg-card` + 1px `--border` + `--radius-lg`): on the Dashboard the status card and the next-action card; on the Profile the identity/rank card. Everything else is a heading plus rows on `--bg`, separated by 1px `--border` lines.
+- At most **two raised surfaces per screen** for the NEW blocks (`--bg-card` + 1px `--border` + `--radius-lg`): on the Dashboard the status card and the next-action card. Everything else is a heading plus rows on `--bg`, separated by 1px `--border` lines.
+- **Exception, by João's choice:** the Dashboard greeting and the Profile cover/identity block keep their current look (cover image, frosted identity backdrop, ring). The rules below apply to everything new, not to these two things.
 - No emoji as icons, no gradients, no glow or `text-shadow`, no frosted glass, no coloured accent stripe on cards, no per-section fade-in.
 - Motion only in response to a tap: expand/collapse and readout change.
 - Sizes only from the scale tokens (`var(--fs-*)`, `var(--ctl-*)`, `var(--sp-*)`, `var(--radius-*)`). One justified exception: heatmap cells (data marks, not tap targets).
@@ -50,7 +53,7 @@ João, in his words:
 
 ### Dashboard (mobile)
 
-1. **Header**: greeting and date on one line, small, muted. No profile entry (it lives in "Mais").
+1. **Header (kept)**: the existing greeting ("boa noite, João" with the cyan name) and the date, exactly as they are today. Only their size and spacing follow the scale tokens. No profile entry here (it lives in "Mais").
 2. **Status card** (surface 1): rank line `8kyu` at `--fs-xl` in the rank colour with `84 / 120 honor` at the right; a 4px bar filled to `rank_progress`; a line "faltam 36 para 7kyu"; then three figures in a row separated by 1px vertical lines: streak (dias), completed this week, honor. Words as labels. The whole card opens the Profile.
 3. **Next action** (surface 2): the in-progress item if one exists ("continuar"), otherwise today's first exercise ("começar"). Title as heading, kyu tag, one 48px primary button. A small "mudar modo" link reveals the existing modes (Rank Up / Aquecimento / Praticar); it is hidden when there are fewer than two distinct choices.
 4. **Agent analysis**: one 52px row: "análise do agente" with its date and the first line, ellipsized, plus a dot when there is something new. Tap expands it inline to the full text and the gap tokens as plain text. Older insights sit behind an "anteriores" row.
@@ -60,12 +63,12 @@ Removed on mobile: stat pills, the "iniciar chat com a IA" pill (the chat button
 
 ### Profile (mobile)
 
-1. **Identity + rank** (surface): 48px avatar with a 1px rank-colour border, name at `--fs-lg`, "membro há Nd" muted; below it the same RankCard as the Dashboard plus a row for completion rate (and active days if the stats API returns it; otherwise omitted).
+1. **Identity (kept)**: the existing cover with the identity laid over it: photo, name, "membro há", the kyu number and the **progress circle**, as João likes them today. Mobile only resizes and re-spaces it: a shorter cover (about 200px instead of 360px), a smaller avatar and ring from the size scale, the identity block sized to the 20px gutters, nothing added and nothing redesigned. The ring is fed the real `rank_progress` (today it is hardcoded to 50%, DEV-27), see open question 6. Below it, one row with completion rate (and active days if the stats API returns it; otherwise omitted).
 2. **Activity heatmap**: the last **20 weeks**, 12px cells with 4px gaps (16px pitch, about 320px plus a day-letter column), the existing four cyan opacity steps. Tapping or dragging selects the nearest day, drawn with a 1px `--text` outline; a one-line **readout** under the grid always shows the selected day ("ter 7 out · 2 katas, 1 aula", default today). A "365 dias" toggle turns the grid into a horizontal scroller anchored at today. Cells are not shrunk.
 3. **Badges**: one row of 36px squares with 8px gaps (up to 8; a 4-column wrap otherwise). Earned: 1px border and icon in the badge colour. Locked: `--border` border and a lock icon in `--faint`. Tapping fills the same readout with the badge name and what it is for. The whole row is one 44px-tall hit area.
 4. **Collapsible rows**: bio (collapsed shows its first line; edit inline with a 16px textarea and 44px buttons) and social links (rows: icon in `--muted`, network, handle; only filled networks plus one "adicionar rede" row; no brand colours).
 
-Removed on mobile: the cover and its adjust/upload (mouse-only today), the streak flame and online dot, the recent-completions list (it duplicates the Dashboard history), friends, guild, all mock data.
+Removed on mobile: the recent-completions list (it duplicates the Dashboard history), friends, guild, all mock data. The cover stays visible; its adjust and upload controls are mouse-only today, so they stay desktop-only for now (open question 7).
 
 ### Friends and Guild pages
 
@@ -127,3 +130,6 @@ A page is an **ordered list of sections**. Each section receives its data as pro
 3. Does the stats API return active days? [Show it only if present.]
 4. Do Friends and Guild also appear in the desktop navigation later? [Not in this work.]
 5. Is 20 weeks the right default window on a real phone? [Yes; verify on device in PR 3.]
+6. The progress circle on the mobile Profile: [feed it the real `rank_progress`; the desktop ring stays hardcoded at 50% until DEV-27] or [keep it exactly as is, including the 50%].
+7. Cover edit (adjust/upload) on mobile: [desktop-only for now, the cover is display-only on a phone] or [rebuild the controls for touch in a later spec].
+8. The Dashboard status card shows rank as a bar and the Profile keeps the circle: [fine, different jobs] or [use the circle on the Dashboard card too, for consistency].
