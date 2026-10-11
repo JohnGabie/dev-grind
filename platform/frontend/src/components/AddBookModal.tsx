@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import * as pdfjsLib from 'pdfjs-dist'
 import api from '../api/client'
+import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs'
 
@@ -116,6 +117,7 @@ const SOURCE_LABEL: Record<NonNullable<MetaSource>, string> = {
 }
 
 export default function AddBookModal({ onClose, onSuccess }: Props) {
+  const isMobile = useMediaQuery(MOBILE_QUERY)
   const [step, setStep] = useState<1 | 2>(1)
   const [bookFile, setBookFile] = useState<File | null>(null)
   const [coverFile, setCoverFile] = useState<File | null>(null)
@@ -240,39 +242,41 @@ export default function AddBookModal({ onClose, onSuccess }: Props) {
   const inputStyle: React.CSSProperties = {
     width: '100%', boxSizing: 'border-box',
     background: 'var(--bg)', border: '1px solid var(--border)',
-    borderRadius: 6, padding: '8px 10px',
-    fontSize: 12, color: 'var(--text)', outline: 'none',
+    borderRadius: 'var(--radius-md)', padding: '8px 10px',
+    fontSize: isMobile ? 'var(--fs-input)' : 12, minHeight: isMobile ? 'var(--ctl-md)' : undefined, color: 'var(--text)', outline: 'none',
     fontFamily: 'var(--f-mono)',
   }
   const labelStyle: React.CSSProperties = {
-    fontSize: 10, fontWeight: 600, color: 'var(--muted)',
+    fontSize: 'var(--fs-xs)', fontWeight: 600, color: 'var(--muted)',
     letterSpacing: '0.06em', textTransform: 'uppercase',
     display: 'block', marginBottom: 5,
   }
 
   return (
     <div
-      style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(2px)' }}
+      style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: isMobile ? '0 16px' : undefined, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(2px)' }}
       onClick={e => { if (e.target === e.currentTarget) onClose() }}
     >
       <div style={{
         width: '100%', maxWidth: 480, background: 'var(--bg-card)',
         border: '1px solid var(--border-lit)', borderRadius: 12,
         boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
-        overflow: 'hidden',
+        maxHeight: isMobile ? '100dvh' : undefined,
+        overflow: isMobile ? undefined : 'hidden',
+        overflowY: isMobile ? 'auto' : undefined,
       }}>
 
         {/* Modal header */}
         <div style={{ padding: '18px 20px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: 'var(--text)' }}>Adicionar livro</p>
-            <p style={{ margin: 0, fontSize: 10, color: 'var(--muted)' }}>
+            <p style={{ margin: 0, fontSize: 'var(--fs-base)', fontWeight: 700, color: 'var(--text)' }}>Adicionar livro</p>
+            <p style={{ margin: 0, fontSize: 'var(--fs-xs)', color: 'var(--muted)' }}>
               {step === 1 ? 'Passo 1 — Selecionar arquivo' : 'Passo 2 — Metadados'}
             </p>
           </div>
           <button
             onClick={onClose}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', padding: 4, borderRadius: 4, lineHeight: 1 }}
+            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', padding: 4, borderRadius: 'var(--radius-sm)', lineHeight: 1, minWidth: isMobile ? 'var(--ctl-icon)' : undefined, minHeight: isMobile ? 'var(--ctl-icon)' : undefined }}
             onMouseEnter={e => (e.currentTarget.style.color = 'var(--text)')}
             onMouseLeave={e => (e.currentTarget.style.color = 'var(--muted)')}
           >
@@ -307,15 +311,15 @@ export default function AddBookModal({ onClose, onSuccess }: Props) {
                   }
                 </svg>
                 {bookFile ? (
-                  <p style={{ margin: 0, fontSize: 12, color: 'var(--green)', textAlign: 'center', wordBreak: 'break-all' }}>
+                  <p style={{ margin: 0, fontSize: isMobile ? 'var(--fs-sm)' : 12, color: 'var(--green)', textAlign: 'center', wordBreak: 'break-all' }}>
                     {bookFile.name}
                   </p>
                 ) : (
                   <>
-                    <p style={{ margin: 0, fontSize: 12, color: 'var(--text)', textAlign: 'center' }}>
+                    <p style={{ margin: 0, fontSize: isMobile ? 'var(--fs-sm)' : 12, color: 'var(--text)', textAlign: 'center' }}>
                       Arraste o arquivo ou clique para selecionar
                     </p>
-                    <p style={{ margin: 0, fontSize: 10, color: 'var(--muted)' }}>
+                    <p style={{ margin: 0, fontSize: 'var(--fs-xs)', color: 'var(--muted)' }}>
                       Aceita .md e .pdf
                     </p>
                   </>
@@ -330,8 +334,8 @@ export default function AddBookModal({ onClose, onSuccess }: Props) {
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
                     <img src={coverPreview} alt="cover" style={{ width: 56, height: 80, objectFit: 'cover', borderRadius: 4, border: '1px solid var(--border)' }} />
                     <div>
-                      <p style={{ margin: '0 0 6px', fontSize: 11, color: 'var(--text)' }}>{coverFile?.name}</p>
-                      <button onClick={() => { setCoverFile(null); setCoverPreview(null) }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 10, color: 'var(--muted)', padding: 0 }}>
+                      <p style={{ margin: '0 0 6px', fontSize: 'var(--fs-sm)', color: 'var(--text)' }}>{coverFile?.name}</p>
+                      <button onClick={() => { setCoverFile(null); setCoverPreview(null) }} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 'var(--fs-xs)', minHeight: isMobile ? 'var(--ctl-md)' : undefined, color: 'var(--muted)', padding: 0 }}>
                         remover
                       </button>
                     </div>
@@ -339,7 +343,7 @@ export default function AddBookModal({ onClose, onSuccess }: Props) {
                 ) : (
                   <button
                     onClick={() => coverInputRef.current?.click()}
-                    style={{ background: 'none', border: '1px dashed var(--border)', borderRadius: 6, padding: '8px 14px', fontSize: 11, color: 'var(--muted)', cursor: 'pointer', transition: 'border-color 130ms, color 130ms' }}
+                    style={{ background: 'none', border: '1px dashed var(--border)', borderRadius: 'var(--radius-md)', padding: '8px 14px', fontSize: 'var(--fs-sm)', minHeight: isMobile ? 'var(--ctl-md)' : undefined, color: 'var(--muted)', cursor: 'pointer', transition: 'border-color 130ms, color 130ms' }}
                     onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--border-lit)'; e.currentTarget.style.color = 'var(--text)' }}
                     onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--border)'; e.currentTarget.style.color = 'var(--muted)' }}
                   >
@@ -354,7 +358,7 @@ export default function AddBookModal({ onClose, onSuccess }: Props) {
                   onClick={handleNextStep}
                   disabled={!bookFile || metaLoading}
                   className="btn btn-cyan"
-                  style={{ fontSize: 12, opacity: bookFile ? 1 : 0.4, minWidth: 110, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7 }}
+                  style={{ fontSize: isMobile ? 'var(--fs-base)' : 12, minHeight: isMobile ? 'var(--ctl-md)' : undefined, opacity: bookFile ? 1 : 0.4, minWidth: 110, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7 }}
                 >
                   {metaLoading ? (
                     <>
@@ -383,7 +387,7 @@ export default function AddBookModal({ onClose, onSuccess }: Props) {
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="2.5" strokeLinecap="round">
                     <path d="M20 6L9 17l-5-5" />
                   </svg>
-                  <span style={{ fontSize: 10, color: 'var(--green)', fontFamily: 'var(--f-mono)' }}>
+                  <span style={{ fontSize: 'var(--fs-xs)', color: 'var(--green)', fontFamily: 'var(--f-mono)' }}>
                     {SOURCE_LABEL[metaSource]} — revise e edite se necessário
                   </span>
                 </div>
@@ -438,13 +442,13 @@ export default function AddBookModal({ onClose, onSuccess }: Props) {
                     style={{ width: 40, height: 56, objectFit: 'cover', borderRadius: 3, border: '1px solid var(--border)' }}
                   />
                   <div>
-                    <span style={{ fontSize: 11, color: 'var(--muted)', display: 'block' }}>
+                    <span style={{ fontSize: 'var(--fs-sm)', color: 'var(--muted)', display: 'block' }}>
                       {coverPreview ? 'capa selecionada' : '✓ capa do Google Books'}
                     </span>
                     {!coverPreview && (
                       <button
                         onClick={() => coverInputRef.current?.click()}
-                        style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 10, color: 'var(--cyan)', padding: 0, fontFamily: 'var(--f-mono)' }}
+                        style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 'var(--fs-xs)', minHeight: isMobile ? 'var(--ctl-md)' : undefined, color: 'var(--cyan)', padding: 0, fontFamily: 'var(--f-mono)' }}
                       >
                         trocar por outra
                       </button>
@@ -454,13 +458,13 @@ export default function AddBookModal({ onClose, onSuccess }: Props) {
               )}
 
               {uploadError && (
-                <p style={{ fontSize: 11, color: 'var(--red)', margin: 0 }}>{uploadError}</p>
+                <p style={{ fontSize: 'var(--fs-sm)', color: 'var(--red)', margin: 0 }}>{uploadError}</p>
               )}
 
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
                 <button
                   onClick={() => setStep(1)}
-                  style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 6, padding: '7px 14px', fontSize: 11, color: 'var(--muted)', cursor: 'pointer' }}
+                  style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', padding: '7px 14px', fontSize: 'var(--fs-sm)', minHeight: isMobile ? 'var(--ctl-md)' : undefined, color: 'var(--muted)', cursor: 'pointer' }}
                 >
                   ← Voltar
                 </button>
@@ -468,7 +472,7 @@ export default function AddBookModal({ onClose, onSuccess }: Props) {
                   onClick={handleSubmit}
                   disabled={uploading || !title.trim() || !author.trim()}
                   className="btn btn-cyan"
-                  style={{ fontSize: 12, opacity: (!title.trim() || !author.trim()) ? 0.4 : 1 }}
+                  style={{ fontSize: isMobile ? 'var(--fs-base)' : 12, minHeight: isMobile ? 'var(--ctl-md)' : undefined, opacity: (!title.trim() || !author.trim()) ? 0.4 : 1 }}
                 >
                   {uploading ? 'Enviando...' : 'Adicionar livro'}
                 </button>

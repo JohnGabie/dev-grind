@@ -135,7 +135,7 @@ export default function ExercisePage() {
 
   if (!slug || !exercise) return (
     <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <span className="f-mono" style={{ color: 'var(--muted)', fontSize: 12 }}>
+      <span className="f-mono" style={{ color: 'var(--muted)', fontSize: isMobile ? 'var(--fs-sm)' : 12 }}>
         {!slug ? 'carregando...' : 'carregando exercício...'}
       </span>
     </div>
@@ -197,16 +197,16 @@ export default function ExercisePage() {
               }
             </span>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <p className="f-mono" style={{ fontSize: 10, color: 'var(--muted)', opacity: 0.6, marginBottom: 3 }}>
+              <p className="f-mono" style={{ fontSize: 'var(--fs-xs)', color: 'var(--muted)', opacity: 0.6, marginBottom: 3 }}>
                 {tc?.description ?? `test ${i + 1}`}
               </p>
               {r.passed
-                ? <p className="f-mono" style={{ fontSize: 12, color: 'var(--green)', margin: 0 }}>{r.output}</p>
+                ? <p className="f-mono" style={{ fontSize: isMobile ? 'var(--fs-sm)' : 12, color: 'var(--green)', margin: 0 }}>{r.output}</p>
                 : <>
-                    <p className="f-mono" style={{ fontSize: 12, color: 'var(--red)', margin: 0 }}>
+                    <p className="f-mono" style={{ fontSize: isMobile ? 'var(--fs-sm)' : 12, color: 'var(--red)', margin: 0 }}>
                       recebeu: <span style={{ color: 'var(--text)' }}>{r.output}</span>
                     </p>
-                    <p className="f-mono" style={{ fontSize: 12, color: 'var(--muted)', margin: '2px 0 0' }}>
+                    <p className="f-mono" style={{ fontSize: isMobile ? 'var(--fs-sm)' : 12, color: 'var(--muted)', margin: '2px 0 0' }}>
                       esperava: <span style={{ color: 'var(--green)' }}>{tc?.expected ?? r.expected}</span>
                     </p>
                   </>
@@ -239,21 +239,21 @@ export default function ExercisePage() {
           <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
             <polyline points="15 18 9 12 15 6" />
           </svg>
-          <span className="f-mono" style={{ fontSize: 10 }}>sobre o desafio</span>
+          <span className="f-mono" style={{ fontSize: 'var(--fs-xs)' }}>sobre o desafio</span>
         </button>
 
         <div style={{ width: 1, height: 12, background: 'var(--border)' }} />
 
         <div style={{
           display: 'flex', alignItems: 'center', gap: 6, padding: '3px 8px',
-          borderRadius: 4, background: `${diffColor}14`, border: `1px solid ${diffColor}30`,
+          borderRadius: 'var(--radius-sm)', background: `${diffColor}14`, border: `1px solid ${diffColor}30`,
         }}>
-          <span style={{ fontSize: 9, fontWeight: 700, color: diffColor, letterSpacing: '0.05em', fontFamily: 'var(--f-mono)' }}>
+          <span style={{ fontSize: isMobile ? 'var(--fs-xs)' : 9, fontWeight: 700, color: diffColor, letterSpacing: '0.05em', fontFamily: 'var(--f-mono)' }}>
             {exercise.difficulty}
           </span>
         </div>
 
-        <span style={{ fontWeight: 600, fontSize: 13, color: 'var(--text)', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span style={{ fontWeight: 600, fontSize: 'var(--fs-base)', color: 'var(--text)', flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'flex', alignItems: 'center', gap: 8 }}>
           <span style={{ overflow: 'hidden', textOverflow: 'ellipsis' }}>{exercise.title}</span>
           {(exercise.user_status === 'completed' || allPassed) && (
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-label="feito" style={{ flexShrink: 0 }}>
@@ -263,7 +263,7 @@ export default function ExercisePage() {
         </span>
 
         {pyLoading && (
-          <span className="f-mono" style={{ fontSize: 10, color: 'var(--cyan)', display: 'flex', alignItems: 'center', gap: 5 }}>
+          <span className="f-mono" style={{ fontSize: 'var(--fs-xs)', color: 'var(--cyan)', display: 'flex', alignItems: 'center', gap: 5 }}>
             <span style={{ display: 'inline-block', animation: 'spin 1s linear infinite' }}>⟳</span>
             python
           </span>
@@ -275,25 +275,25 @@ export default function ExercisePage() {
           width: '38%', flexShrink: 0, overflowY: 'auto',
           padding: '24px 26px 24px 22px', borderRight: '1px solid var(--border)',
         }}>
-          <div style={{ fontSize: 13, lineHeight: 1.8, color: 'var(--muted)' }}
+          <div style={{ fontSize: 'var(--fs-base)', lineHeight: 1.8, color: 'var(--muted)' }}
             dangerouslySetInnerHTML={{ __html: renderDesc(exercise.description) }} />
           <div style={{ marginTop: 28 }}>
             <p className="section-label" style={{ marginBottom: 10 }}>casos de teste</p>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
               {exercise.test_cases.filter(tc => tc.visible).map(tc => (
                 <div key={tc.id} className="card" style={{ padding: '10px 14px' }}>
-                  <p className="f-mono" style={{ fontSize: 10, color: 'var(--muted)', opacity: 0.6, marginBottom: 5 }}>
+                  <p className="f-mono" style={{ fontSize: 'var(--fs-xs)', color: 'var(--muted)', opacity: 0.6, marginBottom: 5 }}>
                     {tc.description}
                   </p>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                    <code className="f-mono" style={{ fontSize: 11, color: 'var(--text)' }}>{tc.input}</code>
+                    <code className="f-mono" style={{ fontSize: 'var(--fs-sm)', color: 'var(--text)' }}>{tc.input}</code>
                     <span style={{ color: 'var(--border-lit)' }}>→</span>
-                    <code className="f-mono" style={{ fontSize: 11, color: 'var(--green)' }}>{tc.expected}</code>
+                    <code className="f-mono" style={{ fontSize: 'var(--fs-sm)', color: 'var(--green)' }}>{tc.expected}</code>
                   </div>
                 </div>
               ))}
               {hiddenCount > 0 && (
-                <p className="f-mono" style={{ fontSize: 10, color: 'var(--muted)', opacity: 0.4, margin: '4px 0 0' }}>
+                <p className="f-mono" style={{ fontSize: 'var(--fs-xs)', color: 'var(--muted)', opacity: 0.4, margin: '4px 0 0' }}>
                   + {hiddenCount} caso{hiddenCount !== 1 ? 's' : ''} oculto{hiddenCount !== 1 ? 's' : ''} — revelados no envio
                 </p>
               )}
@@ -317,7 +317,7 @@ export default function ExercisePage() {
                 cursor: running || pyLoading || submitted ? 'not-allowed' : 'pointer',
                 background: 'transparent', border: '1px solid var(--border-lit)',
                 color: running && runType === 'test' ? 'var(--cyan)' : 'var(--muted)',
-                fontSize: 12, fontFamily: 'var(--f-mono)',
+                fontSize: isMobile ? 'var(--fs-sm)' : 12, fontFamily: 'var(--f-mono)',
                 transition: 'all 120ms', opacity: submitted ? 0.4 : 1,
               }}
             >
@@ -362,7 +362,7 @@ export default function ExercisePage() {
             <div style={{ flex: 1 }} />
 
             {results && (
-              <span className="f-mono" style={{ fontSize: 11, color: allPassed ? 'var(--green)' : 'var(--red)' }}>
+              <span className="f-mono" style={{ fontSize: 'var(--fs-sm)', color: allPassed ? 'var(--green)' : 'var(--red)' }}>
                 {passedCount}/{totalCount}
                 {runType === 'test' && <span style={{ color: 'var(--muted)', marginLeft: 4 }}>visíveis</span>}
               </span>
@@ -372,7 +372,7 @@ export default function ExercisePage() {
               onClick={() => setShowChat(v => !v)}
               title="Chat com IA"
               style={{
-                width: 28, height: 28, borderRadius: 5, flexShrink: 0,
+                width: isMobile ? 'var(--ctl-icon)' : 28, height: isMobile ? 'var(--ctl-icon)' : 28, borderRadius: 5, flexShrink: 0,
                 background: showChat ? 'rgba(34,211,238,0.1)' : 'transparent',
                 border: `1px solid ${showChat ? 'rgba(34,211,238,0.3)' : 'var(--border)'}`,
                 color: showChat ? 'var(--cyan)' : 'var(--muted)',
@@ -404,7 +404,7 @@ export default function ExercisePage() {
                 flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 padding: '6px 14px', borderBottom: '1px solid var(--border)', background: 'var(--bg-card)',
               }}>
-                <span className="f-mono" style={{ fontSize: 10, color: 'var(--muted)' }}>
+                <span className="f-mono" style={{ fontSize: 'var(--fs-xs)', color: 'var(--muted)' }}>
                   IA — {exercise.title}
                 </span>
                 <button onClick={() => setShowChat(false)} style={{
@@ -427,7 +427,7 @@ export default function ExercisePage() {
 
       <div style={{
         flexShrink: 0, display: 'flex', alignItems: 'center', gap: 10,
-        padding: '0 12px', height: 44,
+        padding: isMobile ? '0 var(--sp-5)' : '0 12px', height: 44,
         borderBottom: '1px solid var(--border)', background: 'var(--bg)',
       }}>
         <button onClick={voltarParaSobre} style={{
@@ -441,15 +441,15 @@ export default function ExercisePage() {
         </button>
 
         <span style={{
-          fontSize: 9, fontWeight: 700, color: diffColor, fontFamily: 'var(--f-mono)',
-          padding: '3px 7px', borderRadius: 4,
+          fontSize: isMobile ? 'var(--fs-xs)' : 9, fontWeight: 700, color: diffColor, fontFamily: 'var(--f-mono)',
+          padding: '3px 7px', borderRadius: 'var(--radius-sm)',
           background: `${diffColor}14`, border: `1px solid ${diffColor}30`, flexShrink: 0,
         }}>
           {exercise.difficulty}
         </span>
 
         <span style={{
-          fontWeight: 600, fontSize: 13, color: 'var(--text)', flex: 1, minWidth: 0,
+          fontWeight: 600, fontSize: 'var(--fs-base)', color: 'var(--text)', flex: 1, minWidth: 0,
           overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
           display: 'flex', alignItems: 'center', gap: 8,
         }}>
@@ -501,7 +501,7 @@ export default function ExercisePage() {
       {/* Barra de tokens, logo acima do teclado. */}
       <div style={{
         flexShrink: 0, display: 'flex', gap: 6,
-        padding: '7px 10px', overflowX: 'auto',
+        padding: isMobile ? '7px var(--sp-5)' : '7px 10px', overflowX: 'auto',
         borderTop: '1px solid var(--border)',
         background: 'var(--bg-card)',
       }}>
@@ -516,7 +516,7 @@ export default function ExercisePage() {
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               background: 'var(--bg)', border: '1px solid var(--border)',
               borderRadius: 7, color: 'var(--text)', cursor: 'pointer',
-              fontSize: 14, fontFamily: 'var(--f-mono)',
+              fontSize: isMobile ? 'var(--fs-base)' : 14, fontFamily: 'var(--f-mono)',
               WebkitTapHighlightColor: 'transparent',
             }}
           >
@@ -530,7 +530,7 @@ export default function ExercisePage() {
       {teclado === 0 && (
         <div style={{
           flexShrink: 0, display: 'flex', gap: 8,
-          padding: '8px 12px',
+          padding: isMobile ? '8px var(--sp-5)' : '8px 12px',
           paddingBottom: 'calc(8px + env(safe-area-inset-bottom, 0px))',
           borderTop: '1px solid var(--border)', background: 'var(--bg)',
         }}>
@@ -538,12 +538,12 @@ export default function ExercisePage() {
             onClick={handleTest}
             disabled={running || pyLoading || submitted}
             style={{
-              flex: 1, minHeight: 52, borderRadius: 8,
+              flex: 1, minHeight: isMobile ? 'var(--ctl-primary)' : 52, borderRadius: 'var(--radius-lg)',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
               background: 'transparent', border: '1px solid var(--border-lit)',
               color: running && runType === 'test' ? 'var(--cyan)' : 'var(--text)',
               cursor: running || pyLoading || submitted ? 'not-allowed' : 'pointer',
-              fontSize: 13, fontFamily: 'var(--f-mono)', opacity: submitted ? 0.4 : 1,
+              fontSize: 'var(--fs-base)', fontFamily: 'var(--f-mono)', opacity: submitted ? 0.4 : 1,
             }}
           >
             {running && runType === 'test'
@@ -560,11 +560,11 @@ export default function ExercisePage() {
               onClick={handleSubmit}
               disabled={running || pyLoading}
               style={{
-                flex: 1, minHeight: 52, borderRadius: 8,
+                flex: 1, minHeight: isMobile ? 'var(--ctl-primary)' : 52, borderRadius: 'var(--radius-lg)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                 background: 'var(--cyan-faint)', border: '1px solid var(--cyan-glow)',
                 color: 'var(--cyan)', cursor: running || pyLoading ? 'not-allowed' : 'pointer',
-                fontSize: 13, fontWeight: 700, fontFamily: 'var(--f-mono)',
+                fontSize: 'var(--fs-base)', fontWeight: 700, fontFamily: 'var(--f-mono)',
                 opacity: running || pyLoading ? 0.6 : 1,
               }}
             >
@@ -582,11 +582,11 @@ export default function ExercisePage() {
             <button
               onClick={voltarParaSobre}
               style={{
-                flex: 1, minHeight: 52, borderRadius: 8,
+                flex: 1, minHeight: isMobile ? 'var(--ctl-primary)' : 52, borderRadius: 'var(--radius-lg)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                 background: 'rgba(34,197,94,0.1)', border: '1px solid rgba(34,197,94,0.35)',
                 color: 'var(--green)', cursor: 'pointer',
-                fontSize: 13, fontWeight: 700, fontFamily: 'var(--f-mono)',
+                fontSize: 'var(--fs-base)', fontWeight: 700, fontFamily: 'var(--f-mono)',
               }}
             >
               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -615,12 +615,12 @@ export default function ExercisePage() {
             padding: '12px 16px', borderBottom: '1px solid var(--border)',
           }}>
             <span className="f-mono" style={{
-              fontSize: 14, fontWeight: 700,
+              fontSize: isMobile ? 'var(--fs-base)' : 14, fontWeight: 700,
               color: allPassed ? 'var(--green)' : 'var(--red)',
             }}>
               {passedCount}/{totalCount}
             </span>
-            <span className="f-mono" style={{ fontSize: 11, color: 'var(--muted)', flex: 1, minWidth: 0 }}>
+            <span className="f-mono" style={{ fontSize: 'var(--fs-sm)', color: 'var(--muted)', flex: 1, minWidth: 0 }}>
               {allPassed
                 ? (runType === 'submit'
                     ? 'tudo passou — solução aceita'
@@ -654,11 +654,11 @@ export default function ExercisePage() {
               <button
                 onClick={voltarParaSobre}
                 style={{
-                  width: '100%', minHeight: 52, borderRadius: 8,
+                  width: '100%', minHeight: isMobile ? 'var(--ctl-primary)' : 52, borderRadius: 'var(--radius-lg)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
                   background: 'rgba(34,197,94,0.12)', border: '1px solid rgba(34,197,94,0.4)',
                   color: 'var(--green)', cursor: 'pointer',
-                  fontSize: 13, fontWeight: 700, fontFamily: 'var(--f-mono)',
+                  fontSize: 'var(--fs-base)', fontWeight: 700, fontFamily: 'var(--f-mono)',
                 }}
               >
                 ver soluções
@@ -688,7 +688,7 @@ export default function ExercisePage() {
               padding: '12px 16px', borderBottom: '1px solid var(--border)',
             }}>
               <span className="f-mono" style={{
-                fontSize: 11, fontWeight: 700, letterSpacing: '0.10em',
+                fontSize: 'var(--fs-sm)', fontWeight: 700, letterSpacing: '0.10em',
                 textTransform: 'uppercase', color: 'rgba(240,240,240,0.45)',
               }}>
                 IA — este kata
@@ -722,7 +722,7 @@ export default function ExercisePage() {
               padding: '12px 16px', borderBottom: '1px solid var(--border)',
             }}>
               <span className="f-mono" style={{
-                fontSize: 11, fontWeight: 700, letterSpacing: '0.10em',
+                fontSize: 'var(--fs-sm)', fontWeight: 700, letterSpacing: '0.10em',
                 textTransform: 'uppercase', color: 'rgba(240,240,240,0.45)',
               }}>
                 enunciado
@@ -735,10 +735,10 @@ export default function ExercisePage() {
               }}>×</button>
             </div>
             <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '18px 16px 40px' }}>
-              <div style={{ fontSize: 14, lineHeight: 1.8, color: 'var(--muted)' }}
+              <div style={{ fontSize: isMobile ? 'var(--fs-base)' : 14, lineHeight: 1.8, color: 'var(--muted)' }}
                 dangerouslySetInnerHTML={{ __html: renderDesc(exercise.description) }} />
               <p className="f-mono" style={{
-                fontSize: 10, fontWeight: 700, letterSpacing: '0.11em',
+                fontSize: 'var(--fs-xs)', fontWeight: 700, letterSpacing: '0.11em',
                 textTransform: 'uppercase', color: 'rgba(240,240,240,0.45)', margin: '26px 0 10px',
               }}>
                 casos de teste
@@ -749,13 +749,13 @@ export default function ExercisePage() {
                     background: 'var(--bg-card)', border: '1px solid var(--border)',
                     borderRadius: 7, padding: '11px 13px',
                   }}>
-                    <p className="f-mono" style={{ fontSize: 10, color: 'var(--muted)', opacity: 0.6, margin: '0 0 6px' }}>
+                    <p className="f-mono" style={{ fontSize: 'var(--fs-xs)', color: 'var(--muted)', opacity: 0.6, margin: '0 0 6px' }}>
                       {tc.description}
                     </p>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                      <code className="f-mono" style={{ fontSize: 12, color: 'var(--text)' }}>{tc.input}</code>
+                      <code className="f-mono" style={{ fontSize: isMobile ? 'var(--fs-sm)' : 12, color: 'var(--text)' }}>{tc.input}</code>
                       <span style={{ color: 'var(--border-lit)' }}>→</span>
-                      <code className="f-mono" style={{ fontSize: 12, color: 'var(--green)' }}>{tc.expected}</code>
+                      <code className="f-mono" style={{ fontSize: isMobile ? 'var(--fs-sm)' : 12, color: 'var(--green)' }}>{tc.expected}</code>
                     </div>
                   </div>
                 ))}

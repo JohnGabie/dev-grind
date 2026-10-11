@@ -79,7 +79,7 @@ function timeAgo(iso: string) {
 }
 
 const sectionLabel: React.CSSProperties = {
-  fontSize: 10, fontWeight: 600, letterSpacing: '0.10em',
+  fontSize: 'var(--fs-xs)', fontWeight: 600, letterSpacing: '0.10em',
   textTransform: 'uppercase', color: 'rgba(240,240,240,0.5)',
 }
 
@@ -98,6 +98,7 @@ function assignModes(exercises: Exercise[]): Record<string, Exercise | null> {
 
 // ── ResumeCard ────────────────────────────────────────────────────────────────
 function ResumeCard({ resume }: { resume: Resume }) {
+  const isMobile = useMediaQuery(MOBILE_QUERY)
   const navigate = useNavigate()
   const [hovered, setHovered] = useState(false)
   const c = DIFF_COLOR[resume.exercise.difficulty] || '#525252'
@@ -116,18 +117,18 @@ function ResumeCard({ resume }: { resume: Resume }) {
         background: hovered ? 'var(--bg-hover)' : 'var(--bg-card)',
         border: `1px solid ${hovered ? c + '50' : c + '28'}`,
         borderLeft: `3px solid ${c}`,
-        borderRadius: 6,
+        borderRadius: 'var(--radius-md)',
         display: 'flex', alignItems: 'center', gap: 16,
         transition: 'background 120ms, border-color 120ms',
       }}
     >
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-          <span style={{ fontSize: 9, fontWeight: 700, color: c, fontFamily: 'var(--f-mono)', letterSpacing: '0.08em' }}>
+          <span style={{ fontSize: isMobile ? 'var(--fs-xs)' : 9, fontWeight: 700, color: c, fontFamily: 'var(--f-mono)', letterSpacing: '0.08em' }}>
             {resume.exercise.difficulty}
           </span>
           <span style={{
-            fontSize: 13, fontWeight: 600, color: 'var(--text)',
+            fontSize: 'var(--fs-base)', fontWeight: 600, color: 'var(--text)',
             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
             letterSpacing: '-0.01em',
           }}>
@@ -143,14 +144,14 @@ function ResumeCard({ resume }: { resume: Resume }) {
                 transition: 'width 400ms ease',
               }} />
             </div>
-            <span style={{ fontSize: 10, color: 'var(--muted)', fontFamily: 'var(--f-mono)', flexShrink: 0 }}>
+            <span style={{ fontSize: 'var(--fs-xs)', color: 'var(--muted)', fontFamily: 'var(--f-mono)', flexShrink: 0 }}>
               {resume.passed_count}/{resume.total_count}
             </span>
           </div>
         )}
       </div>
       <div style={{
-        fontSize: 11, fontWeight: 600, color: c, fontFamily: 'var(--f-mono)', flexShrink: 0,
+        fontSize: 'var(--fs-sm)', fontWeight: 600, color: c, fontFamily: 'var(--f-mono)', flexShrink: 0,
         display: 'flex', alignItems: 'center', gap: 5,
         opacity: hovered ? 1 : 0.7, transition: 'opacity 120ms',
       }}>
@@ -165,6 +166,7 @@ function ResumeCard({ resume }: { resume: Resume }) {
 
 // ── TrainerWidget — visual original, cada modo tem exercício pré-atribuído ───
 function TrainerWidget({ exercises }: { exercises: Exercise[] }) {
+  const isMobile = useMediaQuery(MOBILE_QUERY)
   const navigate = useNavigate()
   const [selectedKey, setSelectedKey] = useState<string>('rankup')
 
@@ -200,12 +202,12 @@ function TrainerWidget({ exercises }: { exercises: Exercise[] }) {
               key={m.key}
               onClick={() => setSelectedKey(m.key)}
               style={{
-                height: 28, padding: '0 12px', borderRadius: 14,
+                height: 'var(--ctl-chip)', padding: '0 12px', borderRadius: isMobile ? 'var(--radius-pill)' : 14,
                 border: `1px solid ${active ? `${m.color}65` : `${m.color}30`}`,
                 background: active ? `${m.color}22` : `${m.color}0a`,
                 color: active ? m.color : `${m.color}70`,
                 cursor: 'pointer',
-                fontSize: 11, fontWeight: active ? 700 : 500,
+                fontSize: isMobile ? 'var(--fs-base)' : 11, fontWeight: active ? 700 : 500,
                 fontFamily: 'var(--f-mono)',
                 display: 'flex', alignItems: 'center', gap: 5,
                 transition: 'all 150ms',
@@ -224,7 +226,7 @@ function TrainerWidget({ exercises }: { exercises: Exercise[] }) {
           <>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
               <span style={{
-                fontSize: 9, fontWeight: 700, letterSpacing: '0.05em', flexShrink: 0,
+                fontSize: isMobile ? 'var(--fs-xs)' : 9, fontWeight: 700, letterSpacing: '0.05em', flexShrink: 0,
                 color: DIFF_COLOR[current.difficulty] || '#525252',
                 background: `${DIFF_COLOR[current.difficulty] || '#525252'}18`,
                 border: `1px solid ${DIFF_COLOR[current.difficulty] || '#525252'}40`,
@@ -234,7 +236,7 @@ function TrainerWidget({ exercises }: { exercises: Exercise[] }) {
                 {current.difficulty}
               </span>
               <p style={{
-                fontSize: 14, fontWeight: 700, color: 'var(--text)',
+                fontSize: isMobile ? 'var(--fs-base)' : 14, fontWeight: 700, color: 'var(--text)',
                 margin: 0, letterSpacing: '-0.02em', lineHeight: 1.3,
                 overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
               }}>
@@ -243,7 +245,7 @@ function TrainerWidget({ exercises }: { exercises: Exercise[] }) {
             </div>
             {current.description ? (
               <div style={{
-                fontSize: 11, color: 'var(--text)', margin: '0 0 18px',
+                fontSize: 'var(--fs-sm)', color: 'var(--text)', margin: '0 0 18px',
                 lineHeight: 1.65,
                 display: '-webkit-box', WebkitLineClamp: 3,
                 WebkitBoxOrient: 'vertical', overflow: 'hidden',
@@ -252,7 +254,7 @@ function TrainerWidget({ exercises }: { exercises: Exercise[] }) {
                   components={{
                     p: ({ children }) => <span>{children}</span>,
                     strong: ({ children }) => <strong style={{ color: 'var(--text)' }}>{children}</strong>,
-                    code: ({ children }) => <code style={{ fontFamily: 'var(--f-mono)', fontSize: 10, color: 'var(--cyan)' }}>{children}</code>,
+                    code: ({ children }) => <code style={{ fontFamily: 'var(--f-mono)', fontSize: 'var(--fs-xs)', color: 'var(--cyan)' }}>{children}</code>,
                     a: ({ children }) => <span>{children}</span>,
                   }}
                 >
@@ -262,7 +264,7 @@ function TrainerWidget({ exercises }: { exercises: Exercise[] }) {
             ) : <div style={{ marginBottom: 18 }} />}
           </>
         ) : (
-          <p style={{ fontSize: 11, color: 'var(--muted)', margin: '0 0 18px', opacity: 0.4 }}>
+          <p style={{ fontSize: 'var(--fs-sm)', color: 'var(--muted)', margin: '0 0 18px', opacity: 0.4 }}>
             nenhum exercício disponível — o agente gera novos às 06:00.
           </p>
         )}
@@ -273,11 +275,11 @@ function TrainerWidget({ exercises }: { exercises: Exercise[] }) {
             : navigate(`/exercise?mode=${selectedKey}`)
           }
           style={{
-            height: 32, padding: '0 20px', borderRadius: 6,
+            height: isMobile ? 'var(--ctl-primary)' : 32, padding: '0 20px', borderRadius: 'var(--radius-md)',
             background: `${mode.color}30`,
             border: `1px solid ${mode.color}65`,
             color: mode.color, cursor: 'pointer',
-            fontSize: 12, fontWeight: 700, fontFamily: 'var(--f-mono)',
+            fontSize: isMobile ? 'var(--fs-base)' : 12, fontWeight: 700, fontFamily: 'var(--f-mono)',
             letterSpacing: '0.05em',
             boxShadow: `0 0 10px ${mode.color}18`,
             transition: 'background 120ms, box-shadow 120ms',
@@ -315,6 +317,7 @@ const TYPE_CFG: Record<HistoryItemType, { label: string; color: string }> = {
 
 // ── HistoryCard ───────────────────────────────────────────────────────────────
 function HistoryCard({ item }: { item: HistoryItem }) {
+  const isMobile = useMediaQuery(MOBILE_QUERY)
   const navigate = useNavigate()
   const [hov, setHov] = useState(false)
   const typeCfg = TYPE_CFG[item.type]
@@ -352,7 +355,7 @@ function HistoryCard({ item }: { item: HistoryItem }) {
         background: hov ? `color-mix(in srgb, var(--bg-card) 92%, ${accentColor})` : 'var(--bg-card)',
         border: '1px solid var(--border)',
         borderLeft: `3px solid ${hov ? accentColor : accentColor + '60'}`,
-        borderRadius: 8,
+        borderRadius: 'var(--radius-lg)',
         display: 'flex', flexDirection: 'column', gap: 0,
         boxShadow: hov ? `0 6px 24px rgba(0,0,0,0.4), 0 0 0 1px ${accentColor}22` : 'none',
         transition: 'background 180ms, border-left-color 180ms, box-shadow 180ms, transform 180ms',
@@ -364,7 +367,7 @@ function HistoryCard({ item }: { item: HistoryItem }) {
         {/* Left: diff badge (exercise) or type pill (others) */}
         {item.type === 'exercise' ? (
           <span style={{
-            fontSize: 9, fontWeight: 700, fontFamily: 'var(--f-mono)',
+            fontSize: isMobile ? 'var(--fs-xs)' : 9, fontWeight: 700, fontFamily: 'var(--f-mono)',
             letterSpacing: '0.06em', color: diffColor,
             background: diffColor + '15', border: `1px solid ${diffColor}30`,
             padding: '1px 6px', borderRadius: 3,
@@ -373,7 +376,7 @@ function HistoryCard({ item }: { item: HistoryItem }) {
           </span>
         ) : (
           <span style={{
-            fontSize: 9, fontWeight: 700, fontFamily: 'var(--f-mono)',
+            fontSize: isMobile ? 'var(--fs-xs)' : 9, fontWeight: 700, fontFamily: 'var(--f-mono)',
             letterSpacing: '0.06em', color: typeCfg.color,
             background: typeCfg.color + '15', border: `1px solid ${typeCfg.color}30`,
             padding: '1px 6px', borderRadius: 3, textTransform: 'uppercase',
@@ -384,21 +387,21 @@ function HistoryCard({ item }: { item: HistoryItem }) {
         {/* Right: status label (exercise) or progress % (course/book) or empty (chat) */}
         {item.type === 'exercise' && (
           <span style={{
-            fontSize: 9, fontWeight: 600, fontFamily: 'var(--f-mono)',
+            fontSize: isMobile ? 'var(--fs-xs)' : 9, fontWeight: 600, fontFamily: 'var(--f-mono)',
             color: accentColor, letterSpacing: '0.04em',
             display: 'flex', alignItems: 'center', gap: 4,
           }}>
-            <span style={{ fontSize: 11 }}>{statusIcon}</span>
+            <span style={{ fontSize: 'var(--fs-sm)' }}>{statusIcon}</span>
             {statusLabel}
           </span>
         )}
         {(item.type === 'course' || item.type === 'book') && item.progress !== undefined && (
-          <span style={{ fontSize: 9, fontFamily: 'var(--f-mono)', color: 'var(--muted)' }}>
+          <span style={{ fontSize: isMobile ? 'var(--fs-xs)' : 9, fontFamily: 'var(--f-mono)', color: 'var(--muted)' }}>
             {item.progress}%
           </span>
         )}
         {item.type === 'chat' && (
-          <span style={{ fontSize: 9, fontFamily: 'var(--f-mono)', color: 'var(--muted)' }}>
+          <span style={{ fontSize: isMobile ? 'var(--fs-xs)' : 9, fontFamily: 'var(--f-mono)', color: 'var(--muted)' }}>
             {timeAgo(item.submitted_at)}
           </span>
         )}
@@ -407,7 +410,7 @@ function HistoryCard({ item }: { item: HistoryItem }) {
       {/* Title */}
       <p style={{
         flex: 1, margin: 0,
-        fontSize: 13, fontWeight: 600, color: 'var(--text)',
+        fontSize: 'var(--fs-base)', fontWeight: 600, color: 'var(--text)',
         lineHeight: 1.5, letterSpacing: '-0.01em',
         display: '-webkit-box', WebkitLineClamp: item.type === 'chat' ? 2 : 3,
         WebkitBoxOrient: 'vertical', overflow: 'hidden',
@@ -418,7 +421,7 @@ function HistoryCard({ item }: { item: HistoryItem }) {
       {/* Chat preview */}
       {item.type === 'chat' && item.preview && (
         <p style={{
-          margin: '6px 0 0', fontSize: 10, color: 'var(--muted)',
+          margin: '6px 0 0', fontSize: 'var(--fs-xs)', color: 'var(--muted)',
           lineHeight: 1.5,
           display: '-webkit-box', WebkitLineClamp: 2,
           WebkitBoxOrient: 'vertical', overflow: 'hidden',
@@ -445,7 +448,7 @@ function HistoryCard({ item }: { item: HistoryItem }) {
         <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', marginTop: 10 }}>
           {item.tags.slice(0, 3).map(tag => (
             <span key={tag} style={{
-              fontSize: 9, fontFamily: 'var(--f-mono)',
+              fontSize: isMobile ? 'var(--fs-xs)' : 9, fontFamily: 'var(--f-mono)',
               color: 'var(--muted)', background: 'rgba(255,255,255,0.04)',
               border: '1px solid var(--border)',
               padding: '1px 6px', borderRadius: 3, letterSpacing: '0.02em',
@@ -459,7 +462,7 @@ function HistoryCard({ item }: { item: HistoryItem }) {
       {/* Time (exercise only at bottom) */}
       {item.type === 'exercise' && (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginTop: 8 }}>
-          <span style={{ fontSize: 9, color: 'var(--muted)', fontFamily: 'var(--f-mono)' }}>
+          <span style={{ fontSize: isMobile ? 'var(--fs-xs)' : 9, color: 'var(--muted)', fontFamily: 'var(--f-mono)' }}>
             {timeAgo(item.submitted_at)}
           </span>
         </div>
@@ -468,7 +471,7 @@ function HistoryCard({ item }: { item: HistoryItem }) {
       {/* Course/book bottom: time */}
       {(item.type === 'course' || item.type === 'book') && (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', marginTop: 8 }}>
-          <span style={{ fontSize: 9, color: 'var(--muted)', fontFamily: 'var(--f-mono)' }}>
+          <span style={{ fontSize: isMobile ? 'var(--fs-xs)' : 9, color: 'var(--muted)', fontFamily: 'var(--f-mono)' }}>
             {timeAgo(item.submitted_at)}
           </span>
         </div>
@@ -506,7 +509,7 @@ function HistoryCarousel({ items }: { items: HistoryItem[] }) {
 
   if (items.length === 0) {
     return (
-      <p style={{ fontSize: 11, color: 'var(--muted)', margin: '4px 0 0', fontFamily: 'var(--f-mono)' }}>
+      <p style={{ fontSize: 'var(--fs-sm)', color: 'var(--muted)', margin: '4px 0 0', fontFamily: 'var(--f-mono)' }}>
         nenhuma atividade ainda.
       </p>
     )
@@ -645,10 +648,18 @@ export default function DashboardPage() {
   const [insightIdx, setInsightIdx] = useState(0)
   const [recentItems, setRecentItems] = useState<HistoryItem[]>([])
   const [loading, setLoading] = useState(true)
+  const [rank, setRank] = useState<string | null>(null)
+  const navigate = useNavigate()
 
   const hour = new Date().getHours()
   const greeting = hour < 12 ? 'bom dia' : hour < 18 ? 'boa tarde' : 'boa noite'
   const firstName = user?.name?.split(' ')[0] ?? ''
+
+  // No mobile não há barra de topo: o kyu entra na faixa de stats.
+  useEffect(() => {
+    if (!isMobile) return
+    api.get('/users/me/stats').then(r => setRank(r.data.rank)).catch(() => {})
+  }, [isMobile])
 
   useEffect(() => {
     Promise.all([
@@ -674,7 +685,7 @@ export default function DashboardPage() {
 
   if (loading) return (
     <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <span style={{ color: 'var(--muted)', fontSize: 11, fontFamily: 'var(--f-mono)' }}>_</span>
+      <span style={{ color: 'var(--muted)', fontSize: 'var(--fs-sm)', fontFamily: 'var(--f-mono)' }}>_</span>
     </div>
   )
 
@@ -702,11 +713,11 @@ export default function DashboardPage() {
           display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
           marginBottom: 28,
         }}>
-          <h1 style={{ fontSize: 26, fontWeight: 800, margin: 0, letterSpacing: '-0.03em' }}>
+          <h1 style={{ fontSize: isMobile ? 'var(--fs-xl)' : 26, fontWeight: 800, margin: 0, letterSpacing: '-0.03em' }}>
             {greeting},{' '}
             <span style={{ color: 'var(--cyan)' }}>{firstName}</span>
           </h1>
-          <span style={{ fontSize: 11, color: 'var(--blue)', fontFamily: 'var(--f-mono)' }}>
+          <span style={{ fontSize: 'var(--fs-sm)', color: 'var(--blue)', fontFamily: 'var(--f-mono)' }}>
             {new Date().toLocaleDateString('pt-BR', { weekday: 'short', day: 'numeric', month: 'short' })}
           </span>
         </div>
@@ -717,6 +728,22 @@ export default function DashboardPage() {
             display: 'flex', alignItems: 'center', gap: 8,
             marginBottom: 32, flexWrap: 'wrap',
           }}>
+            {isMobile && rank && (() => {
+              const c = DIFF_COLOR[rank] || '#525252'
+              return (
+                <button
+                  onClick={() => navigate('/profile')}
+                  aria-label={`Rank ${rank}, abrir perfil`}
+                  style={{
+                    height: 'var(--ctl-chip)', padding: '0 12px', cursor: 'pointer',
+                    fontSize: 'var(--fs-base)', fontWeight: 800, fontFamily: 'var(--f-mono)', letterSpacing: '0.06em',
+                    color: c, background: `${c}22`, border: `1px solid ${c}60`, borderRadius: 20,
+                  }}
+                >
+                  {rank}
+                </button>
+              )
+            })()}
             {[
               { icon: '🔥', val: `${summary.current_streak}d`, label: 'streak', accent: summary.current_streak > 0 ? 'var(--cyan)' : undefined },
               { icon: '✓',  val: summary.completed_last_7_days, label: 'essa semana', accent: undefined },
@@ -724,27 +751,27 @@ export default function DashboardPage() {
             ].map(({ icon, val, label, accent }) => (
               <div key={label} style={{
                 display: 'flex', alignItems: 'center', gap: 7,
-                height: 28, padding: '0 12px',
+                height: 'var(--ctl-chip)', padding: '0 12px',
                 background: accent ? `${accent}10` : 'var(--bg-card)',
                 border: `1px solid ${accent ? accent + '30' : 'var(--border)'}`,
                 borderRadius: 20,
               }}>
-                <span style={{ fontSize: 11, lineHeight: 1 }}>{icon}</span>
-                <span style={{ fontSize: 13, fontWeight: 800, fontFamily: 'var(--f-mono)', color: accent ?? 'var(--text)', letterSpacing: '-0.01em' }}>
+                <span style={{ fontSize: 'var(--fs-sm)', lineHeight: 1 }}>{icon}</span>
+                <span style={{ fontSize: 'var(--fs-base)', fontWeight: 800, fontFamily: 'var(--f-mono)', color: accent ?? 'var(--text)', letterSpacing: '-0.01em' }}>
                   {val}
                 </span>
-                <span style={{ fontSize: 10, color: 'var(--muted)', letterSpacing: '0.02em' }}>{label}</span>
+                <span style={{ fontSize: 'var(--fs-xs)', color: 'var(--muted)', letterSpacing: '0.02em' }}>{label}</span>
               </div>
             ))}
             <button
               style={{
                 marginLeft: 'auto',
-                height: 28, padding: '0 14px',
+                height: 'var(--ctl-chip)', padding: '0 14px',
                 display: 'flex', alignItems: 'center', gap: 6,
                 background: 'rgba(59,130,246,0.10)',
                 border: '1px solid rgba(59,130,246,0.35)',
                 borderRadius: 20, cursor: 'pointer',
-                fontSize: 11, fontWeight: 600, color: 'var(--blue)',
+                fontSize: isMobile ? 'var(--fs-base)' : 11, fontWeight: 600, color: 'var(--blue)',
                 fontFamily: 'var(--f-mono)', letterSpacing: '0.02em',
                 transition: 'background 120ms, border-color 120ms',
               }}
@@ -785,7 +812,7 @@ export default function DashboardPage() {
               {/* Header row */}
               <div style={{ marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8 }}>
                 <span style={sectionLabel}>análise do agente</span>
-                <span style={{ fontSize: 9, color: 'var(--muted)', fontFamily: 'var(--f-mono)' }}>
+                <span style={{ fontSize: isMobile ? 'var(--fs-xs)' : 9, color: 'var(--muted)', fontFamily: 'var(--f-mono)' }}>
                   {new Date(insight.generated_at).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })}
                   {!isLatest && <span style={{ color: 'rgba(240,240,240,0.3)', marginLeft: 4 }}>· {insightIdx + 1}/{insights.length}</span>}
                 </span>
@@ -796,7 +823,7 @@ export default function DashboardPage() {
                       onClick={() => setInsightIdx(i => Math.max(0, i - 1))}
                       disabled={isLatest}
                       style={{
-                        width: 22, height: 22, borderRadius: 4,
+                        width: isMobile ? 'var(--ctl-icon)' : 22, height: isMobile ? 'var(--ctl-icon)' : 22, borderRadius: 'var(--radius-sm)',
                         background: isLatest ? 'transparent' : 'var(--bg-card)',
                         border: `1px solid ${isLatest ? 'var(--border)' : 'var(--border-lit)'}`,
                         color: isLatest ? 'var(--border)' : 'var(--muted)',
@@ -813,7 +840,7 @@ export default function DashboardPage() {
                       onClick={() => setInsightIdx(i => Math.min(insights.length - 1, i + 1))}
                       disabled={isOldest}
                       style={{
-                        width: 22, height: 22, borderRadius: 4,
+                        width: isMobile ? 'var(--ctl-icon)' : 22, height: isMobile ? 'var(--ctl-icon)' : 22, borderRadius: 'var(--radius-sm)',
                         background: isOldest ? 'transparent' : 'var(--bg-card)',
                         border: `1px solid ${isOldest ? 'var(--border)' : 'var(--border-lit)'}`,
                         color: isOldest ? 'var(--border)' : 'var(--muted)',
@@ -843,7 +870,7 @@ export default function DashboardPage() {
                   scrollbarColor: 'var(--border) transparent',
                   paddingRight: 4,
                 }}>
-                  <p style={{ fontSize: 12, color: 'var(--text)', lineHeight: 1.7, margin: 0 }}>
+                  <p style={{ fontSize: isMobile ? 'var(--fs-sm)' : 12, color: 'var(--text)', lineHeight: 1.7, margin: 0 }}>
                     {insight.message}
                   </p>
                 </div>
@@ -851,14 +878,14 @@ export default function DashboardPage() {
                   <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
                     {insight.highlights.map(h => (
                       <span key={h} style={{
-                        fontSize: 10, fontFamily: 'var(--f-mono)', padding: '2px 8px',
+                        fontSize: 'var(--fs-xs)', fontFamily: 'var(--f-mono)', padding: '2px 8px',
                         borderRadius: 3, background: 'rgba(63,185,80,0.07)',
                         border: '1px solid rgba(63,185,80,0.2)', color: 'var(--green)',
                       }}>↑ {h}</span>
                     ))}
                     {insight.gaps.map(g => (
                       <span key={g} style={{
-                        fontSize: 10, fontFamily: 'var(--f-mono)', padding: '2px 8px',
+                        fontSize: 'var(--fs-xs)', fontFamily: 'var(--f-mono)', padding: '2px 8px',
                         borderRadius: 3, background: 'rgba(34,211,238,0.07)',
                         border: '1px solid rgba(34,211,238,0.2)', color: 'var(--cyan)',
                       }}>→ {g}</span>

@@ -1,6 +1,7 @@
 import { useState, useRef, useEffect } from 'react'
 import api from '../api/client'
 import { getAiConfig } from '../api/aiConfig'
+import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -13,6 +14,7 @@ export function ChatPanel({ context, style }: {
   context: string
   style?: React.CSSProperties
 }) {
+  const isMobile = useMediaQuery(MOBILE_QUERY)
   const [messages, setMessages] = useState<Message[]>([])
   const [input, setInput] = useState('')
   const [sending, setSending] = useState(false)
@@ -54,7 +56,7 @@ export function ChatPanel({ context, style }: {
         padding: '7px 14px', flexShrink: 0,
         borderBottom: '1px solid var(--border)',
         background: 'rgba(34,211,238,0.03)',
-        fontSize: 10, color: 'var(--muted)', fontFamily: 'var(--f-mono)',
+        fontSize: 'var(--fs-xs)', color: 'var(--muted)', fontFamily: 'var(--f-mono)',
         lineHeight: 1.5,
       }}>
         {ONBOARDING}
@@ -67,7 +69,7 @@ export function ChatPanel({ context, style }: {
         display: 'flex', flexDirection: 'column', gap: 8,
       }}>
         {messages.length === 0 && (
-          <p style={{ fontSize: 11, color: 'var(--muted)', opacity: 0.4, margin: '20px auto 0', textAlign: 'center' }}>
+          <p style={{ fontSize: 'var(--fs-sm)', color: 'var(--muted)', opacity: 0.4, margin: '20px auto 0', textAlign: 'center' }}>
             nenhuma mensagem ainda
           </p>
         )}
@@ -78,7 +80,7 @@ export function ChatPanel({ context, style }: {
               borderRadius: m.role === 'user' ? '10px 10px 2px 10px' : '10px 10px 10px 2px',
               background: m.role === 'user' ? 'rgba(34,211,238,0.1)' : 'var(--bg-card)',
               border: `1px solid ${m.role === 'user' ? 'rgba(34,211,238,0.22)' : 'var(--border)'}`,
-              fontSize: 12, color: 'var(--text)', lineHeight: 1.65,
+              fontSize: isMobile ? 'var(--fs-sm)' : 12, color: 'var(--text)', lineHeight: 1.65,
               whiteSpace: 'pre-wrap', wordBreak: 'break-word',
             }}>
               {m.content}
@@ -90,7 +92,7 @@ export function ChatPanel({ context, style }: {
             <div style={{
               padding: '8px 14px', borderRadius: '10px 10px 10px 2px',
               background: 'var(--bg-card)', border: '1px solid var(--border)',
-              fontSize: 12, color: 'var(--muted)', letterSpacing: '0.15em',
+              fontSize: isMobile ? 'var(--fs-sm)' : 12, color: 'var(--muted)', letterSpacing: '0.15em',
             }}>
               ···
             </div>
@@ -111,9 +113,9 @@ export function ChatPanel({ context, style }: {
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send() } }}
           style={{
-            flex: 1, height: 30, padding: '0 10px', boxSizing: 'border-box',
+            flex: 1, height: isMobile ? 'var(--ctl-md)' : 30, padding: '0 10px', boxSizing: 'border-box',
             background: 'var(--bg)', border: '1px solid var(--border)',
-            borderRadius: 5, color: 'var(--text)', fontSize: 12,
+            borderRadius: 5, color: 'var(--text)', fontSize: isMobile ? 'var(--fs-input)' : 12,
             fontFamily: 'var(--f-mono)', outline: 'none',
           }}
           onFocus={e => e.currentTarget.style.borderColor = 'var(--border-lit)'}
@@ -123,7 +125,7 @@ export function ChatPanel({ context, style }: {
           onClick={send}
           disabled={!input.trim() || sending}
           style={{
-            width: 30, height: 30, borderRadius: 5, flexShrink: 0,
+            width: isMobile ? 'var(--ctl-icon)' : 30, height: isMobile ? 'var(--ctl-icon)' : 30, borderRadius: 5, flexShrink: 0,
             background: input.trim() && !sending ? 'rgba(34,211,238,0.1)' : 'transparent',
             border: `1px solid ${input.trim() && !sending ? 'rgba(34,211,238,0.28)' : 'var(--border)'}`,
             cursor: input.trim() && !sending ? 'pointer' : 'not-allowed',

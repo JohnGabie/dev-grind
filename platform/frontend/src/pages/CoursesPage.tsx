@@ -13,13 +13,13 @@ function matches(given: string, expected: string) {
   return flat(given) === flat(expected)
 }
 
-const chipStyle = (on: boolean, mobile: boolean): CSSProperties => ({
+const chipStyle = (on: boolean, isMobile: boolean): CSSProperties => ({
   fontFamily: 'var(--f-mono)',
   fontVariantLigatures: 'none',
-  fontSize: 14,
+  fontSize: isMobile ? 'var(--fs-base)' : 14,
   padding: '8px 12px',
-  minHeight: mobile ? 44 : undefined,
-  borderRadius: 8,
+  minHeight: isMobile ? 'var(--ctl-md)' : undefined,
+  borderRadius: 'var(--radius-lg)',
   cursor: 'pointer',
   border: on ? '1px solid var(--cyan)' : '1px solid var(--border)',
   background: on ? 'rgba(68,188,211,0.15)' : 'transparent',
@@ -62,7 +62,7 @@ function StepView({
   if (step.type === 'text') {
     return (
       <div style={{ maxWidth: 640, margin: '0 auto' }}>
-        <p style={{ margin: 0, fontSize: 17, lineHeight: 1.75, whiteSpace: 'pre-wrap', color: 'var(--text)' }}>
+        <p style={{ margin: 0, fontSize: isMobile ? 'var(--fs-lg)' : 17, lineHeight: 1.75, whiteSpace: 'pre-wrap', color: 'var(--text)' }}>
           {step.body}
         </p>
       </div>
@@ -77,7 +77,7 @@ function StepView({
     const filled = blanks.some(item => item !== '')
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16, width: '100%' }}>
-        <p style={{ margin: 0, fontSize: 18, lineHeight: 1.6, textAlign: 'center' }}>{step.prompt}</p>
+        <p style={{ margin: 0, fontSize: isMobile ? 'var(--fs-lg)' : 18, lineHeight: 1.6, textAlign: 'center' }}>{step.prompt}</p>
         <div style={{
           display: 'grid',
           gridTemplateColumns: showPreview && !isMobile ? '1fr 1fr' : '1fr',
@@ -87,13 +87,13 @@ function StepView({
           order: isMobile && showPreview ? 2 : 0,
         }}>
           <div style={{ display: 'flex', flexDirection: 'column', minHeight: isMobile && showPreview ? undefined : 300, borderRadius: 10, border: wrong ? '1px solid #f07178' : '1px solid var(--border)', overflow: 'hidden' }}>
-            <div style={{ padding: '8px 12px', fontSize: 12, color: 'var(--muted)', borderBottom: '1px solid var(--border)' }}>
+            <div style={{ padding: '8px 12px', fontSize: isMobile ? 'var(--fs-sm)' : 12, color: 'var(--muted)', borderBottom: '1px solid var(--border)' }}>
               {step.file}
             </div>
             <pre style={{
               margin: 0, padding: '14px 16px', flex: 1, minHeight: isMobile && showPreview ? undefined : 220,
               background: 'rgba(255,255,255,0.03)',
-              fontFamily: 'var(--f-mono)', fontSize: 14, lineHeight: 1.7, whiteSpace: 'pre-wrap',
+              fontFamily: 'var(--f-mono)', fontSize: isMobile ? 'var(--fs-base)' : 14, lineHeight: 1.7, whiteSpace: 'pre-wrap',
             }}>
               {step.parts.map((part, index) => {
                 if (part.kind === 'text') return <span key={index}>{part.text}</span>
@@ -109,12 +109,12 @@ function StepView({
                   boxSizing: 'border-box',
                   margin: 0,
                   padding: '0 6px',
-                  borderRadius: 6,
+                  minHeight: isMobile ? 'var(--ctl-md)' : undefined,
+                  borderRadius: 'var(--radius-md)',
                   fontFamily: 'var(--f-mono)',
                   fontVariantLigatures: 'none',
-                  fontSize: 14,
+                  fontSize: isMobile ? 'var(--fs-input)' : 14,
                   lineHeight: 1.5,
-                  minHeight: isMobile ? 44 : undefined,
                   color: blankTone === 'ok' ? 'var(--green)' : blankTone === 'bad' ? '#f07178' : 'var(--cyan)',
                   background: blankTone === 'ok' ? 'rgba(63,185,80,0.16)' : blankTone === 'bad' ? 'rgba(240,113,120,0.14)' : 'rgba(68,188,211,0.08)',
                   border: blankTone === 'ok'
@@ -147,7 +147,7 @@ function StepView({
               <button
                 onClick={onClear}
                 disabled={!filled}
-                style={{ background: 'none', border: 'none', color: filled ? 'var(--muted)' : 'var(--faint)', cursor: filled ? 'pointer' : 'default', padding: 0, fontSize: 12, minHeight: isMobile ? 44 : undefined, minWidth: isMobile ? 44 : undefined }}
+                style={{ background: 'none', border: 'none', color: filled ? 'var(--muted)' : 'var(--faint)', cursor: filled ? 'pointer' : 'default', padding: 0, minHeight: isMobile ? 'var(--ctl-md)' : undefined, minWidth: isMobile ? 'var(--ctl-md)' : undefined, fontSize: isMobile ? 'var(--fs-sm)' : 12 }}
               >
                 limpar
               </button>
@@ -188,7 +188,7 @@ function StepView({
   if (step.type === 'browser') {
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 16, width: '100%' }}>
-        <p style={{ margin: 0, fontSize: 18, lineHeight: 1.5, textAlign: 'center' }}>{step.prompt}</p>
+        <p style={{ margin: 0, fontSize: isMobile ? 'var(--fs-lg)' : 18, lineHeight: 1.5, textAlign: 'center' }}>{step.prompt}</p>
         <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr', gap: 12 }}>
           <textarea
             value={value}
@@ -197,7 +197,7 @@ function StepView({
             style={{
               minHeight: 280, resize: 'vertical', padding: 14, borderRadius: 10,
               border: '1px solid var(--border)', background: 'rgba(255,255,255,0.03)',
-              color: 'var(--text)', fontFamily: 'var(--f-mono)', fontSize: 13, lineHeight: 1.5,
+              color: 'var(--text)', fontFamily: 'var(--f-mono)', fontSize: isMobile ? 'var(--fs-input)' : 13, lineHeight: 1.5,
             }}
           />
           <iframe
@@ -213,7 +213,7 @@ function StepView({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 18, alignItems: 'center', width: '100%' }}>
-      <p style={{ margin: 0, fontSize: 18, lineHeight: 1.5, textAlign: 'center' }}>{step.prompt}</p>
+      <p style={{ margin: 0, fontSize: isMobile ? 'var(--fs-lg)' : 18, lineHeight: 1.5, textAlign: 'center' }}>{step.prompt}</p>
       <div style={{
         width: '100%', maxWidth: 560, minHeight: 160, borderRadius: 10, padding: 16,
         background: '#0d1117', fontFamily: 'var(--f-mono)',
@@ -232,8 +232,8 @@ function StepView({
           spellCheck={false}
           style={{
             width: '100%', border: 'none', background: 'transparent', color: 'var(--text)',
-            fontFamily: 'var(--f-mono)', fontVariantLigatures: 'none', fontSize: 15, outline: 'none',
-            minHeight: isMobile ? 44 : undefined,
+            fontFamily: 'var(--f-mono)', fontVariantLigatures: 'none', fontSize: isMobile ? 'var(--fs-input)' : 15, outline: 'none',
+            minHeight: isMobile ? 'var(--ctl-md)' : undefined,
           }}
         />
       </div>
@@ -335,7 +335,7 @@ function LessonPlayer({
         <div style={{ maxWidth: 1080, width: '100%', margin: '0 auto', padding: pagePadding('24px 48px 12px', isMobile, true), flex: 1, display: 'flex', flexDirection: 'column' }}>
           <div style={{ maxWidth: 860, width: '100%', margin: '0 auto', flex: 1, display: 'flex', flexDirection: 'column' }}>
             <div style={{ flexShrink: 0 }}>
-              <button onClick={onBack} style={{ background: 'none', border: 'none', color: 'var(--cyan)', cursor: 'pointer', padding: 0, marginBottom: 14, minHeight: isMobile ? 44 : undefined }}>
+              <button onClick={onBack} style={{ background: 'none', border: 'none', color: 'var(--cyan)', cursor: 'pointer', padding: 0, marginBottom: 14, display: isMobile ? 'inline-flex' : undefined, alignItems: isMobile ? 'center' : undefined, minHeight: isMobile ? 'var(--ctl-md)' : undefined, fontSize: isMobile ? 'var(--fs-base)' : undefined }}>
                 ← {courseTitle}
               </button>
               <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
@@ -382,7 +382,7 @@ function LessonPlayer({
             <button
               onClick={wrong ? retry : goNext}
               style={{
-                flexShrink: 0, fontSize: 15, fontWeight: 700, padding: '12px 22px', borderRadius: 8, cursor: 'pointer',
+                flexShrink: 0, minHeight: isMobile ? 'var(--ctl-primary)' : undefined, fontSize: isMobile ? 'var(--fs-base)' : 15, fontWeight: 700, padding: '12px 22px', borderRadius: 'var(--radius-lg)', cursor: 'pointer',
                 background: wrong ? 'rgba(240,113,120,0.14)' : 'rgba(68,188,211,0.16)',
                 border: wrong ? '1px solid #f07178' : '1px solid rgba(68,188,211,0.45)',
                 color: wrong ? '#f07178' : 'var(--cyan)',
@@ -464,9 +464,9 @@ export default function CoursesPage() {
             onClick={() => setOpenId(item.id)}
             style={{ display: 'block', width: '100%', maxWidth: 640, textAlign: 'left', padding: '18px 20px', marginBottom: 10, cursor: 'pointer', background: 'transparent', color: 'inherit' }}
           >
-            <span style={{ display: 'block', fontSize: 18, fontWeight: 700, marginBottom: 6 }}>{item.title}</span>
-            {item.description && <span style={{ display: 'block', color: 'var(--muted)', marginBottom: 8 }}>{item.description}</span>}
-            <span style={{ color: 'var(--cyan)' }}>
+            <span style={{ display: 'block', fontSize: isMobile ? 'var(--fs-lg)' : 18, fontWeight: 700, marginBottom: 6 }}>{item.title}</span>
+            {item.description && <span style={{ display: 'block', color: 'var(--muted)', marginBottom: 8, fontSize: isMobile ? 'var(--fs-base)' : undefined }}>{item.description}</span>}
+            <span style={{ color: 'var(--cyan)', fontSize: isMobile ? 'var(--fs-base)' : undefined }}>
               {item.completed.length} de {item.sections.reduce((n, section) => n + section.lessons.length, 0)} lições
             </span>
           </button>
@@ -475,10 +475,10 @@ export default function CoursesPage() {
         {course && !lesson && (
           <div>
             <div style={{ position: 'sticky', top: 0, zIndex: 5, background: 'var(--bg)', padding: '12px 0 10px', marginBottom: 12 }}>
-              <button onClick={() => setOpenId(null)} style={{ background: 'none', border: 'none', color: 'var(--cyan)', cursor: 'pointer', padding: 0, marginBottom: isMobile ? 0 : 10, minHeight: isMobile ? 44 : undefined }}>
+              <button onClick={() => setOpenId(null)} style={{ background: 'none', border: 'none', color: 'var(--cyan)', cursor: 'pointer', padding: 0, marginBottom: isMobile ? 0 : 10, display: isMobile ? 'inline-flex' : undefined, alignItems: isMobile ? 'center' : undefined, minHeight: isMobile ? 'var(--ctl-md)' : undefined, fontSize: isMobile ? 'var(--fs-base)' : undefined }}>
                 ← cursos
               </button>
-              <h1 style={{ fontSize: 32, margin: 0 }}>{course.title}</h1>
+              <h1 style={{ fontSize: isMobile ? 'var(--fs-xl)' : 32, margin: 0 }}>{course.title}</h1>
             </div>
             <SkillPath
               courseId={course.id}

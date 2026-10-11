@@ -23,7 +23,7 @@ function Secao({ label, extra, children }: {
         gap: 12, marginBottom: 12,
       }}>
         <span style={{
-          fontSize: 10, fontWeight: 700, letterSpacing: '0.11em',
+          fontSize: 'var(--fs-xs)', fontWeight: 700, letterSpacing: '0.11em',
           textTransform: 'uppercase', color: 'rgba(240,240,240,0.45)',
           fontFamily: 'var(--f-mono)',
         }}>
@@ -38,11 +38,12 @@ function Secao({ label, extra, children }: {
 
 /** Estado vazio de seção que ainda não tem backend. Diz o que falta, sem prometer. */
 function Vazio({ texto }: { texto: string }) {
+  const isMobile = useMediaQuery(MOBILE_QUERY)
   return (
     <div style={{
       padding: '22px 16px', textAlign: 'center',
-      border: '1px dashed var(--border)', borderRadius: 8,
-      color: 'var(--muted)', fontSize: 12, fontFamily: 'var(--f-mono)',
+      border: '1px dashed var(--border)', borderRadius: 'var(--radius-lg)',
+      color: 'var(--muted)', fontSize: isMobile ? 'var(--fs-sm)' : 12, fontFamily: 'var(--f-mono)',
     }}>
       {texto}
     </div>
@@ -67,11 +68,11 @@ export default function ExerciseAboutPage() {
 
   if (erro) return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 14 }}>
-      <span className="f-mono" style={{ fontSize: 12, color: 'var(--muted)' }}>{erro}</span>
+      <span className="f-mono" style={{ fontSize: isMobile ? 'var(--fs-sm)' : 12, color: 'var(--muted)' }}>{erro}</span>
       <button onClick={() => navigate('/exercise')} style={{
-        minHeight: 44, padding: '0 18px', borderRadius: 6, cursor: 'pointer',
+        minHeight: isMobile ? 'var(--ctl-md)' : 44, padding: '0 18px', borderRadius: 'var(--radius-md)', cursor: 'pointer',
         background: 'var(--cyan-faint)', border: '1px solid var(--cyan-glow)',
-        color: 'var(--cyan)', fontSize: 12, fontFamily: 'var(--f-mono)',
+        color: 'var(--cyan)', fontSize: isMobile ? 'var(--fs-base)' : 12, fontFamily: 'var(--f-mono)',
       }}>
         voltar para a lista
       </button>
@@ -80,7 +81,7 @@ export default function ExerciseAboutPage() {
 
   if (!exercise) return (
     <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <span className="f-mono" style={{ fontSize: 12, color: 'var(--muted)' }}>carregando…</span>
+      <span className="f-mono" style={{ fontSize: isMobile ? 'var(--fs-sm)' : 12, color: 'var(--muted)' }}>carregando…</span>
     </div>
   )
 
@@ -93,10 +94,10 @@ export default function ExerciseAboutPage() {
       onClick={() => navigate(`/exercise/${exercise.slug}/solve`)}
       style={{
         width: isMobile ? '100%' : undefined,
-        minHeight: 52, padding: '0 24px', borderRadius: 8, cursor: 'pointer',
+        minHeight: isMobile ? 'var(--ctl-primary)' : 52, padding: '0 24px', borderRadius: 'var(--radius-lg)', cursor: 'pointer',
         display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 9,
         background: 'var(--cyan-faint)', border: `1px solid ${cor}55`,
-        color: cor, fontSize: 14, fontWeight: 700, fontFamily: 'var(--f-mono)',
+        color: cor, fontSize: isMobile ? 'var(--fs-base)' : 14, fontWeight: 700, fontFamily: 'var(--f-mono)',
         boxShadow: `0 0 22px ${cor}22`,
         transition: 'background 130ms, box-shadow 130ms',
       }}
@@ -124,7 +125,7 @@ export default function ExerciseAboutPage() {
             <span style={{ fontSize: 16, fontWeight: 800, color: cor, fontFamily: 'var(--f-mono)', lineHeight: 1 }}>
               {exercise.difficulty.replace('kyu', '')}
             </span>
-            <span style={{ fontSize: 8, fontWeight: 600, color: cor, fontFamily: 'var(--f-mono)', opacity: 0.75, lineHeight: 1.4 }}>
+            <span style={{ fontSize: isMobile ? 'var(--fs-xs)' : 8, fontWeight: 600, color: cor, fontFamily: 'var(--f-mono)', opacity: 0.75, lineHeight: 1.4 }}>
               kyu
             </span>
           </div>
@@ -132,7 +133,7 @@ export default function ExerciseAboutPage() {
 
         <div style={{ flex: 1, minWidth: 0 }}>
           <h1 style={{
-            fontSize: isMobile ? 19 : 22, fontWeight: 800, margin: '2px 0 8px',
+            fontSize: 'var(--fs-xl)', fontWeight: 800, margin: '2px 0 8px',
             letterSpacing: '-0.02em', lineHeight: 1.25, color: 'var(--text)',
             display: 'flex', alignItems: 'center', gap: 8,
           }}>
@@ -144,12 +145,12 @@ export default function ExerciseAboutPage() {
             )}
           </h1>
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
-            <span className="f-mono" style={{ fontSize: 11, color: 'var(--muted)' }}>
+            <span className="f-mono" style={{ fontSize: 'var(--fs-sm)', color: 'var(--muted)' }}>
               {exercise.module}
             </span>
             {exercise.tags.map(t => (
               <span key={t} style={{
-                fontSize: 9, fontWeight: 700, letterSpacing: '0.07em',
+                fontSize: isMobile ? 'var(--fs-xs)' : 9, fontWeight: 700, letterSpacing: '0.07em',
                 textTransform: 'uppercase', padding: '3px 7px', borderRadius: 3,
                 background: 'rgba(255,255,255,0.03)', border: '1px solid var(--border)',
                 color: 'var(--muted)',
@@ -164,14 +165,14 @@ export default function ExerciseAboutPage() {
       {!isMobile && <div style={{ marginTop: 22 }}>{acao}</div>}
 
       <Secao label="descrição">
-        <div style={{ fontSize: isMobile ? 14 : 13, lineHeight: 1.8, color: 'var(--muted)' }}
+        <div style={{ fontSize: 'var(--fs-base)', lineHeight: 1.8, color: 'var(--muted)' }}
           dangerouslySetInnerHTML={{ __html: renderDesc(exercise.description) }} />
       </Secao>
 
       <Secao
         label="casos de teste"
         extra={ocultos > 0 ? (
-          <span className="f-mono" style={{ fontSize: 10, color: 'var(--muted)', opacity: 0.6 }}>
+          <span className="f-mono" style={{ fontSize: 'var(--fs-xs)', color: 'var(--muted)', opacity: 0.6 }}>
             +{ocultos} oculto{ocultos !== 1 ? 's' : ''}
           </span>
         ) : undefined}
@@ -182,14 +183,14 @@ export default function ExerciseAboutPage() {
               background: 'var(--bg-card)', border: '1px solid var(--border)',
               borderRadius: 7, padding: '11px 13px',
             }}>
-              <p className="f-mono" style={{ fontSize: 10, color: 'var(--muted)', opacity: 0.6, margin: '0 0 6px' }}>
+              <p className="f-mono" style={{ fontSize: 'var(--fs-xs)', color: 'var(--muted)', opacity: 0.6, margin: '0 0 6px' }}>
                 {tc.description}
               </p>
               {/* entrada → esperado numa linha: é isso que se compara de relance */}
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-                <code className="f-mono" style={{ fontSize: 12, color: 'var(--text)' }}>{tc.input}</code>
-                <span style={{ color: 'var(--border-lit)', fontSize: 12 }}>→</span>
-                <code className="f-mono" style={{ fontSize: 12, color: 'var(--green)' }}>{tc.expected}</code>
+                <code className="f-mono" style={{ fontSize: isMobile ? 'var(--fs-sm)' : 12, color: 'var(--text)' }}>{tc.input}</code>
+                <span style={{ color: 'var(--border-lit)', fontSize: isMobile ? 'var(--fs-sm)' : 12 }}>→</span>
+                <code className="f-mono" style={{ fontSize: isMobile ? 'var(--fs-sm)' : 12, color: 'var(--green)' }}>{tc.expected}</code>
               </div>
             </div>
           ))}
@@ -203,12 +204,12 @@ export default function ExerciseAboutPage() {
             onClick={() => setShowHints(v => !v)}
             aria-expanded={showHints}
             style={{
-              minHeight: 44, width: '100%', textAlign: 'left',
+              minHeight: isMobile ? 'var(--ctl-md)' : 44, width: '100%', textAlign: 'left',
               display: 'flex', alignItems: 'center', gap: 8,
               background: 'none', border: '1px solid var(--border)', borderRadius: 7,
               padding: '0 13px', cursor: 'pointer',
               color: showHints ? 'var(--cyan)' : 'var(--muted)',
-              fontSize: 12, fontFamily: 'var(--f-mono)',
+              fontSize: isMobile ? 'var(--fs-base)' : 12, fontFamily: 'var(--f-mono)',
               transition: 'color 130ms, border-color 130ms',
             }}
           >
@@ -226,7 +227,7 @@ export default function ExerciseAboutPage() {
                   background: 'rgba(34,211,238,0.04)', border: '1px solid rgba(34,211,238,0.15)',
                   borderRadius: 7, padding: '11px 13px',
                 }}>
-                  <p className="f-mono" style={{ fontSize: 12, color: 'var(--muted)', margin: 0, lineHeight: 1.6 }}>
+                  <p className="f-mono" style={{ fontSize: isMobile ? 'var(--fs-sm)' : 12, color: 'var(--muted)', margin: 0, lineHeight: 1.6 }}>
                     <span style={{ color: 'var(--cyan)' }}>{i + 1}.</span> {h}
                   </p>
                 </div>
