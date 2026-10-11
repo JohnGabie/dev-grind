@@ -167,7 +167,7 @@ export default function StorePage() {
             value={search}
             onChange={e => setSearch(e.target.value)}
             style={{
-              width: '100%', paddingLeft: 28, paddingRight: search ? 28 : 10,
+              width: '100%', paddingLeft: 28, paddingRight: search ? (isMobile ? 44 : 28) : 10,
               height: isMobile ? 'var(--ctl-md)' : 30, fontSize: isMobile ? 'var(--fs-input)' : 12, boxSizing: 'border-box',
               background: 'var(--bg)', border: '1px solid var(--border)',
               borderRadius: 5, color: 'var(--text)',
@@ -180,10 +180,10 @@ export default function StorePage() {
           {search && (
             <button onClick={() => setSearch('')}
               style={{
-                position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
+                position: 'absolute', right: isMobile ? 0 : 8, top: '50%', transform: 'translateY(-50%)',
                 background: 'none', border: 'none', cursor: 'pointer',
                 color: 'var(--muted)', fontSize: isMobile ? 'var(--fs-base)' : 14, lineHeight: 1, padding: 0,
-                minWidth: isMobile ? 'var(--ctl-icon)' : undefined, minHeight: isMobile ? 'var(--ctl-icon)' : undefined,
+                width: isMobile ? 'var(--ctl-icon)' : undefined, height: isMobile ? 'var(--ctl-icon)' : undefined,
               }}>×</button>
           )}
         </div>

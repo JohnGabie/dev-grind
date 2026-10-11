@@ -281,7 +281,7 @@ export default function PdfViewer({ slug, onLoadSuccess, onPageChange, onToggleT
 
       {/* ── Toolbar ── */}
       <div style={{
-        height: isMobile ? 'var(--ctl-icon)' : 40, flexShrink: 0, padding: '0 10px',
+        height: isMobile ? 'calc(var(--ctl-icon) + 1px)' : 40, flexShrink: 0, padding: '0 10px',
         overflowX: isMobile ? 'auto' : undefined,
         display: 'flex', alignItems: 'center', gap: 2,
         background: 'var(--bg-card)', borderBottom: '1px solid var(--border)',

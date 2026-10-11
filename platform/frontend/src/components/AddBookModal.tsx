@@ -254,14 +254,16 @@ export default function AddBookModal({ onClose, onSuccess }: Props) {
 
   return (
     <div
-      style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(2px)' }}
+      style={{ position: 'fixed', inset: 0, zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: isMobile ? '0 16px' : undefined, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(2px)' }}
       onClick={e => { if (e.target === e.currentTarget) onClose() }}
     >
       <div style={{
         width: '100%', maxWidth: 480, background: 'var(--bg-card)',
         border: '1px solid var(--border-lit)', borderRadius: 12,
         boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
-        overflow: 'hidden',
+        maxHeight: isMobile ? '100dvh' : undefined,
+        overflow: isMobile ? undefined : 'hidden',
+        overflowY: isMobile ? 'auto' : undefined,
       }}>
 
         {/* Modal header */}

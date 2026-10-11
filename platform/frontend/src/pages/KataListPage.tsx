@@ -545,7 +545,7 @@ export default function KataListPage() {
       type="text" placeholder="buscar por nome, tag..."
       value={search} onChange={e => setSearch(e.target.value)}
       style={{
-        width: '100%', paddingLeft: isMobile ? 34 : 28, paddingRight: search ? 28 : 10,
+        width: '100%', paddingLeft: isMobile ? 34 : 28, paddingRight: search ? (isMobile ? 44 : 28) : 10,
         height: isMobile ? 'var(--ctl-md)' : 30,
         fontSize: isMobile ? 'var(--fs-input)' : 12,
         boxSizing: 'border-box',

@@ -450,7 +450,7 @@ export default function BookReaderPage() {
               <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                 {/* Text page nav bar */}
                 <div style={{
-                  flexShrink: 0, height: isMobile ? 'var(--ctl-icon)' : 40,
+                  flexShrink: 0, height: isMobile ? 'calc(var(--ctl-icon) + 1px)' : 40,
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                   padding: '0 16px',
                   borderBottom: '1px solid var(--border)',
