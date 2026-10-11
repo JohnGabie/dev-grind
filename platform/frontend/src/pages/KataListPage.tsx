@@ -93,7 +93,7 @@ function FilterSelect<T extends string>({
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           background: 'var(--bg)', border: `1px solid ${open ? 'var(--border-lit)' : 'var(--border)'}`,
           borderRadius: 5, color: 'var(--text)', cursor: 'pointer',
-          fontSize: isMobile ? 'var(--fs-sm)' : 12, fontFamily: 'var(--f-mono)',
+          fontSize: isMobile ? 'var(--fs-base)' : 12, fontFamily: 'var(--f-mono)',
           transition: 'border-color 120ms',
         }}
       >
@@ -122,7 +122,7 @@ function FilterSelect<T extends string>({
                 background: opt.value === value ? 'rgba(34,211,238,0.06)' : 'transparent',
                 border: 'none', cursor: 'pointer',
                 color: opt.value === value ? 'var(--cyan)' : 'var(--text)',
-                fontSize: isMobile ? 'var(--fs-sm)' : 12, fontFamily: 'var(--f-mono)',
+                fontSize: isMobile ? 'var(--fs-base)' : 12, fontFamily: 'var(--f-mono)',
                 display: 'flex', alignItems: 'center', gap: 8,
                 transition: 'background 80ms',
               }}
@@ -212,7 +212,7 @@ function FilterMultiSelect({
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           background: 'var(--bg)', border: `1px solid ${open ? 'var(--border-lit)' : 'var(--border)'}`,
           borderRadius: 5, color: values.size > 0 ? 'var(--text)' : 'var(--muted)', cursor: 'pointer',
-          fontSize: isMobile ? 'var(--fs-sm)' : 12, fontFamily: 'var(--f-mono)',
+          fontSize: isMobile ? 'var(--fs-base)' : 12, fontFamily: 'var(--f-mono)',
           transition: 'border-color 120ms',
         }}
       >
@@ -261,7 +261,7 @@ function FilterMultiSelect({
                     background: active ? `${c}0f` : 'transparent',
                     border: 'none', cursor: 'pointer',
                     color: active ? c : 'var(--text)',
-                    fontSize: isMobile ? 'var(--fs-sm)' : 12, fontFamily: 'var(--f-mono)',
+                    fontSize: isMobile ? 'var(--fs-base)' : 12, fontFamily: 'var(--f-mono)',
                     display: 'flex', alignItems: 'center', gap: 8,
                     transition: 'background 80ms',
                   }}
@@ -709,7 +709,7 @@ export default function KataListPage() {
               border: `1px solid ${filtrosAbertos || filterCount ? 'var(--cyan-glow)' : 'var(--border)'}`,
               borderRadius: 5, cursor: 'pointer',
               color: filtrosAbertos || filterCount ? 'var(--cyan)' : 'var(--text)',
-              fontSize: isMobile ? 'var(--fs-sm)' : 12, fontFamily: 'var(--f-mono)',
+              fontSize: isMobile ? 'var(--fs-base)' : 12, fontFamily: 'var(--f-mono)',
               transition: 'background 130ms, border-color 130ms, color 130ms',
             }}
           >

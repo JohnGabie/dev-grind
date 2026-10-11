@@ -96,7 +96,7 @@ function FilterTab({ label, count, active, color, onClick }: {
         background: active ? `${color}18` : hovered ? 'var(--bg-card)' : 'transparent',
         border: `1px solid ${active ? `${color}50` : hovered ? 'var(--border-lit)' : 'var(--border)'}`,
         color: active ? color : hovered ? 'var(--text)' : 'var(--muted)',
-        fontSize: 'var(--fs-sm)', fontWeight: active ? 700 : 500,
+        fontSize: isMobile ? 'var(--fs-base)' : 11, fontWeight: active ? 700 : 500,
         transition: 'all 130ms',
       }}
     >
@@ -248,11 +248,11 @@ function BookCard({ book, onClick, onDelete }: { book: Book; onClick: () => void
           </p>
           <div style={{ display: 'flex', gap: 8 }}>
             <button onClick={e => { stopProp(e); setConfirming(false) }}
-              style={{ padding: '5px 14px', borderRadius: 5, fontSize: 'var(--fs-sm)', minHeight: isMobile ? 'var(--ctl-md)' : undefined, cursor: 'pointer', background: 'transparent', border: '1px solid var(--border)', color: 'var(--muted)', fontFamily: 'var(--font)' }}>
+              style={{ padding: '5px 14px', borderRadius: 5, fontSize: isMobile ? 'var(--fs-base)' : 11, minHeight: isMobile ? 'var(--ctl-md)' : undefined, cursor: 'pointer', background: 'transparent', border: '1px solid var(--border)', color: 'var(--muted)', fontFamily: 'var(--font)' }}>
               cancelar
             </button>
             <button onClick={e => { stopProp(e); onDelete() }}
-              style={{ padding: '5px 14px', borderRadius: 5, fontSize: 'var(--fs-sm)', minHeight: isMobile ? 'var(--ctl-md)' : undefined, cursor: 'pointer', background: 'rgba(248,81,73,0.15)', border: '1px solid rgba(248,81,73,0.4)', color: '#f85149', fontWeight: 700, fontFamily: 'var(--font)' }}>
+              style={{ padding: '5px 14px', borderRadius: 5, fontSize: isMobile ? 'var(--fs-base)' : 11, minHeight: isMobile ? 'var(--ctl-md)' : undefined, cursor: 'pointer', background: 'rgba(248,81,73,0.15)', border: '1px solid rgba(248,81,73,0.4)', color: '#f85149', fontWeight: 700, fontFamily: 'var(--font)' }}>
               deletar
             </button>
           </div>

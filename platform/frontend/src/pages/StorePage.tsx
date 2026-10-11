@@ -214,7 +214,7 @@ export default function StorePage() {
                     background: isActive ? 'rgba(34,211,238,0.08)' : 'transparent',
                     borderLeft: `3px solid ${isActive ? 'var(--cyan)' : 'transparent'}`,
                     color: isActive ? 'var(--cyan)' : 'var(--muted)',
-                    fontSize: isMobile ? 'var(--fs-sm)' : 12, fontFamily: 'var(--f-mono)',
+                    fontSize: isMobile ? 'var(--fs-base)' : 12, fontFamily: 'var(--f-mono)',
                     transition: 'background 120ms, color 120ms, border-left-color 120ms',
                   }}
                   onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'var(--bg-hover)' }}
@@ -297,7 +297,7 @@ export default function StorePage() {
                         style={{
                           flexShrink: 0, display: 'flex', alignItems: 'center', gap: 6,
                           padding: '8px 16px', borderRadius: 7, cursor: atMax || !canAfford ? 'not-allowed' : 'pointer',
-                          fontSize: isMobile ? 'var(--fs-sm)' : 12, fontWeight: 700, fontFamily: 'var(--f-mono)',
+                          fontSize: isMobile ? 'var(--fs-base)' : 12, fontWeight: 700, fontFamily: 'var(--f-mono)',
                           minHeight: isMobile ? 'var(--ctl-primary)' : undefined,
                           border: '1px solid',
                           borderColor: atMax ? 'var(--border)' : canAfford ? 'rgba(168,85,247,0.4)' : 'var(--border)',

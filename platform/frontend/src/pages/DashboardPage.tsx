@@ -202,12 +202,12 @@ function TrainerWidget({ exercises }: { exercises: Exercise[] }) {
               key={m.key}
               onClick={() => setSelectedKey(m.key)}
               style={{
-                height: 'var(--ctl-chip)', padding: '0 12px', borderRadius: 14,
+                height: 'var(--ctl-chip)', padding: '0 12px', borderRadius: isMobile ? 'var(--radius-pill)' : 14,
                 border: `1px solid ${active ? `${m.color}65` : `${m.color}30`}`,
                 background: active ? `${m.color}22` : `${m.color}0a`,
                 color: active ? m.color : `${m.color}70`,
                 cursor: 'pointer',
-                fontSize: 'var(--fs-sm)', fontWeight: active ? 700 : 500,
+                fontSize: isMobile ? 'var(--fs-base)' : 11, fontWeight: active ? 700 : 500,
                 fontFamily: 'var(--f-mono)',
                 display: 'flex', alignItems: 'center', gap: 5,
                 transition: 'all 150ms',
@@ -736,7 +736,7 @@ export default function DashboardPage() {
                   aria-label={`Rank ${rank}, abrir perfil`}
                   style={{
                     height: 'var(--ctl-chip)', padding: '0 12px', cursor: 'pointer',
-                    fontSize: 'var(--fs-sm)', fontWeight: 800, fontFamily: 'var(--f-mono)', letterSpacing: '0.06em',
+                    fontSize: 'var(--fs-base)', fontWeight: 800, fontFamily: 'var(--f-mono)', letterSpacing: '0.06em',
                     color: c, background: `${c}22`, border: `1px solid ${c}60`, borderRadius: 20,
                   }}
                 >
@@ -771,7 +771,7 @@ export default function DashboardPage() {
                 background: 'rgba(59,130,246,0.10)',
                 border: '1px solid rgba(59,130,246,0.35)',
                 borderRadius: 20, cursor: 'pointer',
-                fontSize: 'var(--fs-sm)', fontWeight: 600, color: 'var(--blue)',
+                fontSize: isMobile ? 'var(--fs-base)' : 11, fontWeight: 600, color: 'var(--blue)',
                 fontFamily: 'var(--f-mono)', letterSpacing: '0.02em',
                 transition: 'background 120ms, border-color 120ms',
               }}

@@ -72,7 +72,7 @@ export default function ExerciseAboutPage() {
       <button onClick={() => navigate('/exercise')} style={{
         minHeight: isMobile ? 'var(--ctl-md)' : 44, padding: '0 18px', borderRadius: 'var(--radius-md)', cursor: 'pointer',
         background: 'var(--cyan-faint)', border: '1px solid var(--cyan-glow)',
-        color: 'var(--cyan)', fontSize: isMobile ? 'var(--fs-sm)' : 12, fontFamily: 'var(--f-mono)',
+        color: 'var(--cyan)', fontSize: isMobile ? 'var(--fs-base)' : 12, fontFamily: 'var(--f-mono)',
       }}>
         voltar para a lista
       </button>
@@ -203,7 +203,7 @@ export default function ExerciseAboutPage() {
               background: 'none', border: '1px solid var(--border)', borderRadius: 7,
               padding: '0 13px', cursor: 'pointer',
               color: showHints ? 'var(--cyan)' : 'var(--muted)',
-              fontSize: isMobile ? 'var(--fs-sm)' : 12, fontFamily: 'var(--f-mono)',
+              fontSize: isMobile ? 'var(--fs-base)' : 12, fontFamily: 'var(--f-mono)',
               transition: 'color 130ms, border-color 130ms',
             }}
           >
