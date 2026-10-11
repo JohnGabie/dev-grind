@@ -188,7 +188,8 @@ function ChatBubble() {
     : (isMobile ? `calc(84px + ${MOBILE_NAV_SPACE})` : 84)
   const rightOffset = isMobile ? 20 : 24
 
-  if (naTelaDeResolver) return null
+  const naDashboardMobile = isMobile && location.pathname === '/'
+  if (naTelaDeResolver || naDashboardMobile) return null
 
   return (
     <>
