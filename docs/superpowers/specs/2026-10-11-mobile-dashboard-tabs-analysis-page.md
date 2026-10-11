@@ -21,6 +21,16 @@
 - **C. Route:** `/analysis`, reachable only from the Dashboard tab; no dock entry.
 - **D. Desktop:** untouched; `/analysis` redirects to `/` on desktop.
 
+## Revision: real IDE look (João: "let more looks like a real code, with our themes and IDE")
+
+This replaces proposal A. The windows look like an editor showing real files:
+
+- **Editor chrome:** macOS dots left, then editor tabs (`status.json`, `analise.md`) with the active tab joined to the code area and a 2px accent underline; inactive tab muted.
+- **Code area:** a line-number gutter (muted, right-aligned, not selectable) and syntax-highlighted content. `status.json` is real JSON: keys blue, strings green, numbers orange, braces/punctuation muted, `rank` value in its rank colour. `analise.md` is real Markdown: `#` heading in blue, `-` list markers orange, `**bold**` in yellow, code spans in cyan.
+- **Status bar** at the bottom of each window, one line like an IDE footer: `JSON  UTF-8  Ln 7, Col 1` (static text, muted, with one coloured language label).
+- **Theme (undecided):** colours come only from the app tokens already in `index.css` (`--cyan --green --red --yellow --blue`, plus orange and purple added as tokens), so it matches the rest of the app. The app has no theme switcher and no Monaco theme to reuse, so "our themes" is read as these tokens. If you meant a specific IDE theme (e.g. One Dark, Dracula), say which.
+- This reintroduces colour, but as syntax colour in code and only inside windows. The reading page uses the same Markdown highlighting.
+
 ## Out of scope
 
 Editing or deleting analyses, a desktop reading page, creating analyses from the app, changes to the Profile, changes to the agent or MCP tool.
