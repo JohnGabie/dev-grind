@@ -11,7 +11,7 @@ export default function MobilePage({ children, header, background }: MobilePageP
   return (
     <div style={{ height: '100%', overflow: 'hidden', position: 'relative' }}>
       {background && (
-        <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, pointerEvents: 'none', zIndex: 0 }}>
+        <div style={{ position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0 }}>
           {background}
         </div>
       )}

@@ -28,7 +28,7 @@ export function BackgroundPreview({ config }: { config?: BgConfig | null }) {
   }
 }
 
-export function BackgroundFooter({ height = 220, config }: { height?: number; config?: BgConfig | null }) {
+export function BackgroundFooter({ height = 220, config }: { height?: number | string; config?: BgConfig | null }) {
   return (
     <div style={{
       position: 'relative', height, overflow: 'hidden', flexShrink: 0,
