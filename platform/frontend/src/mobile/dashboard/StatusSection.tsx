@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom'
 import RankCard from '../RankCard'
+import Section from '../Section'
 import SectionState from '../SectionState'
 import { Stat, StatRow } from '../Stat'
 import Surface from '../Surface'
@@ -9,6 +10,13 @@ import type { UserStats } from '../types'
 export default function StatusSection({ stats }: { stats: Slot<UserStats> }) {
   const navigate = useNavigate()
   const s = stats.data
+  if (stats.status !== 'ready' || !s) {
+    return (
+      <Section label="estado">
+        <SectionState status={stats.status} onRetry={stats.retry}>{null}</SectionState>
+      </Section>
+    )
+  }
   return (
     <div style={{ marginTop: 'var(--sp-5)' }}>
       <SectionState status={stats.status} onRetry={stats.retry}>

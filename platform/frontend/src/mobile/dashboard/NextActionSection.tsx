@@ -4,6 +4,7 @@ import ActionCard from '../ActionCard'
 import ListRow from '../ListRow'
 import { MODE_LABEL, distinctModeCount, pickModes, pickNextAction, type ModeKey } from '../nextAction'
 import { rankColor } from '../rank'
+import Section from '../Section'
 import SectionState from '../SectionState'
 import type { Slot } from '../useSlot'
 import type { Exercise, Resume } from '../types'
@@ -16,10 +17,10 @@ export default function NextActionSection({ resume, exercises }: Props) {
   const [picking, setPicking] = useState(false)
 
   const list = exercises.data ?? []
-  const status = resume.status === 'loading' || exercises.status === 'loading'
-    ? 'loading'
-    : exercises.status === 'error' ? 'error' : 'ready'
   const action = pickNextAction(resume.data, list, mode)
+  const status = resume.status === 'loading' || (exercises.status === 'loading' && !action)
+    ? 'loading'
+    : !action && exercises.status === 'error' ? 'error' : 'ready'
   const canChoose = action?.kind === 'start' && distinctModeCount(list) >= 2
   const modes = pickModes(list)
 
@@ -43,27 +44,31 @@ export default function NextActionSection({ resume, exercises }: Props) {
     </div>
   )
 
+  if (!action || status === 'loading') {
+    return (
+      <Section label="treinar agora">
+        <SectionState
+          status={status}
+          empty
+          emptyText="sem exercício por hoje"
+          onRetry={() => { resume.retry(); exercises.retry() }}
+        >{null}</SectionState>
+      </Section>
+    )
+  }
+
   return (
     <div style={{ marginTop: 'var(--sp-4)' }}>
-      <SectionState
-        status={status}
-        empty={!action}
-        emptyText="sem exercício por hoje"
-        onRetry={() => { resume.retry(); exercises.retry() }}
-      >
-        {action && (
-          <ActionCard
-            eyebrow={action.kind === 'resume' ? 'continuar' : 'treinar agora'}
-            title={action.title}
-            tag={action.difficulty}
-            tagColor={rankColor(action.difficulty)}
-            meta={action.progress ?? undefined}
-            actionLabel={action.kind === 'resume' ? 'continuar' : 'começar'}
-            onAction={() => navigate(`/exercise/${action.slug}`)}
-            secondary={chooser || undefined}
-          />
-        )}
-      </SectionState>
+      <ActionCard
+        eyebrow={action.kind === 'resume' ? 'continuar' : 'treinar agora'}
+        title={action.title}
+        tag={action.difficulty}
+        tagColor={rankColor(action.difficulty)}
+        meta={action.progress ?? undefined}
+        actionLabel={action.kind === 'resume' ? 'continuar' : 'começar'}
+        onAction={() => navigate(`/exercise/${action.slug}`)}
+        secondary={chooser || undefined}
+      />
     </div>
   )
 }
