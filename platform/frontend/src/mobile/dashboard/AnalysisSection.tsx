@@ -66,7 +66,7 @@ export default function AnalysisSection({ insights, user }: { insights: Slot<Ins
           background: 'none', border: 'none', padding: 0, cursor: 'pointer', color: 'inherit', fontFamily: 'var(--font)', textAlign: 'left',
         }}
       >
-        {isNew && <span style={{ fontSize: 'var(--fs-xs)', color: 'var(--cyan)', flexShrink: 0 }}>● novo</span>}
+        {isNew && <span style={{ fontSize: 'var(--fs-xs)', color: 'var(--blue)', flexShrink: 0 }}>● novo</span>}
         {!open && (
           <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 'var(--fs-sm)', color: 'var(--muted)' }}>
             {`${day(latest.generated_at)} · ${latest.message.split('\n')[0]}`}
