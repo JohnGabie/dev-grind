@@ -10,9 +10,10 @@ interface ActionCardProps {
   actionLabel: string
   onAction: () => void
   secondary?: ReactNode
+  accent?: string
 }
 
-export default function ActionCard({ eyebrow, title, tag, tagColor, meta, actionLabel, onAction, secondary }: ActionCardProps) {
+export default function ActionCard({ eyebrow, title, tag, tagColor, meta, actionLabel, onAction, secondary, accent }: ActionCardProps) {
   return (
     <Surface>
       <span className="section-label">{eyebrow}</span>
@@ -26,8 +27,9 @@ export default function ActionCard({ eyebrow, title, tag, tagColor, meta, action
         onClick={onAction}
         style={{
           width: '100%', minHeight: 'var(--ctl-primary)', marginTop: 'var(--sp-4)', cursor: 'pointer',
-          background: 'var(--cyan-faint)', border: '1px solid rgba(34,211,238,0.3)', borderRadius: 'var(--radius-md)',
-          color: 'var(--cyan)', fontSize: 'var(--fs-base)', fontWeight: 600, fontFamily: 'var(--font)',
+          background: accent ? `color-mix(in srgb, ${accent} 12%, transparent)` : 'var(--cyan-faint)',
+          border: `1px solid ${accent ?? 'rgba(34,211,238,0.3)'}`, borderRadius: 'var(--radius-md)',
+          color: accent ?? 'var(--cyan)', fontSize: 'var(--fs-base)', fontWeight: 600, fontFamily: 'var(--font)',
         }}
       >
         {actionLabel}

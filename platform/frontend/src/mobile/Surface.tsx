@@ -1,13 +1,14 @@
 import type { KeyboardEvent, ReactNode } from 'react'
 
-interface SurfaceProps { children: ReactNode; onClick?: () => void }
+interface SurfaceProps { children: ReactNode; onClick?: () => void; label?: string }
 
-export default function Surface({ children, onClick }: SurfaceProps) {
+export default function Surface({ children, onClick, label }: SurfaceProps) {
   const onKeyDown = (e: KeyboardEvent) => { if (onClick && (e.key === 'Enter' || e.key === ' ')) onClick() }
   return (
     <div
       role={onClick ? 'button' : undefined}
       tabIndex={onClick ? 0 : undefined}
+      aria-label={label}
       onClick={onClick}
       onKeyDown={onClick ? onKeyDown : undefined}
       style={{
