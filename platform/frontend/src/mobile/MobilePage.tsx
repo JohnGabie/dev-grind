@@ -17,7 +17,7 @@ export default function MobilePage({ children, header, background }: MobilePageP
       )}
       <div style={{ height: '100%', overflowY: 'auto', overflowX: 'hidden', position: 'relative', zIndex: 1 }}>
         {header}
-        <div style={{ padding: pagePadding(header ? '20px 0 24px' : '0 0 24px', true, !header), fontFamily: 'var(--font)' }}>
+        <div style={{ padding: pagePadding(header ? '20px 0 88px' : '0 0 88px', true, !header), fontFamily: 'var(--font)' }}>
           {children}
         </div>
       </div>
