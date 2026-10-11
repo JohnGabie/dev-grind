@@ -191,7 +191,7 @@ function FilterMultiSelect({
 
   return (
     <div ref={ref} style={{ position: 'relative' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6, minHeight: isMobile ? 'var(--ctl-md)' : undefined }}>
         <p style={{
           fontSize: isMobile ? 'var(--fs-xs)' : 9, fontWeight: 700, letterSpacing: '0.12em',
           textTransform: 'uppercase', color: 'var(--muted)', margin: 0,
@@ -200,7 +200,7 @@ function FilterMultiSelect({
         </p>
         {values.size > 0 && (
           <button onClick={e => { e.stopPropagation(); onChange(new Set()) }}
-            style={{ fontSize: isMobile ? 'var(--fs-xs)' : 9, color: 'var(--muted)', background: 'none', border: 'none', cursor: 'pointer', padding: isMobile ? '0 var(--sp-3)' : 0, minHeight: isMobile ? 'var(--ctl-md)' : undefined, margin: isMobile ? '-16px calc(-1 * var(--sp-3)) -16px 0' : undefined }}>
+            style={{ fontSize: isMobile ? 'var(--fs-xs)' : 9, color: 'var(--muted)', background: 'none', border: 'none', cursor: 'pointer', padding: isMobile ? '0 var(--sp-3)' : 0, minHeight: isMobile ? 'var(--ctl-md)' : undefined, margin: isMobile ? '0 calc(-1 * var(--sp-3)) 0 0' : undefined }}>
             limpar
           </button>
         )}
