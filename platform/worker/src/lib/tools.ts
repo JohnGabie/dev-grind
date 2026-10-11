@@ -5,7 +5,7 @@
 import { and, count, eq, gte } from 'drizzle-orm'
 import { getDb } from '../db'
 import {
-  agentInsights, books, courses, dailyProgress, exercises, submissions, testCases,
+  agentInsights, books, courseLessonProgress, courses, dailyProgress, exercises, submissions, testCases,
   userProfiles, users,
 } from '../db/schema'
 import { awardHonor } from './honor'
@@ -162,12 +162,15 @@ async function getProgress(ctx: ToolCtx): Promise<Json> {
     .where(and(eq(dailyProgress.user_id, ctx.userId), gte(dailyProgress.date, daysAgo(6))))
   const [{ total }] = await ctx.db.select({ total: count() }).from(submissions)
     .where(and(eq(submissions.user_id, ctx.userId), eq(submissions.status, 'passed')))
+  const [{ lessons }] = await ctx.db.select({ lessons: count() }).from(courseLessonProgress)
+    .where(and(eq(courseLessonProgress.user_id, ctx.userId), eq(courseLessonProgress.finished, true)))
 
   return {
     rank: honorToRank(user?.honor ?? 0),
     honor: user?.honor ?? 0,
     completed_last_7_days: rows.reduce((s, r) => s + r.exercises_completed, 0),
     total_passed: total,
+    lessons_completed: lessons,
     daily: rows.map(r => ({ date: r.date, completed: r.exercises_completed })),
   }
 }
@@ -535,7 +538,7 @@ export const TOOLS: ToolDef[] = [
   },
   {
     name: 'get_progress',
-    description: 'Get your rank, honor, completed exercises in the last 7 days, and daily breakdown.',
+    description: 'Get your rank, honor, completed exercises in the last 7 days, daily breakdown, and how many course lessons you have finished.',
     inputSchema: { type: 'object', properties: {}, required: [] },
     run: getProgress,
   },

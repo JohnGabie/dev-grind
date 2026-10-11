@@ -1,4 +1,7 @@
+import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
+
 export default function CommunityPage() {
+  const isMobile = useMediaQuery(MOBILE_QUERY)
   return (
     <div style={{
       flex: 1,
@@ -16,8 +19,8 @@ export default function CommunityPage() {
         <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
         <path d="M16 3.13a4 4 0 0 1 0 7.75" />
       </svg>
-      <span style={{ fontSize: 18, fontWeight: 600, color: 'var(--text)', opacity: 0.5 }}>Comunidade</span>
-      <span style={{ fontSize: 13 }}>Em desenvolvimento</span>
+      <span style={{ fontSize: isMobile ? 'var(--fs-lg)' : 18, fontWeight: 600, color: 'var(--text)', opacity: 0.5 }}>Comunidade</span>
+      <span style={{ fontSize: 'var(--fs-base)' }}>Em desenvolvimento</span>
     </div>
   )
 }

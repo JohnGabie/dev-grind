@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import * as pdfjsLib from 'pdfjs-dist'
 import api from '../api/client'
+import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = '/pdf.worker.min.mjs'
 
@@ -21,9 +22,9 @@ const DARK_FILTER = 'invert(1) hue-rotate(180deg)'
 const BASE_MAX_W  = 860
 
 // ── Toolbar button style helper ───────────────────────────────────────────────
-function btnStyle(active = false, disabled = false): React.CSSProperties {
+function btnStyle(active = false, disabled = false, isMobile = false): React.CSSProperties {
   return {
-    width: 28, height: 28, padding: 0, flexShrink: 0,
+    width: isMobile ? 'var(--ctl-icon)' : 28, height: isMobile ? 'var(--ctl-icon)' : 28, padding: 0, flexShrink: 0,
     display: 'flex', alignItems: 'center', justifyContent: 'center',
     background: active ? 'rgba(68,188,211,0.12)' : 'transparent',
     border: `1px solid ${active ? 'rgba(68,188,211,0.40)' : 'transparent'}`,
@@ -39,6 +40,8 @@ function Divider() {
 
 // ─────────────────────────────────────────────────────────────────────────────
 export default function PdfViewer({ slug, onLoadSuccess, onPageChange, onToggleText, textMode = false, extractingText = false, targetPage }: Props) {
+  const isMobile = useMediaQuery(MOBILE_QUERY)
+  const tb = (active = false, disabled = false) => btnStyle(active, disabled, isMobile)
   const wrapRef  = useRef<HTMLDivElement>(null)
   const pagesRef = useRef<HTMLDivElement>(null)
   const msgRef   = useRef<HTMLDivElement>(null)
@@ -278,14 +281,15 @@ export default function PdfViewer({ slug, onLoadSuccess, onPageChange, onToggleT
 
       {/* ── Toolbar ── */}
       <div style={{
-        height: 40, flexShrink: 0, padding: '0 10px',
+        height: isMobile ? 'calc(var(--ctl-icon) + 1px)' : 40, flexShrink: 0, padding: '0 10px',
+        overflowX: isMobile ? 'auto' : undefined,
         display: 'flex', alignItems: 'center', gap: 2,
         background: 'var(--bg-card)', borderBottom: '1px solid var(--border)',
       }}>
 
         {/* Page navigation */}
         <button
-          style={btnStyle(false, currentPage <= 1)}
+          style={tb(false, currentPage <= 1)}
           disabled={currentPage <= 1}
           onClick={() => scrollToPage(currentPage - 1)}
           title="Página anterior (←)"
@@ -293,12 +297,12 @@ export default function PdfViewer({ slug, onLoadSuccess, onPageChange, onToggleT
           <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><polyline points="15 18 9 12 15 6"/></svg>
         </button>
 
-        <span style={{ fontSize: 11, fontFamily: 'var(--f-mono)', color: 'var(--text)', padding: '0 6px', minWidth: 76, textAlign: 'center', whiteSpace: 'nowrap' }}>
+        <span style={{ fontSize: 'var(--fs-sm)', fontFamily: 'var(--f-mono)', color: 'var(--text)', padding: '0 6px', minWidth: 76, textAlign: 'center', whiteSpace: 'nowrap' }}>
           {numPages > 0 ? `${currentPage} / ${numPages}` : '—'}
         </span>
 
         <button
-          style={btnStyle(false, currentPage >= numPages)}
+          style={tb(false, currentPage >= numPages)}
           disabled={currentPage >= numPages}
           onClick={() => scrollToPage(currentPage + 1)}
           title="Próxima página (→)"
@@ -310,7 +314,7 @@ export default function PdfViewer({ slug, onLoadSuccess, onPageChange, onToggleT
 
         {/* Zoom */}
         <button
-          style={btnStyle(false, zoomIdx <= 0)}
+          style={tb(false, zoomIdx <= 0)}
           disabled={zoomIdx <= 0}
           onClick={zoomOut}
           title="Reduzir zoom"
@@ -318,12 +322,12 @@ export default function PdfViewer({ slug, onLoadSuccess, onPageChange, onToggleT
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
         </button>
 
-        <span style={{ fontSize: 11, fontFamily: 'var(--f-mono)', color: 'var(--text)', padding: '0 4px', minWidth: 40, textAlign: 'center' }}>
+        <span style={{ fontSize: 'var(--fs-sm)', fontFamily: 'var(--f-mono)', color: 'var(--text)', padding: '0 4px', minWidth: 40, textAlign: 'center' }}>
           {Math.round(zoom * 100)}%
         </span>
 
         <button
-          style={btnStyle(false, zoomIdx >= ZOOM_STEPS.length - 1)}
+          style={tb(false, zoomIdx >= ZOOM_STEPS.length - 1)}
           disabled={zoomIdx >= ZOOM_STEPS.length - 1}
           onClick={zoomIn}
           title="Aumentar zoom"
@@ -335,7 +339,7 @@ export default function PdfViewer({ slug, onLoadSuccess, onPageChange, onToggleT
 
         {/* View mode */}
         <button
-          style={btnStyle(viewMode === 'single')}
+          style={tb(viewMode === 'single')}
           onClick={() => setViewMode('single')}
           title="Página única"
         >
@@ -343,7 +347,7 @@ export default function PdfViewer({ slug, onLoadSuccess, onPageChange, onToggleT
         </button>
 
         <button
-          style={btnStyle(viewMode === 'double')}
+          style={tb(viewMode === 'double')}
           onClick={() => setViewMode('double')}
           title="Duas páginas"
         >
@@ -354,7 +358,7 @@ export default function PdfViewer({ slug, onLoadSuccess, onPageChange, onToggleT
 
         {/* Dark mode */}
         <button
-          style={btnStyle(darkMode)}
+          style={tb(darkMode)}
           onClick={() => setDarkMode(d => !d)}
           title="Modo escuro do PDF"
         >
@@ -365,7 +369,7 @@ export default function PdfViewer({ slug, onLoadSuccess, onPageChange, onToggleT
           <>
             <Divider />
             <button
-              style={btnStyle(textMode, extractingText)}
+              style={tb(textMode, extractingText)}
               onClick={onToggleText}
               disabled={extractingText}
               title={textMode ? 'Voltar ao PDF' : 'Ver em texto'}

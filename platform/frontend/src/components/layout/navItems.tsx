@@ -80,8 +80,40 @@ export const CONFIG_ITEM: NavItem = {
   ),
 }
 
+export const PROFILE_ITEM: NavItem = {
+  to: '/profile', label: 'Perfil',
+  icon: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+      <circle cx="12" cy="7" r="4" />
+    </svg>
+  ),
+}
+
+export const FRIENDS_ITEM: NavItem = {
+  to: '/friends', label: 'Amigos',
+  icon: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+      <circle cx="9" cy="7" r="4" />
+      <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+      <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+    </svg>
+  ),
+}
+
+export const GUILD_ITEM: NavItem = {
+  to: '/guild', label: 'Guilda',
+  icon: (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5z" />
+    </svg>
+  ),
+}
+
 // No mobile só cabem 4 abas + "Mais". O resto vai para a folha.
 const PRIMARY_PATHS = ['/', '/exercise', '/courses', '/books']
 
 export const MOBILE_TABS = NAV.filter(i => PRIMARY_PATHS.includes(i.to))
-export const MOBILE_SHEET = [...NAV.filter(i => !PRIMARY_PATHS.includes(i.to)), CONFIG_ITEM]
+// O perfil abre pela folha: no mobile não há mais avatar fixo no topo.
+export const MOBILE_SHEET = [PROFILE_ITEM, FRIENDS_ITEM, GUILD_ITEM, ...NAV.filter(i => !PRIMARY_PATHS.includes(i.to)), CONFIG_ITEM]

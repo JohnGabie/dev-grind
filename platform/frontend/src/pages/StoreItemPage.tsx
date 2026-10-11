@@ -3,6 +3,7 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom'
 import api from '../api/client'
 import { BackgroundBg } from '../components/BackgroundRenderer'
 import type { BgConfig } from '../components/StarfieldFooter'
+import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
 
 interface StoreItem {
   id: string
@@ -477,6 +478,7 @@ function PublicProfileMockup() {
 }
 
 export default function StoreItemPage() {
+  const isMobile = useMediaQuery(MOBILE_QUERY)
   const { itemId } = useParams<{ itemId: string }>()
   const navigate = useNavigate()
   const location = useLocation()
@@ -515,14 +517,14 @@ export default function StoreItemPage() {
 
   if (loading) return (
     <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <span style={{ color: 'var(--muted)', fontFamily: 'var(--f-mono)', fontSize: 11 }}>_</span>
+      <span style={{ color: 'var(--muted)', fontFamily: 'var(--f-mono)', fontSize: 'var(--fs-sm)' }}>_</span>
     </div>
   )
 
   if (!item) return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
-      <span style={{ color: 'var(--muted)', fontFamily: 'var(--f-mono)', fontSize: 12 }}>item não encontrado</span>
-      <button onClick={() => navigate('/store')} style={{ fontSize: 11, fontFamily: 'var(--f-mono)', color: 'var(--cyan)', background: 'none', border: 'none', cursor: 'pointer' }}>
+      <span style={{ color: 'var(--muted)', fontFamily: 'var(--f-mono)', fontSize: isMobile ? 'var(--fs-sm)' : 12 }}>item não encontrado</span>
+      <button onClick={() => navigate('/store')} style={{ fontSize: 'var(--fs-sm)', minHeight: isMobile ? 'var(--ctl-md)' : undefined, fontFamily: 'var(--f-mono)', color: 'var(--cyan)', background: 'none', border: 'none', cursor: 'pointer' }}>
         ← voltar
       </button>
     </div>
@@ -556,10 +558,10 @@ export default function StoreItemPage() {
         flexShrink: 0, padding: '18px 28px 14px',
         borderBottom: '1px solid var(--border)',
       }}>
-        <h1 style={{ margin: '0 0 2px', fontSize: 20, fontWeight: 800, letterSpacing: '-0.03em' }}>
+        <h1 style={{ margin: '0 0 2px', fontSize: isMobile ? 'var(--fs-xl)' : 20, fontWeight: 800, letterSpacing: '-0.03em' }}>
           Grind <span style={{ color: 'var(--cyan)' }}>Store</span>
         </h1>
-        <p style={{ margin: 0, fontSize: 11, color: 'var(--muted)' }}>
+        <p style={{ margin: 0, fontSize: 'var(--fs-sm)', color: 'var(--muted)' }}>
           {item.name}
         </p>
       </div>
@@ -584,7 +586,8 @@ export default function StoreItemPage() {
               border: '1px solid rgba(255,255,255,0.1)',
               borderRadius: 7, padding: '5px 10px',
               cursor: 'pointer', color: 'var(--muted)',
-              fontSize: 11, fontFamily: 'var(--f-mono)',
+              fontSize: 'var(--fs-sm)', fontFamily: 'var(--f-mono)',
+              minHeight: isMobile ? 'var(--ctl-md)' : undefined,
               transition: 'background 120ms, color 120ms',
             }}
             onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.10)'; e.currentTarget.style.color = 'var(--text)' }}
@@ -604,7 +607,7 @@ export default function StoreItemPage() {
               onClick={prev}
               style={{
                 position: 'absolute', left: 0, zIndex: 10,
-                width: 36, height: 36, borderRadius: 9,
+                width: isMobile ? 'var(--ctl-icon)' : 36, height: isMobile ? 'var(--ctl-icon)' : 36, borderRadius: 9,
                 background: 'rgba(255,255,255,0.06)',
                 border: '1px solid rgba(255,255,255,0.1)',
                 color: 'var(--text)', cursor: 'pointer',
@@ -641,7 +644,7 @@ export default function StoreItemPage() {
               onClick={next}
               style={{
                 position: 'absolute', right: 0, zIndex: 10,
-                width: 36, height: 36, borderRadius: 9,
+                width: isMobile ? 'var(--ctl-icon)' : 36, height: isMobile ? 'var(--ctl-icon)' : 36, borderRadius: 9,
                 background: 'rgba(255,255,255,0.06)',
                 border: '1px solid rgba(255,255,255,0.1)',
                 color: 'var(--text)', cursor: 'pointer',
@@ -659,7 +662,7 @@ export default function StoreItemPage() {
 
           {/* Label + dots */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
-            <span style={{ fontSize: 11, color: 'var(--muted)', fontFamily: 'var(--f-mono)', letterSpacing: '0.06em' }}>
+            <span style={{ fontSize: 'var(--fs-sm)', color: 'var(--muted)', fontFamily: 'var(--f-mono)', letterSpacing: '0.06em' }}>
               {slides[slide].label}
             </span>
             <div style={{ display: 'flex', gap: 6 }}>
@@ -693,9 +696,9 @@ export default function StoreItemPage() {
             {/* Rarity */}
             <span style={{
               display: 'inline-block', marginBottom: 14,
-              fontSize: 9, fontWeight: 700, fontFamily: 'var(--f-mono)',
+              fontSize: isMobile ? 'var(--fs-xs)' : 9, fontWeight: 700, fontFamily: 'var(--f-mono)',
               letterSpacing: '0.10em', textTransform: 'uppercase',
-              padding: '3px 9px', borderRadius: 4,
+              padding: '3px 9px', borderRadius: 'var(--radius-sm)',
               background: rc + '18', border: `1px solid ${rc}50`, color: rc,
             }}>
               {RARITY_LABEL[item.rarity]}
@@ -705,7 +708,7 @@ export default function StoreItemPage() {
               {item.name}
             </h1>
 
-            <p style={{ margin: '0 0 24px', fontSize: 12, color: 'var(--muted)', lineHeight: 1.75 }}>
+            <p style={{ margin: '0 0 24px', fontSize: isMobile ? 'var(--fs-sm)' : 12, color: 'var(--muted)', lineHeight: 1.75 }}>
               {item.description}
             </p>
 
@@ -716,7 +719,7 @@ export default function StoreItemPage() {
               <>
                 <p style={{
                   margin: '0 0 12px',
-                  fontSize: 10, fontFamily: 'var(--f-mono)', color: 'var(--muted)',
+                  fontSize: 'var(--fs-xs)', fontFamily: 'var(--f-mono)', color: 'var(--muted)',
                   letterSpacing: '0.08em', textTransform: 'uppercase',
                 }}>
                   Variantes — {variants.length}
@@ -736,7 +739,7 @@ export default function StoreItemPage() {
                         onClick={() => navigate(`/store/${v.id}`, { state: { items: allItems, coins } })}
                         title={v.name}
                         style={{
-                          width: 30, height: 30, borderRadius: 7, flexShrink: 0,
+                          width: isMobile ? 'var(--ctl-icon)' : 30, height: isMobile ? 'var(--ctl-icon)' : 30, borderRadius: 7, flexShrink: 0,
                           background: gradient,
                           border: isSelected
                             ? '2.5px solid var(--text)'
@@ -760,9 +763,9 @@ export default function StoreItemPage() {
               border: '1px solid var(--border)',
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
             }}>
-              <span style={{ fontSize: 11, color: 'var(--muted)', fontFamily: 'var(--f-mono)' }}>preço</span>
+              <span style={{ fontSize: 'var(--fs-sm)', color: 'var(--muted)', fontFamily: 'var(--f-mono)' }}>preço</span>
               <span style={{
-                fontSize: 13, fontWeight: 800, fontFamily: 'var(--f-mono)',
+                fontSize: 'var(--fs-base)', fontWeight: 800, fontFamily: 'var(--f-mono)',
                 color: item.owned ? rc : 'var(--text)',
                 display: 'flex', alignItems: 'center', gap: 5,
               }}>

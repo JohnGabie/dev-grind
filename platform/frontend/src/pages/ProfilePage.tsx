@@ -4,6 +4,7 @@ import { useCosmetics } from '../contexts/CosmeticsContext'
 import { BackgroundBg } from '../components/BackgroundRenderer'
 import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
 import { pagePadding } from '../lib/layout'
+import ProfileMobile from '../mobile/profile/ProfileMobile'
 
 interface HeatmapDay { total: number; katas: number; books: number; courses: number }
 
@@ -617,7 +618,7 @@ const ADJUST_KEY = 'cover_adjust'
 const defaultAdjust: CoverAdjust = { x: 0, y: 0, scale: 1 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-export default function ProfilePage() {
+function ProfileDesktop() {
   const isMobile = useMediaQuery(MOBILE_QUERY)
   const { bg } = useCosmetics()
   const [stats, setStats] = useState<Stats | null>(null)
@@ -1119,4 +1120,9 @@ export default function ProfilePage() {
       </div>
     </div>
   )
+}
+
+export default function ProfilePage() {
+  const isMobile = useMediaQuery(MOBILE_QUERY)
+  return isMobile ? <ProfileMobile /> : <ProfileDesktop />
 }

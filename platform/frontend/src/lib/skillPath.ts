@@ -52,13 +52,13 @@ export function courseBranchSide(courseId: string): -1 | 1 {
   return (seed & 1) === 0 ? -1 : 1
 }
 
-export const NODE = 56
-export const NODE_RADIUS = 16
-export const V_STEP = 128
-export const BRANCH = 96
-export const LANE_X: Record<Lane, number> = { left: 48, center: 140, right: 232 }
-export const PAD_TOP = 8
-export const TITLE_BLOCK = 28
+export const NODE = 84
+export const NODE_RADIUS = 24
+export const V_STEP = 192
+export const BRANCH = 144
+export const LANE_X: Record<Lane, number> = { left: 72, center: 210, right: 348 }
+export const PAD_TOP = 12
+export const TITLE_BLOCK = 42
 
 export function mainNodeY(mainIndex: number, sectionStarts: readonly number[]): number {
   let titles = 0
@@ -66,9 +66,26 @@ export function mainNodeY(mainIndex: number, sectionStarts: readonly number[]): 
   return PAD_TOP + titles * TITLE_BLOCK + mainIndex * V_STEP + NODE / 2
 }
 
+const CORNER = 24
+
+function pathNum(value: number): string {
+  return String(Math.round(value * 1000) / 1000)
+}
+
 export function connector(x1: number, y1: number, x2: number, y2: number): string {
+  if (x1 === x2 || y1 === y2) return `M ${pathNum(x1)} ${pathNum(y1)} L ${pathNum(x2)} ${pathNum(y2)}`
   const midY = (y1 + y2) / 2
-  return `M ${x1} ${y1} C ${x1} ${midY}, ${x2} ${midY}, ${x2} ${y2}`
+  const vSign = y2 > y1 ? 1 : -1
+  const hSign = x2 > x1 ? 1 : -1
+  const radius = Math.min(CORNER, Math.abs(y2 - y1) / 2, Math.abs(x2 - x1) / 2)
+  if (radius <= 0) {
+    return `M ${pathNum(x1)} ${pathNum(y1)} L ${pathNum(x1)} ${pathNum(midY)} L ${pathNum(x2)} ${pathNum(midY)} L ${pathNum(x2)} ${pathNum(y2)}`
+  }
+  const yIn = midY - vSign * radius
+  const xTurn = x1 + hSign * radius
+  const xBack = x2 - hSign * radius
+  const yOut = midY + vSign * radius
+  return `M ${pathNum(x1)} ${pathNum(y1)} L ${pathNum(x1)} ${pathNum(yIn)} Q ${pathNum(x1)} ${pathNum(midY)} ${pathNum(xTurn)} ${pathNum(midY)} L ${pathNum(xBack)} ${pathNum(midY)} Q ${pathNum(x2)} ${pathNum(midY)} ${pathNum(x2)} ${pathNum(yOut)} L ${pathNum(x2)} ${pathNum(y2)}`
 }
 
 export function branchPlacement(
@@ -82,23 +99,32 @@ export function branchPlacement(
   return { x: parentX + side * depth * BRANCH, y: parentY, side, depth }
 }
 
-const TITLE_LINE = 16
-const TITLE_ABOVE = 18
-const LESSON_TITLE_GAP = 6
-const LESSON_TITLE_H = 33
-const OPTIONAL_WORD_GAP = 4
-const OPTIONAL_WORD_H = 14
-const STACK_GAP = 4
-const CHAR_W = 7.2
-const CHAR_SP = 0.72
-const COLUMN_W = 280
+const TITLE_LINE = 24
+const TITLE_ABOVE = 27
+export const LABEL_GAP = 18
+export const LABEL_W = 510
+export const LABEL_TITLE_H = 30
+export const LABEL_DESC_GAP = 3
+export const LABEL_DESC_H = 48
+export const OPTIONAL_WORD_GAP = 6
+export const OPTIONAL_WORD_H = 21
+const STACK_GAP = 6
+const CHAR_W = 10.8
+const CHAR_SP = 1.08
+const COLUMN_W = 420
+const BOTTOM_PAD = 128
+export const FRACTION_W = 56
+export const FRACTION_GAP = 10
 
 export interface PathLesson {
   key: string
   title: string
+  description: string
   optional: boolean
   sectionIndex: number
   sectionTitle: string
+  parts?: number
+  partsDone?: number
 }
 
 export type NodeState = 'done' | 'current' | 'locked' | 'optional-open' | 'optional-locked' | 'optional-done'
@@ -106,15 +132,18 @@ export type NodeState = 'done' | 'current' | 'locked' | 'optional-open' | 'optio
 export interface PlacedNode {
   key: string
   title: string
+  description: string
   optional: boolean
   state: NodeState
   x: number
   y: number
+  parts: number
+  partsDone: number
 }
 
 export interface PlacedStroke {
   d: string
-  width: 10 | 6
+  width: 8 | 5
 }
 
 export interface PlacedSectionTitle {
@@ -156,6 +185,20 @@ function overlaps(a: Box, b: Box): boolean {
   return a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y
 }
 
+function partProgress(lesson: PathLesson, finished: boolean): { parts: number; partsDone: number } {
+  const parts = Number.isInteger(lesson.parts) && (lesson.parts as number) > 1 ? lesson.parts as number : 1
+  if (finished) return { parts, partsDone: parts }
+  const raw = Number.isInteger(lesson.partsDone) ? lesson.partsDone as number : 0
+  return { parts, partsDone: Math.min(Math.max(0, raw), parts - 1) }
+}
+
+function labelBlockHeight(node: { description: string; optional: boolean }): number {
+  let height = LABEL_TITLE_H
+  if (node.description.trim()) height += LABEL_DESC_GAP + LABEL_DESC_H
+  if (node.optional) height += OPTIONAL_WORD_GAP + OPTIONAL_WORD_H
+  return height
+}
+
 function frame(nodes: PlacedNode[], strokes: PlacedStroke[], sectionTitles: PlacedSectionTitle[]): SkillMap {
   let minX = 0
   let maxX = COLUMN_W
@@ -163,11 +206,11 @@ function frame(nodes: PlacedNode[], strokes: PlacedStroke[], sectionTitles: Plac
   let maxY = PAD_TOP
   for (const node of nodes) {
     minX = Math.min(minX, node.x - NODE / 2)
-    maxX = Math.max(maxX, node.x + NODE / 2)
+    if (node.parts > 1) minX = Math.min(minX, node.x - NODE / 2 - FRACTION_GAP - FRACTION_W)
+    maxX = Math.max(maxX, node.x + NODE / 2 + LABEL_GAP + LABEL_W)
     minY = Math.min(minY, node.y - NODE / 2)
-    let bottom = node.y + NODE / 2 + LESSON_TITLE_GAP + LESSON_TITLE_H
-    if (node.optional) bottom += OPTIONAL_WORD_GAP + OPTIONAL_WORD_H
-    maxY = Math.max(maxY, bottom)
+    const labelBottom = node.y - NODE / 2 + labelBlockHeight(node)
+    maxY = Math.max(maxY, node.y + NODE / 2, labelBottom)
   }
   for (const title of sectionTitles) {
     const w = sectionTitleWidth(title.text)
@@ -176,6 +219,7 @@ function frame(nodes: PlacedNode[], strokes: PlacedStroke[], sectionTitles: Plac
     minY = Math.min(minY, title.y)
     maxY = Math.max(maxY, title.y + TITLE_LINE)
   }
+  maxY += BOTTOM_PAD
   return { nodes, strokes, sectionTitles, minX, minY, width: maxX - minX, height: maxY - minY }
 }
 
@@ -198,10 +242,12 @@ export function placeSkillPath(courseId: string, lessons: readonly PathLesson[],
       nodes.push({
         key: lesson.key,
         title: lesson.title,
+        description: lesson.description,
         optional: true,
         state: done.has(lesson.key) ? 'optional-done' : 'optional-open',
         x: spot.x,
         y: spot.y,
+        ...partProgress(lesson, done.has(lesson.key)),
       })
     })
     sectionOrder.forEach((sectionIndex, index) => {
@@ -228,12 +274,12 @@ export function placeSkillPath(courseId: string, lessons: readonly PathLesson[],
     const y = mainNodeY(index, sectionStarts)
     requiredPos.set(lesson.key, { x, y })
     const state: NodeState = done.has(lesson.key) ? 'done' : lesson.key === current ? 'current' : 'locked'
-    nodes.push({ key: lesson.key, title: lesson.title, optional: false, state, x, y })
+    nodes.push({ key: lesson.key, title: lesson.title, description: lesson.description, optional: false, state, x, y, ...partProgress(lesson, done.has(lesson.key)) })
   })
   for (let index = 0; index < required.length - 1; index++) {
     const from = requiredPos.get(required[index].key)!
     const to = requiredPos.get(required[index + 1].key)!
-    strokes.push({ d: connector(from.x, from.y, to.x, to.y), width: 10 })
+    strokes.push({ d: connector(from.x, from.y, to.x, to.y), width: 8 })
   }
 
   const titleBySection = new Map<number, Box>()
@@ -265,10 +311,10 @@ export function placeSkillPath(courseId: string, lessons: readonly PathLesson[],
     optionals.forEach((lesson, index) => {
       const spot = branchPlacement(parent.x, parent.y, index, firstSide)
       const state: NodeState = done.has(lesson.key) ? 'optional-done' : reached ? 'optional-open' : 'optional-locked'
-      nodes.push({ key: lesson.key, title: lesson.title, optional: true, state, x: spot.x, y: spot.y })
+      nodes.push({ key: lesson.key, title: lesson.title, description: lesson.description, optional: true, state, x: spot.x, y: spot.y, ...partProgress(lesson, done.has(lesson.key)) })
       const x0 = parent.x + spot.side * (NODE / 2)
       const x1 = spot.x - spot.side * (NODE / 2)
-      strokes.push({ d: `M ${x0} ${parent.y} L ${x1} ${parent.y}`, width: 6 })
+      strokes.push({ d: `M ${x0} ${parent.y} L ${x1} ${parent.y}`, width: 5 })
     })
   }
 
@@ -288,7 +334,7 @@ export function placeSkillPath(courseId: string, lessons: readonly PathLesson[],
     const defaultTop = placed.y - NODE / 2 - TITLE_ABOVE - TITLE_LINE
     const draft = titleBox(placed.x, defaultTop, first.sectionTitle)
     if (anchorBox && overlaps(draft, anchorBox)) {
-      const below = placed.y + NODE / 2 + LESSON_TITLE_GAP + LESSON_TITLE_H + OPTIONAL_WORD_GAP + OPTIONAL_WORD_H + STACK_GAP
+      const below = placed.y - NODE / 2 + labelBlockHeight(placed) + STACK_GAP
       sectionTitles.push({ text: first.sectionTitle, x: placed.x, y: below, place: 'below' })
     } else {
       sectionTitles.push({ text: first.sectionTitle, x: placed.x, y: defaultTop, place: 'above' })

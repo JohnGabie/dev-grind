@@ -21,6 +21,10 @@
   --red:          #ef4444;
   --yellow:       #eab308;
   --blue:         #3b82f6;
+  --orange:       #f97316;
+  --purple:       #a855f7;
+  --blue-soft:    #7aa7f7;
+  --editor:       #050505;
 
   --font:      'JetBrains Mono', monospace;
   --f-display: 'JetBrains Mono', monospace;
@@ -28,6 +32,36 @@
   --f-mono:    'JetBrains Mono', monospace;
 
   --rail: 70px;
+}
+
+/* ─── Size scale ────────────────────────────────────────────
+   Desktop values are what the app already uses; the mobile block below
+   redefines only what changes. Inline styles use var(--token). */
+:root {
+  --fs-xs: 10px;   --lh-xs: 1.3;
+  --fs-sm: 11px;   --lh-sm: 1.5;
+  --fs-base: 13px; --lh-base: 1.6;
+  --fs-input: 13px; --lh-input: 1.4;
+  --fs-lg: 15px;   --lh-lg: 1.35;
+  --fs-xl: 22px;   --lh-xl: 1.25;
+
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px;
+  --sp-5: 20px; --sp-6: 24px; --sp-7: 32px;
+
+  --ctl-primary: 40px; --ctl-md: 32px; --ctl-chip: 28px;
+  --ctl-icon: 32px; --ctl-row: 44px; --ctl-tag: 18px;
+
+  --radius-sm: 4px; --radius-md: 6px; --radius-lg: 8px; --radius-pill: 999px;
+  --icon-sm: 16px; --icon-md: 20px;
+}
+
+@media (max-width: 768px) {
+  :root {
+    --fs-xs: 11px; --fs-sm: 12px; --fs-base: 14px; --fs-input: 16px; --fs-lg: 17px;
+    --ctl-primary: 48px; --ctl-md: 44px; --ctl-chip: 36px;
+    --ctl-icon: 44px; --ctl-row: 52px; --ctl-tag: 20px;
+    --radius-md: 8px; --radius-lg: 12px;
+  }
 }
 
 *, *::before, *::after { box-sizing: border-box; }
@@ -147,7 +181,7 @@ body {
   gap: 2px;
   color: var(--muted);
   text-decoration: none;
-  font-size: 9px; font-weight: 500;
+  font-size: var(--fs-xs); font-weight: 500;
   letter-spacing: -0.01em;
   cursor: pointer;
   border: none; background: none;
@@ -193,14 +227,20 @@ body {
    Aqui ficam só as que ninguém declara inline — e que precisam alcançar
    descendentes que a página não controla um a um. */
 @media (max-width: 768px) {
+  /* A trilha de 3px comia largura do layout só de um lado e deixava a margem
+     direita maior que a esquerda. No toque a rolagem já é indicada pelo sistema. */
+  ::-webkit-scrollbar { display: none; }
+  * { scrollbar-width: none; }
+
   .cfg-ctrl { width: 100%; }
   .cfg-ctrl > div { flex-wrap: wrap; }
 
-  /* Alvo de toque: 44px é o mínimo do HIG e da WCAG 2.5.5. Os chips vinham
-     com 30px e os campos com 40. */
+  /* Alvo de toque: campos e botões de ação sobem para --ctl-md (44px, mínimo
+     do HIG e da WCAG 2.5.5); chips de opção ficam em --ctl-chip e ganham
+     espaço entre si pelo gap. A regra de chip vem por último para vencer. */
   .cfg-ctrl input,
-  .cfg-ctrl button,
-  .cfg-row button { min-height: 44px; }
+  .cfg-row button { min-height: var(--ctl-md); }
+  .cfg-ctrl button { min-height: var(--ctl-chip); }
 }
 
 /* ─── Mobile "Mais" sheet ───────────────────────────────── */
@@ -217,7 +257,7 @@ body {
   border-radius: 999px;
   color: var(--text);
   text-decoration: none;
-  font-size: 13px; font-weight: 500;
+  font-size: var(--fs-base); font-weight: 500;
   border: none; background: none;
   font-family: var(--font);
   cursor: pointer;
@@ -228,7 +268,7 @@ body {
 
 /* ─── Diff badge ────────────────────────────────────────── */
 .diff-badge {
-  font-size: 10px; font-weight: 700;
+  font-size: var(--fs-xs); font-weight: 700;
   padding: 2px 6px; border-radius: 3px;
   border: 1px solid currentColor;
   background: transparent;
@@ -264,9 +304,19 @@ body {
 }
 .btn-green:not(:disabled):hover { background: rgba(34, 197, 94, 0.13); }
 
+/* Depois da regra base: mesma especificidade, quem vem por ultimo vence. */
+@media (max-width: 768px) {
+  .btn {
+    font-size: var(--fs-base);
+    min-height: var(--ctl-md);
+    padding: 0 var(--sp-4);
+    border-radius: var(--radius-md);
+  }
+}
+
 /* ─── Tags ──────────────────────────────────────────────── */
 .tag {
-  font-size: 10px; font-weight: 500;
+  font-size: var(--fs-xs); font-weight: 500;
   padding: 2px 6px; border-radius: 3px;
   background: rgba(255,255,255,0.03);
   color: var(--muted);
@@ -282,12 +332,12 @@ body {
 
 /* ─── Labels ────────────────────────────────────────────── */
 .stat-label {
-  font-size: 10px; font-weight: 600;
+  font-size: var(--fs-xs); font-weight: 600;
   letter-spacing: 0.08em; text-transform: uppercase;
   color: var(--muted);
 }
 .section-label {
-  font-size: 10px; font-weight: 600;
+  font-size: var(--fs-xs); font-weight: 600;
   letter-spacing: 0.10em; text-transform: uppercase;
   color: var(--muted);
   white-space: nowrap;

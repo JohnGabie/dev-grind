@@ -21,7 +21,9 @@ describe('SkillPath source', () => {
     assert.match(source, /13 2 4 14 12 14 11 22 20 10 12 10 13 2/)
     assert.match(source, /20 6 9 17 4 12/)
     assert.match(source, /aria-label="feita"/)
-    assert.match(source, /radial-gradient\(circle, var\(--border\) 1\.2px, transparent 1\.4px\)/)
+    assert.equal(source.includes('radial-gradient'), false)
+    assert.equal(source.includes('backgroundImage'), false)
+    assert.match(source, /node\.description/)
     assert.match(source, /overflowX: 'auto'/)
   })
 

@@ -1,133 +1,128 @@
-# CLAUDE.md — Arquiteto da DevGrind
+# CLAUDE.md — DevGrind Architect
 
-> Este arquivo é carregado automaticamente a cada sessão. É a única fonte de verdade
-> sobre COMO trabalhar. O estado real do projeto está no código e no `git log`.
-
----
-
-## BOOT SEQUENCE
-
-O planejamento vive num vault Obsidian fora do repo (`vault-obsidian/`, gitignored).
-Se ele existir na máquina, leia `STATE.md`, `TASKS.md` e `DECISIONS.md`. Se não existir,
-não invente: leia o código. Estado declarado ≠ estado real — sempre confirme no repo
-antes de assumir que uma feature está pronta.
+> This file is loaded automatically every session. It is the only source of truth
+> on HOW to work. The real state of the project is in the code and in `git log`.
 
 ---
 
-## MISSÃO
+## LANGUAGE
 
-Construir uma plataforma de aprendizado de backend para João — um único usuário com
-TDAH que está aprendendo Python/FastAPI/SQL/HTTP para entender o ZionHub (seu projeto
-em produção, vibecoded com IA).
+English is the default for everything: code, comments, docs, specs, plans, commit messages,
+Linear issues and replies. Translating or using another language is an exception, only when João asks.
 
-A plataforma tem **dois tracks separados**:
+---
 
-### Track 1 — Cursos (estilo Duolingo)
-Conteúdo estruturado baseado nos livros de `study-backend/books/`. Cada lição é um
-capítulo com texto + exercícios práticos atrelados. Progressão linear por fase do
-roadmap. O aluno avança módulo a módulo.
+## MISSION
 
-### Track 2 — Prática (estilo CodeWars, adaptativo)
-Exercícios avulsos com execução real no browser (Pyodide). O diferencial é o motor
-adaptativo: a IA analisa o desempenho por conceito e calibra a próxima leva.
+Build a backend learning platform for João — a single user with ADHD who is learning
+Python/FastAPI/SQL/HTTP to understand ZionHub (his production project, vibecoded with AI).
 
-**Foco de conteúdo:** exercícios de BACKEND — HTTP, SQL, FastAPI, arquitetura,
-Python para backend. Não kata de algoritmos. Não puzzles. Problemas reais de
-desenvolvimento backend.
+The platform has **two separate tracks**:
 
-**O CodeWars API** serve apenas para contexto: saber o que João já resolveu lá
-para não repetir e entender seu nível. Não é para copiar exercícios do CodeWars.
+### Track 1 — Courses (Duolingo style)
+Structured content based on the books in `study-backend/books/`. Each lesson is a
+chapter with text + attached practical exercises. Linear progression by roadmap phase.
+The learner advances module by module.
 
-**O objetivo final:** João entender o ZionHub titim por titim, sem depender de IA
-para saber o que está acontecendo no próprio código.
+### Track 2 — Practice (CodeWars style, adaptive)
+Standalone exercises with real execution in the browser (Pyodide). The differentiator is the
+adaptive engine: the AI analyzes performance per concept and calibrates the next batch.
+
+**Content focus:** BACKEND exercises — HTTP, SQL, FastAPI, architecture,
+Python for backend. Not algorithm katas. Not puzzles. Real backend development problems.
+
+**The CodeWars API** is context only: know what João has already solved there so
+exercises are not repeated, and understand his level. Do not copy CodeWars exercises.
+
+**The end goal:** João understands ZionHub down to the last detail, without depending on AI
+to know what is happening in his own code.
 
 ---
 
 ## STACK
 
-| Camada | Tecnologia | Motivo |
-|--------|-----------|--------|
-| Backend | Cloudflare Workers + Hono + D1 | Um só backend, deploy na edge |
-| ORM | Drizzle | SQL tipado, roda no Workers |
-| Storage | R2 (PDFs, capas, texto extraído) | Sem disco local |
-| Frontend | React 19 + Vite + TypeScript | SPA simples |
-| Editor | Monaco Editor | Mesmo do VS Code |
-| Execução de código | Pyodide (Python no browser) | Sem servidor de execução |
-| Fonte tipográfica | JetBrains Mono (única fonte) | Dev tool aesthetic, sem Syne/Outfit |
-| Auth | Google OAuth + dev bypass | Zero fricção |
-| Agente | Claude Code /schedule (6h) | Usa conta do usuário, sem API key no backend |
-| Conteúdo | study-backend/ (21 livros, perfil, quizzes) | Fonte de verdade do conteúdo |
+| Layer | Technology | Reason |
+|-------|-----------|--------|
+| Backend | Cloudflare Workers + Hono + D1 | One backend, deployed on the edge |
+| ORM | Drizzle | Typed SQL, runs on Workers |
+| Storage | R2 (PDFs, covers, extracted text) | No local disk |
+| Frontend | React 19 + Vite + TypeScript | Simple SPA |
+| Editor | Monaco Editor | Same as VS Code |
+| Code execution | Pyodide (Python in the browser) | No execution server |
+| Typeface | JetBrains Mono (only font) | Dev tool aesthetic, no Syne/Outfit |
+| Auth | Google OAuth + dev bypass | Zero friction |
+| Agent | Claude Code /schedule (daily, 6am) | Uses the user's account, no API key in the backend |
+| Content | study-backend/ (21 books, profile, quizzes) | Source of truth for content |
 
 ---
 
-## ESTRUTURA DE ARQUIVOS
+## FILE STRUCTURE
 
 ```
 devgrind/
-├── CLAUDE.md               ← este arquivo (arquiteto)
-├── README.md               ← stack, setup local, deploy
-├── vault-obsidian/         ← STATE.md · TASKS.md · DECISIONS.md (fora do git)
-├── study-backend/          ← conteúdo fonte — NÃO MODIFICAR estrutura
-│   ├── CLAUDE.md           ← instruções do mentor socrático
-│   ├── books/              ← 21 livros em MD (Python, FastAPI, SQL, etc.)
-│   ├── memory/             ← perfil do aluno, roadmap, feedback
-│   ├── quizzes/            ← provas diagnósticas já feitas
-│   └── student/            ← perfil dinâmico + sessões
+├── CLAUDE.md               ← this file (architect)
+├── README.md               ← stack, local setup, deploy
+├── docs/superpowers/       ← specs/ and plans/ (YYYY-MM-DD-<topic>.md)
+├── study-backend/          ← source content, separate repo (gitignored) — DO NOT change structure
+│   ├── CLAUDE.md           ← Socratic mentor instructions
+│   ├── books/              ← 21 books in MD (Python, FastAPI, SQL, etc.)
+│   ├── memory/             ← learner profile, roadmap, feedback
+│   ├── quizzes/            ← diagnostic tests already taken
+│   └── student/            ← dynamic profile + sessions
 ├── platform/
-│   ├── worker/             ← Hono + D1 (porta 8787) — ÚNICO backend
+│   ├── worker/             ← Hono + D1 (port 8787) — ONLY backend
 │   │   ├── src/
-│   │   │   ├── index.ts    ← registro de rotas
+│   │   │   ├── index.ts    ← route registration
 │   │   │   ├── db/         ← schema.ts (Drizzle), index.ts
-│   │   │   ├── lib/        ← tools.ts (registry MCP+chat), honor, rank, progress
+│   │   │   ├── lib/        ← tools.ts (MCP+chat registry), honor, rank, progress
 │   │   │   ├── middleware/ ← auth.ts (JWT)
 │   │   │   └── routes/     ← auth, exercises, submissions, books, store, mcp, chat…
 │   │   └── drizzle/        ← migrations
-│   └── frontend/           ← React + Vite (porta 5173)
+│   └── frontend/           ← React + Vite (port 5173)
 │       └── src/
-│           ├── pages/      ← Dashboard, Exercise, Profile, Courses, Login
-│           ├── components/ ← Sidebar (icon rail 60px), AppLayout
+│           ├── pages/      ← Dashboard, Courses, Exercise, Books, Store, Chat, Profile, Config, Login…
+│           ├── components/ ← layout/ (Sidebar icon rail 60px, AppLayout), SkillPath…
 │           ├── hooks/      ← usePyodide
 │           └── auth/       ← AuthContext
 └── agent/
-    ├── AGENT.md            ← estado do agente + histórico de execuções
-    ├── daily_prompt.md     ← prompt completo que o /schedule executa
-    ├── exercise_schema.md  ← schema JSON dos exercícios
-    └── codewars_sync.py    ← lê perfil público JohnGabie via API CodeWars
+    ├── AGENT.md            ← agent state + run history
+    ├── daily_prompt.md     ← full prompt that /schedule runs
+    └── codewars_sync.py    ← reads public JohnGabie profile via the CodeWars API
 ```
 
 ---
 
-## COMO O AGENTE ADAPTATIVO FUNCIONA
+## HOW THE ADAPTIVE AGENT WORKS
 
-O agente NÃO valida exercícios em tempo real. Opera em ciclos assíncronos:
+The agent does NOT validate exercises in real time. It runs in asynchronous cycles:
 
 ```
-Rodada de exercícios
-    ↓ (Pyodide valida se código passou/falhou)
-Submission salva no banco com: status, test_results, time_spent, concepts
+Exercise round
+    ↓ (Pyodide validates whether the code passed/failed)
+Submission saved in the database with: status, test_results, time_spent, concepts
     ↓
-Agente executa a cada 6h via /schedule
+Agent runs daily at 6am via /schedule
     ↓
-Conecta no MCP da plataforma (/mcp, token pessoal)
+Connects to the platform MCP (/mcp, personal token)
     ↓
-Chama: get_context() e get_profile()  → rank, streak, lacunas, estilo
-Lê: study-backend/memory/user_perfil.md  → quem é o aluno
-Lê: study-backend/memory/project_roadmap.md  → onde está no roadmap
-Lê: codewars_sync.py output  → o que já resolveu no CodeWars
+Calls: get_context() and get_profile()  → rank, streak, gaps, style
+Reads: study-backend/memory/user_perfil.md  → who the learner is
+Reads: study-backend/memory/project_roadmap.md  → where they are on the roadmap
+Reads: codewars_sync.py output  → what they already solved on CodeWars
     ↓
-Analisa: quais conceitos têm taxa < 60%? o que veio da sessão anterior?
+Analyzes: which concepts have a rate < 60%? what came from the previous session?
     ↓
-Cria: 1-3 exercícios via create_exercise() — já entram no D1
-Atualiza: update_profile() / add_profile_note() com o que observou
-Registra: agent/AGENT.md com timestamp e o que foi gerado
+Creates: 1-3 exercises via create_exercise() — they go straight into D1
+Updates: update_profile() / add_profile_note() / write_insight() (message of the day)
+Records: agent/AGENT.md with timestamp and what was generated
 ```
 
-**Calibração de quantidade:**
-- 0 exercícios nos últimos 3 dias → 1 exercício fácil (reengajamento)
-- Atividade normal → 2 exercícios nos gaps identificados
-- Alta atividade (5+/dia) → 3 exercícios, dificuldade cresce
+**Quantity calibration:**
+- 0 exercises in the last 3 days → 1 easy exercise (re-engagement)
+- Normal activity → 2 exercises on the identified gaps
+- High activity (5+/day) → 3 exercises, difficulty grows
 
-**Conceitos rastreados** (campo `concepts` em cada exercício):
+**Tracked concepts** (`concepts` field on each exercise):
 ```
 python:types, python:functions, python:async, python:oop
 http:methods, http:status-codes, http:headers, http:rest
@@ -138,42 +133,100 @@ arch:separation-of-concerns, arch:error-handling, arch:naming
 
 ---
 
-## PROTOCOLO DE TRABALHO
+## WORK PROTOCOL
 
-### Ao iniciar uma tarefa
-1. Leia a task — entenda o critério de conclusão antes de começar
-2. Se depende de outra não concluída, pare e sinalize
-3. Escreva o código mínimo que satisfaz o critério. Nada além.
+### Spec before code
+A feature or behavior change requires a short spec in `docs/superpowers/specs/`: the request
+in João's words, your reading of it, your proposals marked "undecided", out of scope.
+Once the spec is written, STOP and ask for approval. The original request or silence is not approval.
+Spec wrong midway: stop, update it and ask approval for the changed part.
+No spec needed for: typo, formatting, docs, bug with an obvious local cause.
 
-### Ao concluir uma tarefa
-1. `npx tsc --noEmit` e `npm test` no worker — verde antes de dizer que acabou
-2. Se o vault existir: marque `[done]` em TASKS.md e atualize STATE.md
-3. Se a decisão muda arquitetura: registre em DECISIONS.md
+### When starting a task
+1. Read the spec or the task — understand the completion criterion before starting
+2. If it depends on another unfinished task, stop and flag it
+3. Write the minimum code that satisfies the criterion. Nothing more.
+4. Back from a pause: list the parked branches in one line and suggest finishing, slicing
+   or dropping them before opening another. If João wants to go straight in, go.
 
-### Quando bloqueado
-1. Diga o que falta e por quê, em vez de inventar solução que aumenta acoplamento
-2. Se o vault existir, registre em TASKS.md seção BLOCKED
+### Models and subagents
+- Opus: ambiguous decisions, architecture, auth, data, and every code review.
+- Sonnet: clear scope, new logic across several files. Haiku: mechanical tasks.
+- One agent = one concern, distinct files; the contract (route, type, schema) goes in the spec.
+- Whoever integrates re-runs typecheck and tests. A failed agent = nothing delivered.
+
+### When something breaks
+Reproduce first. Read logs, the HTTP response and D1 before asking. Find the root
+cause and only then fix. Explain the cause to João in one sentence.
+
+### When finishing a task
+1. Worker: `npx tsc --noEmit` and `npm test`. Frontend, if touched: `npm run build` and `npm test`.
+   Green, with the exit code checked, before saying it is done. Do not filter output to hide a failure.
+2. A fixed bug gets a test that fails before and passes after. New rule: break the code
+   on purpose, watch the named test fail, restore.
+3. Touched a screen: open it in the browser and go through the empty, error and with-data states.
+4. Say what you ran and what you saw. What was not run is "not verified".
+5. If the decision changes the architecture: record it in the feature's spec.
+
+### Autocommit
+Authorized: commit without asking when a unit of work is ready. Push only to `backup/*` (section below), never to the working branch, `dev` or `main`.
+1. **Ready** = does one thing, typecheck and tests of what it touched are green. Broken or half-done is not committed.
+2. **Atomic**: one reason per commit. Mixed feature, fix and docs: split them.
+3. **Working branches only** (`feat/…`, `fix/…`). Never on `main`; on `dev` only if the user asks.
+4. **Explicit staging** by path. No `git add -A`/`.`. Keep out of the commit: secrets, `.env`, `.dev.vars`, `node_modules`, build artifacts, screenshots and files the user edited by hand that are unrelated to the task.
+5. **Message**: imperative, English, states the why in ≤ 72 characters, in the style of `git log`. Body only if the why is not obvious.
+6. **History belongs to the user**: no `--amend`, `--no-verify`, `reset --hard`, `push --force`. A hook failed: fix the cause and make a new commit. Only exception: `--force-with-lease` on `backup/*`.
+7. State the hash and the message at the end.
+
+### Automatic backup (autopush)
+A disposable copy of the working branch `<b>` as `backup/<b>`, local and on `origin`. It exists only so work is not lost.
+1. **When**: before and after every context compaction; and if the last backup of `<b>` is older than 24h or missing, checked at session start and on every commit.
+2. **How** (does not touch the working tree or the index; untracked and ignored files are left out):
+   `s=$(git stash create); git branch -f backup/<b> ${s:-HEAD}; git push --force-with-lease origin backup/<b>`
+   Includes the commits and the not-yet-committed work. It does not replace the commit: what is ready still goes through the rule above.
+3. **Only `backup/*`**: never a plain push or a force on any other branch. Do not back up `main`, `dev` or a `backup/*`.
+4. **Cleanup**: when `<b>` lands in `dev` (`git merge-base --is-ancestor <b> dev`) or the user declares the branch finished, delete only `backup/<b>`, local and remote: `git branch -D backup/<b>` and `git push origin --delete backup/<b>`. Use the full name, checking that it starts with `backup/` and is not the current branch. Never with a glob or an empty variable. The working branch is deleted only if the user asks.
+5. Say in one line that a backup was made (branch and time). Network or permission failure: warn and move on, without insisting.
+
+### When blocked
+Say what is missing and why, instead of inventing a solution that increases coupling.
+
+### Backlog in Linear
+Linear holds only what is left for later. What we are doing now does not become an issue: it lives in
+the conversation, the spec and the commit. Global `linear` skill (team `DEV`, project `DevGrind`). Never write
+the API key in a file, command or conversation. If `py -3` fails, use the win-sandbox-lab Python 3.14.
+- **Create an issue only when**: (a) you found a bug or problem that must be done separately: fixing
+  it now would mix another subject into the current task and commit, pollute the context or call for
+  another branch; (b) work came up that stays for after the current task (idea, improvement, next step).
+  Do not create one for the task in progress, for what is already done, or for everything that crosses the mind.
+  When in doubt, do not create it and ask. Search (`issues --query`) first.
+- Issue = title with a concrete outcome + one Area label + one type label (`Bug`, `Feature`,
+  `Improvement`) + priority. In the description: what was seen, why it was left for later and, if any,
+  `Spec:` with the path in `docs/superpowers/` and `Branch:`. Specs and plans stay in the repo.
+- Board: Backlog = for later; Todo = only the next one, a single issue. When resumed, move to In Progress;
+  when it lands in `dev`, Done. If you solved on the spot what you were about to log: do not log it.
 
 ---
 
-## PRINCÍPIOS DE CÓDIGO
+## CODE PRINCIPLES
 
-1. **Mínimo que funciona** — sem abstrações para "futuro"
-2. **Um arquivo por responsabilidade** — router, service, model separados
-3. **Sem comentários óbvios** — nome de função já documenta
-4. **Estado nunca em memória** — tudo no banco
-5. **Zero dependência de context window** — os arquivos contam tudo
+1. **Minimum that works** — no abstractions for the "future"
+2. **One file per responsibility** — router, service, model separate
+3. **No obvious comments** — the function name already documents it
+4. **State never in memory** — everything in the database
+5. **Zero dependence on the context window** — the files tell everything
 
 ---
 
-## ANTI-PADRÕES
+## ANTI-PATTERNS
 
-- ❌ Exercícios de algoritmo puro (ordenação, busca binária) — foco é backend
-- ❌ Validação de resposta em tempo real por IA — agente opera em batch
-- ❌ Guardar chave de IA no backend — o agente usa /schedule; o chat recebe a chave do usuário por request
-- ❌ Criar um segundo backend — o Worker é a única implementação do domínio
-- ❌ Copiar exercícios do CodeWars — CodeWars API é só para contexto de perfil
-- ❌ Modificar `study-backend/` exceto `student/profile.md` via agente
-- ❌ Usar Syne, Outfit ou qualquer fonte que não seja JetBrains Mono
-- ❌ Dizer que terminou sem rodar typecheck e testes
-- ❌ Confiar na conversa para reconstruir contexto — sempre leia os arquivos
+- ❌ Pure algorithm exercises (sorting, binary search) — focus is backend
+- ❌ Real-time answer validation by AI — the agent operates in batch
+- ❌ Storing an AI key in the backend — the agent uses /schedule; the chat receives the user's key per request
+- ❌ Creating a second backend — the Worker is the only implementation of the domain
+- ❌ Copying CodeWars exercises — the CodeWars API is only for profile context
+- ❌ Modifying `study-backend/` except `student/profile.md` via the agent
+- ❌ Using Syne, Outfit or any font other than JetBrains Mono
+- ❌ Starting to implement in the same reply in which you wrote the spec
+- ❌ Relaying "tests passed" from a subagent without having re-run them
+- ❌ Trusting the conversation to rebuild context — always read the files

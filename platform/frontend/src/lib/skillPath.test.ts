@@ -37,26 +37,26 @@ describe('mainLanes', () => {
 
 describe('geometry', () => {
   it('locks the HTML centers and the branch offsets', () => {
-    assert.equal(mainNodeY(0, [0]), 64)
-    assert.equal(mainNodeY(4, [0]), 576)
-    assert.equal(mainNodeY(1, [0, 1]), 220)
-    assert.equal(LANE_X.left, 48)
-    assert.equal(LANE_X.center, 140)
-    assert.equal(LANE_X.right, 232)
-    assert.equal(connector(232, 64, 232, 192), 'M 232 64 C 232 128, 232 128, 232 192')
-    assert.equal(connector(232, 192, 140, 320), 'M 232 192 C 232 256, 140 256, 140 320')
-    assert.deepEqual(branchPlacement(232, 192, 0, 1), { x: 328, y: 192, side: 1, depth: 1 })
-    assert.deepEqual(branchPlacement(232, 192, 1, 1), { x: 136, y: 192, side: -1, depth: 1 })
-    assert.equal(branchPlacement(232, 192, 2, 1).x, 232 + 2 * BRANCH)
-    assert.equal(branchPlacement(232, 192, 2, 1).side, 1)
-    assert.equal(branchPlacement(232, 192, 2, 1).depth, 2)
-    assert.equal(branchPlacement(232, 192, 3, 1).x, 232 - 2 * BRANCH)
+    assert.equal(mainNodeY(0, [0]), 96)
+    assert.equal(mainNodeY(4, [0]), 864)
+    assert.equal(mainNodeY(1, [0, 1]), 330)
+    assert.equal(LANE_X.left, 72)
+    assert.equal(LANE_X.center, 210)
+    assert.equal(LANE_X.right, 348)
+    assert.equal(connector(348, 96, 348, 288), 'M 348 96 L 348 288')
+    assert.equal(connector(348, 288, 210, 480), 'M 348 288 L 348 360 Q 348 384 324 384 L 234 384 Q 210 384 210 408 L 210 480')
+    assert.deepEqual(branchPlacement(348, 288, 0, 1), { x: 492, y: 288, side: 1, depth: 1 })
+    assert.deepEqual(branchPlacement(348, 288, 1, 1), { x: 204, y: 288, side: -1, depth: 1 })
+    assert.equal(branchPlacement(348, 288, 2, 1).x, 348 + 2 * BRANCH)
+    assert.equal(branchPlacement(348, 288, 2, 1).side, 1)
+    assert.equal(branchPlacement(348, 288, 2, 1).depth, 2)
+    assert.equal(branchPlacement(348, 288, 3, 1).x, 348 - 2 * BRANCH)
   })
 })
 
 describe('frozen source', () => {
   it('does not call Math.random and keeps the freeze comment', () => {
-    const source = readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'skillPath.ts'), 'utf8')
+    const source = readFileSync(join(dirname(fileURLToPath(import.meta.url)), 'skillPath.ts'), 'utf8').replace(/\r\n/g, '\n')
     assert.equal(source.startsWith('// Frozen. Changing the salt, Step, or the constants moves every course map.\n'), true)
     assert.equal(source.includes('Math.random'), false)
   })
@@ -65,7 +65,7 @@ describe('frozen source', () => {
 const LONG = 'ABCDEFGHIJABCDEFGHIJABCDEFGHIJ'
 
 function lesson(key: string, sectionIndex: number, sectionTitle: string, optional = false, title = key): PathLesson {
-  return { key, title, optional, sectionIndex, sectionTitle }
+  return { key, title, description: '', optional, sectionIndex, sectionTitle }
 }
 
 const htmlFive: PathLesson[] = [
@@ -81,28 +81,28 @@ describe('placeSkillPath', () => {
     const done = ['0-0', '0-1', '0-2', '0-3', '0-4']
     const five = placeSkillPath(HTML, htmlFive, done)
     assert.deepEqual(five.nodes.map(node => [node.key, node.x, node.y, node.state]), [
-      ['0-0', 232, 64, 'done'],
-      ['0-1', 232, 192, 'done'],
-      ['0-2', 140, 320, 'done'],
-      ['0-3', 232, 448, 'done'],
-      ['0-4', 48, 576, 'done'],
+      ['0-0', 348, 96, 'done'],
+      ['0-1', 348, 288, 'done'],
+      ['0-2', 210, 480, 'done'],
+      ['0-3', 348, 672, 'done'],
+      ['0-4', 72, 864, 'done'],
     ])
     assert.equal(five.nodes.some(node => node.state === 'current'), false)
-    assert.equal(five.width, 280)
+    assert.equal(five.width, 918)
     assert.equal(five.minX, 0)
-    assert.equal(five.height, 643)
+    assert.equal(five.height, 1034)
     assert.equal(five.sectionTitles[0].text, 'HTML básico')
-    assert.equal(five.sectionTitles[0].x, 140)
-    assert.equal(five.sectionTitles[0].y, 14)
+    assert.equal(five.sectionTitles[0].x, 210)
+    assert.equal(five.sectionTitles[0].y, 21)
     assert.equal(five.sectionTitles[0].place, 'band')
-    assert.equal(five.strokes[0].d, 'M 232 64 C 232 128, 232 128, 232 192')
-    assert.equal(five.strokes[0].width, 10)
-    assert.equal(five.strokes[1].d, 'M 232 192 C 232 256, 140 256, 140 320')
+    assert.equal(five.strokes[0].d, 'M 348 96 L 348 288')
+    assert.equal(five.strokes[0].width, 8)
+    assert.equal(five.strokes[1].d, 'M 348 288 L 348 360 Q 348 384 324 384 L 234 384 Q 210 384 210 408 L 210 480')
 
     const sixLessons = [...htmlFive, lesson('0-5', 0, 'HTML básico', false, 'Mais')]
     const six = placeSkillPath(HTML, sixLessons, done)
     assert.deepEqual(six.nodes.slice(0, 5).map(node => [node.x, node.y]), five.nodes.map(node => [node.x, node.y]))
-    assert.deepEqual([six.nodes[5].x, six.nodes[5].y, six.nodes[5].state], [140, 704, 'current'])
+    assert.deepEqual([six.nodes[5].x, six.nodes[5].y, six.nodes[5].state], [210, 1056, 'current'])
   })
 
   it('puts the Python bolt on the first unfinished required lesson', () => {
@@ -114,10 +114,10 @@ describe('placeSkillPath', () => {
     ]
     const map = placeSkillPath(PYTHON, lessons, ['0-0'])
     assert.deepEqual(map.nodes.map(node => [node.x, node.y, node.state]), [
-      [48, 64, 'done'],
-      [140, 192, 'current'],
-      [48, 320, 'locked'],
-      [140, 448, 'locked'],
+      [72, 96, 'done'],
+      [210, 288, 'current'],
+      [72, 480, 'locked'],
+      [210, 672, 'locked'],
     ])
   })
 
@@ -153,11 +153,11 @@ describe('placeSkillPath', () => {
     ], [])
     const branches = map.nodes.filter(node => node.optional)
     assert.deepEqual(branches.map(node => [node.x, node.y, node.state]), [
-      [328, 64, 'optional-open'],
-      [136, 64, 'optional-open'],
-      [424, 64, 'optional-open'],
+      [492, 96, 'optional-open'],
+      [204, 96, 'optional-open'],
+      [636, 96, 'optional-open'],
     ])
-    assert.equal(map.strokes.find(stroke => stroke.width === 6)?.d, 'M 260 64 L 300 64')
+    assert.equal(map.strokes.find(stroke => stroke.width === 5)?.d, 'M 390 96 L 450 96')
     assert.equal(map.nodes[0].state, 'current')
   })
 
@@ -169,7 +169,7 @@ describe('placeSkillPath', () => {
     assert.equal(map.nodes.find(node => node.key === '0-0')?.state, 'optional-open')
     assert.deepEqual(
       map.nodes.filter(node => node.optional).map(node => [node.x, node.y]),
-      [[328, 64]],
+      [[492, 96]],
     )
   })
 
@@ -196,12 +196,12 @@ describe('placeSkillPath', () => {
     assert.equal(map.strokes.length, 0)
     assert.equal(map.nodes.some(node => node.state === 'current'), false)
     assert.deepEqual(map.nodes.map(node => [node.x, node.y, node.state]), [
-      [236, 92, 'optional-open'],
-      [44, 92, 'optional-done'],
+      [354, 138, 'optional-open'],
+      [66, 138, 'optional-done'],
     ])
     assert.deepEqual(map.sectionTitles.map(title => [title.text, title.x, title.y, title.place]), [
-      ['Primeira', 140, 14, 'band'],
-      ['Segunda', 140, 42, 'band'],
+      ['Primeira', 210, 21, 'band'],
+      ['Segunda', 210, 63, 'band'],
     ])
   })
 
@@ -210,8 +210,8 @@ describe('placeSkillPath', () => {
       lesson('0-0', 0, 'Primeira', false, 'Um'),
       lesson('1-0', 1, 'Segunda', false, 'Dois'),
     ], [])
-    assert.deepEqual(map.nodes.map(node => [node.x, node.y]), [[232, 64], [232, 220]])
-    assert.deepEqual(map.sectionTitles.map(title => [title.x, title.y, title.place]), [[140, 14, 'band'], [140, 170, 'band']])
+    assert.deepEqual(map.nodes.map(node => [node.x, node.y]), [[348, 96], [348, 330]])
+    assert.deepEqual(map.sectionTitles.map(title => [title.x, title.y, title.place]), [[210, 21, 'band'], [210, 255, 'band']])
   })
 
   it('drops an overlapping optional-only section title below the opcional label', () => {
@@ -220,14 +220,14 @@ describe('placeSkillPath', () => {
       lesson('1-0', 1, LONG, true, 'Extra'),
     ], [])
     const title = overlapped.sectionTitles.find(item => item.place !== 'band')
-    assert.deepEqual(title, { text: LONG, x: 328, y: 153, place: 'below' })
+    assert.deepEqual(title, { text: LONG, x: 492, y: 117, place: 'below' })
 
     const clear = placeSkillPath(HTML, [
       lesson('0-0', 0, LONG, false, 'Tags'),
       lesson('1-0', 1, 'A', true, 'Extra'),
     ], [])
     const above = clear.sectionTitles.find(item => item.text === 'A')
-    assert.deepEqual(above, { text: 'A', x: 328, y: 2, place: 'above' })
+    assert.deepEqual(above, { text: 'A', x: 492, y: 3, place: 'above' })
   })
 
   it('lets a left branch extend the canvas past x 0', () => {
@@ -236,9 +236,26 @@ describe('placeSkillPath', () => {
       lesson('0-1', 0, 'Python básico', true, 'Extra'),
     ], ['0-0'])
     const extra = map.nodes.find(node => node.optional)
-    assert.equal(extra?.x, -48)
+    assert.equal(extra?.x, -72)
     assert.equal(extra?.state, 'optional-open')
-    assert.equal(map.minX, -76)
-    assert.equal(map.strokes.find(stroke => stroke.width === 6)?.d, 'M 20 64 L -20 64')
+    assert.equal(map.minX, -114)
+    assert.equal(map.strokes.find(stroke => stroke.width === 5)?.d, 'M 30 96 L -30 96')
+  })
+
+  it('keeps a multi-part count to the left of the node', () => {
+    const map = placeSkillPath(PYTHON, [{
+      ...lesson('0-0', 0, 'Python básico', false, 'Variável'),
+      parts: 3,
+      partsDone: 1,
+    }], [])
+    assert.equal(map.nodes[0].parts, 3)
+    assert.equal(map.nodes[0].partsDone, 1)
+    assert.equal(map.minX, -36)
+    const finished = placeSkillPath(PYTHON, [{
+      ...lesson('0-0', 0, 'Python básico', false, 'Variável'),
+      parts: 3,
+      partsDone: 1,
+    }], ['0-0'])
+    assert.equal(finished.nodes[0].partsDone, 3)
   })
 })

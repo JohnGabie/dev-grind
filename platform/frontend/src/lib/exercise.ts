@@ -37,4 +37,5 @@ export interface ExerciseData {
   description: string; stub: string; hints: string[]
   module: string; tags: string[]
   book_reference: string | null; test_cases: TestCase[]
+  user_status?: 'completed' | 'attempted' | 'not_attempted'
 }

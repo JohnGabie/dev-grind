@@ -94,7 +94,7 @@ The agent does **not** validate exercises in real time. It runs in async cycles 
 | Architecture | `arch:separation-of-concerns` `arch:error-handling` `arch:naming` |
 
 <details>
-<summary><strong>Signal quality thresholds (ADR-019)</strong></summary>
+<summary><strong>Signal quality thresholds</strong></summary>
 
 <br>
 
@@ -199,12 +199,11 @@ Worker secrets in production: `wrangler secret put JWT_SECRET` (and `GOOGLE_CLIE
 
 ```
 dev-grind/
-├── vault-obsidian/             # STATE.md · TASKS.md · DECISIONS.md
+├── docs/superpowers/           # specs/ and plans/ (YYYY-MM-DD-<topic>.md)
 ├── agent/
+│   ├── AGENT.md                # agent state + run history
 │   ├── daily_prompt.md         # full prompt Claude Code /schedule executes
-│   ├── exercise_schema.md      # JSON schema for generated exercises
-│   ├── codewars_sync.py        # reads public profile via CodeWars API
-│   └── last_insight.json       # written by agent, shown in dashboard
+│   └── codewars_sync.py        # reads public profile via CodeWars API
 └── platform/
     ├── worker/                 # Cloudflare Worker (active backend)
     │   ├── src/

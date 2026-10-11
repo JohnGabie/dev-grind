@@ -6,7 +6,7 @@ import { useAuth } from '../../auth/AuthContext'
 import { ChatPanel } from '../ChatPanel'
 import { CosmeticsProvider } from '../../contexts/CosmeticsContext'
 import { useMediaQuery, MOBILE_QUERY } from '../../hooks/useMediaQuery'
-import { TOPBAR_SPACE, MOBILE_NAV_SPACE } from '../../lib/layout'
+import { TOPBAR_SPACE, MOBILE_TOP_INSET, MOBILE_NAV_SPACE } from '../../lib/layout'
 import api from '../../api/client'
 
 // ── TopBar ───────────────────────────────────────────────────────────────────
@@ -158,6 +158,15 @@ function ChatBubble() {
   const location = useLocation()
   const [open, setOpen] = useState(false)
   const isMobile = useMediaQuery(MOBILE_QUERY)
+  const [lessonDock, setLessonDock] = useState(false)
+  useEffect(() => {
+    const sync = () => setLessonDock(document.body.dataset.courseLesson === '1')
+    sync()
+    const observer = new MutationObserver(sync)
+    observer.observe(document.body, { attributes: true, attributeFilter: ['data-course-lesson'] })
+    return () => observer.disconnect()
+  }, [])
+  const onAbout = /^\/exercise\/[^/]+$/.test(location.pathname)
 
   const slug = location.pathname.startsWith('/exercise/')
     ? location.pathname.split('/exercise/')[1]
@@ -169,17 +178,26 @@ function ChatBubble() {
   const context = slug ? `kata:${slug}` : location.pathname === '/' ? 'dashboard' : 'general'
 
   // No mobile a bolha sobe para não cobrir a tab bar.
-  const bubbleBottom = isMobile ? `calc(24px + ${MOBILE_NAV_SPACE})` : 24
-  const panelBottom = isMobile ? `calc(84px + ${MOBILE_NAV_SPACE})` : 84
+  // Com um CTA fixo no rodape (licao, "sobre" do exercicio) a bolha sobe --ctl-primary + 16.
+  const raised = lessonDock || (isMobile && onAbout)
+  const bubbleBottom = raised
+    ? (isMobile ? `calc(96px + ${MOBILE_NAV_SPACE})` : 96)
+    : (isMobile ? `calc(24px + ${MOBILE_NAV_SPACE})` : 24)
+  const panelBottom = raised
+    ? (isMobile ? `calc(156px + ${MOBILE_NAV_SPACE})` : 156)
+    : (isMobile ? `calc(84px + ${MOBILE_NAV_SPACE})` : 84)
+  const rightOffset = isMobile ? 20 : 24
 
-  if (naTelaDeResolver) return null
+  const naDashboardMobile = isMobile && location.pathname === '/'
+  if (naTelaDeResolver || naDashboardMobile) return null
 
   return (
     <>
       {open && (
         <div style={{
-          position: 'fixed', bottom: panelBottom, right: 24, zIndex: 41,
+          position: 'fixed', bottom: panelBottom, right: rightOffset, zIndex: 41,
           width: 'min(320px, calc(100vw - 48px))', height: 420,
+          maxHeight: isMobile ? `calc(100dvh - ${panelBottom} - 16px)` : undefined,
           background: 'var(--bg-card)',
           border: '1px solid var(--border-lit)',
           borderRadius: 12,
@@ -194,7 +212,7 @@ function ChatBubble() {
         onClick={() => setOpen(o => !o)}
         title="Chat"
         style={{
-          position: 'fixed', bottom: bubbleBottom, right: 24, zIndex: 42,
+          position: 'fixed', bottom: bubbleBottom, right: rightOffset, zIndex: 42,
           width: 48, height: 48, borderRadius: '50%',
           background: open ? 'var(--cyan-faint)' : 'var(--bg-card)',
           border: `1px solid ${open ? 'var(--cyan)' : 'var(--cyan-glow)'}`,
@@ -244,7 +262,7 @@ export default function AppLayout() {
           position: 'relative',
           paddingBottom: isMobile && isFixedLayout ? MOBILE_NAV_SPACE : 0,
         }}>
-          {!hideTopBar && <TopBar />}
+          {!isMobile && !hideTopBar && <TopBar />}
           {/* Só os layouts de altura fixa cedem a faixa aqui — o header próprio
               deles precisa começar abaixo do notch. As páginas de rolagem vão
               até y=0 e reservam a faixa no conteúdo, via pagePadding, para o
@@ -254,7 +272,7 @@ export default function AppLayout() {
           <div style={{
             height: '100%',
             overflow: 'hidden',
-            paddingTop: isMobile && !hideTopBar && isFixedLayout ? TOPBAR_SPACE : 0,
+            paddingTop: isMobile && !hideTopBar && isFixedLayout ? MOBILE_TOP_INSET : 0,
           }}>
             <Outlet />
           </div>

@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google'
 import { useAuth } from '../auth/AuthContext'
+import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
 
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID || ''
 
 export default function LoginPage() {
+  const isMobile = useMediaQuery(MOBILE_QUERY)
   const { user, loginDev, loginGoogle } = useAuth()
   const navigate = useNavigate()
   const [error, setError] = useState('')
@@ -77,20 +79,20 @@ export default function LoginPage() {
               <path d="M16 4V28M8 8L24 16M24 8L8 16" stroke="#22d3ee" strokeWidth="0.6" opacity="0.5" />
             </svg>
           </div>
-          <h1 className="f-display" style={{ fontSize: 26, fontWeight: 800, color: 'var(--text)', margin: 0 }}>
+          <h1 className="f-display" style={{ fontSize: isMobile ? 'var(--fs-xl)' : 26, fontWeight: 800, color: 'var(--text)', margin: 0 }}>
             DevGrind
           </h1>
-          <p className="f-mono" style={{ fontSize: 11, color: 'var(--cyan)', marginTop: 6 }}>
+          <p className="f-mono" style={{ fontSize: 'var(--fs-sm)', color: 'var(--cyan)', marginTop: 6 }}>
             // train · think · ship
           </p>
         </div>
 
         {/* Panel */}
         <div className="card" style={{ padding: 24 }}>
-          <p className="f-display" style={{ fontWeight: 700, fontSize: 15, color: 'var(--text)', marginBottom: 4 }}>
+          <p className="f-display" style={{ fontWeight: 700, fontSize: 'var(--fs-lg)', color: 'var(--text)', marginBottom: 4 }}>
             Acesse sua conta
           </p>
-          <p style={{ fontSize: 13, color: 'var(--muted)', marginBottom: 20 }}>
+          <p style={{ fontSize: 'var(--fs-base)', color: 'var(--muted)', marginBottom: 20 }}>
             Continue de onde parou.
           </p>
 
@@ -114,15 +116,15 @@ export default function LoginPage() {
                 background: 'rgba(210,153,34,0.06)', border: '1px solid rgba(210,153,34,0.25)',
                 borderRadius: 8,
               }}>
-                <span style={{ color: 'var(--yellow)', fontSize: 13 }}>⚠</span>
-                <span className="f-mono" style={{ fontSize: 11, color: 'var(--muted)' }}>
+                <span style={{ color: 'var(--yellow)', fontSize: 'var(--fs-base)' }}>⚠</span>
+                <span className="f-mono" style={{ fontSize: 'var(--fs-sm)', color: 'var(--muted)' }}>
                   Google OAuth não configurado
                 </span>
               </div>
               <button className="btn btn-cyan" onClick={handleDev} disabled={loading}
-                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, minHeight: isMobile ? 'var(--ctl-primary)' : undefined }}>
                 {loading ? (
-                  <span className="f-mono" style={{ fontSize: 12 }}>entrando...</span>
+                  <span className="f-mono" style={{ fontSize: isMobile ? 'var(--fs-sm)' : 12 }}>entrando...</span>
                 ) : (
                   <><span>→</span><span>Entrar em modo dev</span></>
                 )}
@@ -131,18 +133,18 @@ export default function LoginPage() {
           )}
 
           {loading && (
-            <p className="f-mono" style={{ fontSize: 11, color: 'var(--muted)', textAlign: 'center', marginTop: 12 }}>
+            <p className="f-mono" style={{ fontSize: 'var(--fs-sm)', color: 'var(--muted)', textAlign: 'center', marginTop: 12 }}>
               autenticando...
             </p>
           )}
           {error && (
-            <p className="f-mono" style={{ fontSize: 11, color: '#f85149', textAlign: 'center', marginTop: 12 }}>
+            <p className="f-mono" style={{ fontSize: 'var(--fs-sm)', color: '#f85149', textAlign: 'center', marginTop: 12 }}>
               {error}
             </p>
           )}
         </div>
 
-        <p className="f-mono" style={{ fontSize: 10, color: 'var(--muted)', opacity: 0.5, textAlign: 'center', marginTop: 16 }}>
+        <p className="f-mono" style={{ fontSize: 'var(--fs-xs)', color: 'var(--muted)', opacity: 0.5, textAlign: 'center', marginTop: 16 }}>
           plataforma privada · apenas usuários autorizados
         </p>
       </div>

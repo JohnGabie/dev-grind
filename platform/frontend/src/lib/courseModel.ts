@@ -47,10 +47,17 @@ export function asStep(raw: unknown): Step | null {
 
 export interface Lesson {
   title: string
+  description: string
   optional: boolean
   steps: Step[]
   sectionIndex: number
   lessonIndex: number
+}
+
+function lessonDescription(lesson: Record<string, unknown>, steps: Step[]): string {
+  if (typeof lesson.description === 'string' && lesson.description.trim()) return lesson.description.trim()
+  const text = steps.find(step => step.type === 'text')
+  return text?.type === 'text' ? text.body.trim() : ''
 }
 
 export interface Section {
@@ -64,6 +71,16 @@ export interface Course {
   description: string | null
   sections: Section[]
   completed: string[]
+  parts: Record<string, number>
+}
+
+function lessonParts(value: unknown): Record<string, number> {
+  if (!value || typeof value !== 'object') return {}
+  const parts: Record<string, number> = {}
+  for (const [key, count] of Object.entries(value as Record<string, unknown>)) {
+    if (Number.isInteger(count) && (count as number) >= 0) parts[key] = count as number
+  }
+  return parts
 }
 
 export function asCourse(row: Record<string, unknown>): Course | null {
@@ -79,6 +96,7 @@ export function asCourse(row: Record<string, unknown>): Course | null {
       if (!steps.length) continue
       lessons.push({
         title: String(lesson.title ?? 'Lição'),
+        description: lessonDescription(lesson, steps),
         optional: lesson.optional === true,
         steps,
         sectionIndex,
@@ -94,5 +112,6 @@ export function asCourse(row: Record<string, unknown>): Course | null {
     description: typeof row.description === 'string' ? row.description : null,
     sections,
     completed: Array.isArray(row.completed_lessons) ? row.completed_lessons.map(String) : [],
+    parts: lessonParts(row.lesson_parts),
   }
 }
