@@ -15,6 +15,7 @@ import StatusJson from './StatusJson'
 const TABS = [{ id: 'status', label: 'status.json' }, { id: 'analysis', label: 'analise.md' }]
 const PANEL_MIN_HEIGHT = 'calc(9 * var(--lh-base) * var(--fs-base))'
 const EMPTY_PREVIEW_LINES = 1
+const PREVIEW_LINES = 5
 
 interface Props { stats: Slot<UserStats>; insights: Slot<Insight[]>; user: string }
 
@@ -60,16 +61,18 @@ export default function StatusSection({ stats, insights, user }: Props) {
     } else {
       const isNew = isInsightNew(latest.generated_at, openedAt)
       const rows = [
-        <span style={{ color: MARKDOWN_COLOR.heading }}>{`# ${shortDate(latest.generated_at)}`}</span>,
-        <span style={{ display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-          {latest.message.split('\n')[0]}
+        <span>
+          <span style={{ color: MARKDOWN_COLOR.heading }}>{`# ${shortDate(latest.generated_at)}`}</span>
+          {isNew && <span style={{ color: 'var(--cyan)' }}>{'  ● novo'}</span>}
         </span>,
-        ...(isNew ? [<span style={{ color: 'var(--cyan)' }}>● novo</span>] : []),
+        <span style={{ display: '-webkit-box', WebkitBoxOrient: 'vertical', WebkitLineClamp: PREVIEW_LINES, overflow: 'hidden' }}>
+          {latest.message.replace(/\s*\n+\s*/g, ' ')}
+        </span>,
       ]
       lineCount = rows.length
       body = (
         <>
-          <CodeBlock lines={rows} />
+          <div style={{ flex: 1 }}><CodeBlock lines={rows} /></div>
           <button
             type="button"
             aria-label="abrir análise do agente"
@@ -99,7 +102,7 @@ export default function StatusSection({ stats, insights, user }: Props) {
         <div style={{ marginBottom: 'var(--sp-2)' }}>
           <PromptLine user={user} command={statusTab ? 'cat status.json' : 'cat analise.md'} cursor={false} />
         </div>
-        <div style={{ minHeight: PANEL_MIN_HEIGHT }}>{body}</div>
+        <div style={{ minHeight: PANEL_MIN_HEIGHT, display: 'flex', flexDirection: 'column' }}>{body}</div>
       </WindowFrame>
     </div>
   )
