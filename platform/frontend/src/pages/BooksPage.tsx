@@ -6,6 +6,7 @@ import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
 import { pagePadding } from '../lib/layout'
 
 function EmptySlotCard({ onClick }: { onClick: () => void }) {
+  const isMobile = useMediaQuery(MOBILE_QUERY)
   const [hovered, setHovered] = useState(false)
   return (
     <div
@@ -36,7 +37,7 @@ function EmptySlotCard({ onClick }: { onClick: () => void }) {
           <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
         </svg>
       </div>
-      <span style={{ fontSize: 9, fontWeight: 700, color: hovered ? 'var(--cyan)' : 'var(--muted)', transition: 'color 130ms', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+      <span style={{ fontSize: isMobile ? 'var(--fs-xs)' : 9, fontWeight: 700, color: hovered ? 'var(--cyan)' : 'var(--muted)', transition: 'color 130ms', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
         adicionar
       </span>
     </div>
@@ -81,6 +82,7 @@ function withProgress(books: Omit<Book, 'progress'>[]): Book[] {
 function FilterTab({ label, count, active, color, onClick }: {
   label: string; count: number; active: boolean; color: string; onClick: () => void
 }) {
+  const isMobile = useMediaQuery(MOBILE_QUERY)
   const [hovered, setHovered] = useState(false)
   return (
     <button
@@ -89,17 +91,18 @@ function FilterTab({ label, count, active, color, onClick }: {
       onMouseLeave={() => setHovered(false)}
       style={{
         display: 'flex', alignItems: 'center', gap: 6,
-        padding: '5px 12px', borderRadius: 6, cursor: 'pointer',
+        padding: '5px 12px', borderRadius: 'var(--radius-md)', cursor: 'pointer',
+        minHeight: isMobile ? 'var(--ctl-chip)' : undefined,
         background: active ? `${color}18` : hovered ? 'var(--bg-card)' : 'transparent',
         border: `1px solid ${active ? `${color}50` : hovered ? 'var(--border-lit)' : 'var(--border)'}`,
         color: active ? color : hovered ? 'var(--text)' : 'var(--muted)',
-        fontSize: 11, fontWeight: active ? 700 : 500,
+        fontSize: 'var(--fs-sm)', fontWeight: active ? 700 : 500,
         transition: 'all 130ms',
       }}
     >
       {label}
       <span style={{
-        fontSize: 9, fontWeight: 700, color: active ? color : 'var(--faint)',
+        fontSize: isMobile ? 'var(--fs-xs)' : 9, fontWeight: 700, color: active ? color : 'var(--faint)',
         background: active ? `${color}25` : 'transparent',
         padding: '1px 5px', borderRadius: 3, transition: 'all 130ms',
       }}>
@@ -111,6 +114,7 @@ function FilterTab({ label, count, active, color, onClick }: {
 
 // ── BookCard ──────────────────────────────────────────────────────────────────
 function BookCard({ book, onClick, onDelete }: { book: Book; onClick: () => void; onDelete: () => void }) {
+  const isMobile = useMediaQuery(MOBILE_QUERY)
   const [hovered, setHovered] = useState(false)
   const [confirming, setConfirming] = useState(false)
   const [coverSrc, setCoverSrc] = useState<string | null>(null)
@@ -212,7 +216,7 @@ function BookCard({ book, onClick, onDelete }: { book: Book; onClick: () => void
           onClick={e => { stopProp(e); setConfirming(true) }}
           style={{
             position: 'absolute', top: 8, right: 8, zIndex: 4,
-            width: 28, height: 28, padding: 0, borderRadius: 6,
+            width: isMobile ? 'var(--ctl-icon)' : 28, height: isMobile ? 'var(--ctl-icon)' : 28, padding: 0, borderRadius: 'var(--radius-md)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             background: hovered ? 'rgba(10,10,10,0.75)' : 'transparent',
             border: `1px solid ${hovered ? 'rgba(248,81,73,0.4)' : 'transparent'}`,
@@ -238,17 +242,17 @@ function BookCard({ book, onClick, onDelete }: { book: Book; onClick: () => void
             alignItems: 'center', justifyContent: 'center', gap: 12,
           }}
         >
-          <p style={{ fontSize: 12, color: 'var(--text)', margin: 0, fontWeight: 700 }}>Deletar livro?</p>
-          <p style={{ fontSize: 10, color: 'var(--muted)', margin: 0, textAlign: 'center', maxWidth: 160, lineHeight: 1.6 }}>
+          <p style={{ fontSize: isMobile ? 'var(--fs-sm)' : 12, color: 'var(--text)', margin: 0, fontWeight: 700 }}>Deletar livro?</p>
+          <p style={{ fontSize: 'var(--fs-xs)', color: 'var(--muted)', margin: 0, textAlign: 'center', maxWidth: 160, lineHeight: 1.6 }}>
             Arquivo e capa serão removidos permanentemente.
           </p>
           <div style={{ display: 'flex', gap: 8 }}>
             <button onClick={e => { stopProp(e); setConfirming(false) }}
-              style={{ padding: '5px 14px', borderRadius: 5, fontSize: 11, cursor: 'pointer', background: 'transparent', border: '1px solid var(--border)', color: 'var(--muted)', fontFamily: 'var(--font)' }}>
+              style={{ padding: '5px 14px', borderRadius: 5, fontSize: 'var(--fs-sm)', minHeight: isMobile ? 'var(--ctl-md)' : undefined, cursor: 'pointer', background: 'transparent', border: '1px solid var(--border)', color: 'var(--muted)', fontFamily: 'var(--font)' }}>
               cancelar
             </button>
             <button onClick={e => { stopProp(e); onDelete() }}
-              style={{ padding: '5px 14px', borderRadius: 5, fontSize: 11, cursor: 'pointer', background: 'rgba(248,81,73,0.15)', border: '1px solid rgba(248,81,73,0.4)', color: '#f85149', fontWeight: 700, fontFamily: 'var(--font)' }}>
+              style={{ padding: '5px 14px', borderRadius: 5, fontSize: 'var(--fs-sm)', minHeight: isMobile ? 'var(--ctl-md)' : undefined, cursor: 'pointer', background: 'rgba(248,81,73,0.15)', border: '1px solid rgba(248,81,73,0.4)', color: '#f85149', fontWeight: 700, fontFamily: 'var(--font)' }}>
               deletar
             </button>
           </div>
@@ -288,7 +292,7 @@ function BookCard({ book, onClick, onDelete }: { book: Book; onClick: () => void
               {initials}
             </div>
             <p style={{
-              fontSize: 10, fontWeight: 600, color: 'var(--muted)',
+              fontSize: 'var(--fs-xs)', fontWeight: 600, color: 'var(--muted)',
               textAlign: 'center', lineHeight: 1.6, margin: 0,
               display: '-webkit-box', WebkitLineClamp: 5, WebkitBoxOrient: 'vertical', overflow: 'hidden',
             } as React.CSSProperties}>
@@ -303,7 +307,7 @@ function BookCard({ book, onClick, onDelete }: { book: Book; onClick: () => void
         <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 6 }}>
           {phase && (
             <span style={{
-              fontSize: 9, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase',
+              fontSize: isMobile ? 'var(--fs-xs)' : 9, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase',
               color: phaseColor, padding: '2px 6px', borderRadius: 3,
               background: `${phaseColor}15`, border: `1px solid ${phaseColor}30`,
             }}>
@@ -311,20 +315,20 @@ function BookCard({ book, onClick, onDelete }: { book: Book; onClick: () => void
             </span>
           )}
           {book.progress > 0 && (
-            <span style={{ marginLeft: 'auto', fontSize: 10, fontWeight: 700, color: 'var(--green)' }}>
+            <span style={{ marginLeft: 'auto', fontSize: 'var(--fs-xs)', fontWeight: 700, color: 'var(--green)' }}>
               {book.progress}%
             </span>
           )}
         </div>
 
         <p style={{
-          fontSize: 11, fontWeight: 700, margin: '0 0 3px', color: 'var(--text)', lineHeight: 1.4,
+          fontSize: 'var(--fs-sm)', fontWeight: 700, margin: '0 0 3px', color: 'var(--text)', lineHeight: 1.4,
           display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden',
         } as React.CSSProperties}>
           {book.title}
         </p>
 
-        <p style={{ fontSize: 10, color: 'var(--muted)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+        <p style={{ fontSize: 'var(--fs-xs)', color: 'var(--muted)', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
           {book.author}{book.year ? ` · ${book.year}` : ''}
         </p>
 
@@ -385,27 +389,27 @@ export default function BooksPage() {
 
         {/* Header */}
         <div className="fade-up" style={{ marginBottom: 32 }}>
-          <p style={{ fontSize: 11, color: 'var(--cyan)', marginBottom: 8, fontWeight: 500, letterSpacing: '0.06em' }}>
+          <p style={{ fontSize: 'var(--fs-sm)', color: 'var(--cyan)', marginBottom: 8, fontWeight: 500, letterSpacing: '0.06em' }}>
             // biblioteca de referência
           </p>
-          <h1 style={{ fontSize: 40, fontWeight: 800, color: 'var(--text)', margin: '0 0 10px', letterSpacing: '-0.03em' }}>
+          <h1 style={{ fontSize: isMobile ? 'var(--fs-xl)' : 40, fontWeight: 800, color: 'var(--text)', margin: '0 0 10px', letterSpacing: '-0.03em' }}>
             livros
           </h1>
-          <p style={{ fontSize: 12, color: 'var(--muted)', margin: '0 0 20px', maxWidth: 500, lineHeight: 1.7 }}>
+          <p style={{ fontSize: isMobile ? 'var(--fs-sm)' : 12, color: 'var(--muted)', margin: '0 0 20px', maxWidth: 500, lineHeight: 1.7 }}>
             Seus livros de referência em Markdown ou PDF. Adicione o arquivo e leia direto na plataforma.
           </p>
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 28 }}>
             <div>
               <span style={{ fontSize: 20, fontWeight: 800, color: 'var(--text)', fontFamily: 'var(--f-mono)' }}>{books.length}</span>
-              <span style={{ fontSize: 11, color: 'var(--muted)', marginLeft: 4 }}>/</span>
+              <span style={{ fontSize: 'var(--fs-sm)', color: 'var(--muted)', marginLeft: 4 }}>/</span>
               <span style={{ fontSize: 20, fontWeight: 800, color: 'var(--muted)', fontFamily: 'var(--f-mono)', marginLeft: 4 }}>{slotLimit}</span>
-              <span style={{ fontSize: 11, color: 'var(--muted)', marginLeft: 7 }}>slots</span>
+              <span style={{ fontSize: 'var(--fs-sm)', color: 'var(--muted)', marginLeft: 7 }}>slots</span>
             </div>
             {totalStarted > 0 && (
               <div>
                 <span style={{ fontSize: 20, fontWeight: 800, color: 'var(--cyan)', fontFamily: 'var(--f-mono)' }}>{totalStarted}</span>
-                <span style={{ fontSize: 11, color: 'var(--muted)', marginLeft: 7 }}>em leitura</span>
+                <span style={{ fontSize: 'var(--fs-sm)', color: 'var(--muted)', marginLeft: 7 }}>em leitura</span>
               </div>
             )}
 
@@ -413,7 +417,7 @@ export default function BooksPage() {
               <button
                 onClick={() => setShowAddModal(true)}
                 className="btn btn-cyan"
-                style={{ marginLeft: 'auto', fontSize: 11, display: 'flex', alignItems: 'center', gap: 6 }}
+                style={{ marginLeft: 'auto', fontSize: isMobile ? 'var(--fs-base)' : 11, minHeight: isMobile ? 'var(--ctl-md)' : undefined, display: 'flex', alignItems: 'center', gap: 6 }}
               >
                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                   <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
@@ -424,9 +428,9 @@ export default function BooksPage() {
               <button
                 onClick={() => navigate('/store')}
                 style={{
-                  marginLeft: 'auto', fontSize: 11, display: 'flex', alignItems: 'center', gap: 6,
+                  marginLeft: 'auto', fontSize: isMobile ? 'var(--fs-base)' : 11, minHeight: isMobile ? 'var(--ctl-md)' : undefined, display: 'flex', alignItems: 'center', gap: 6,
                   background: 'transparent', border: '1px solid var(--border)',
-                  borderRadius: 6, padding: '7px 13px', cursor: 'pointer',
+                  borderRadius: 'var(--radius-md)', padding: '7px 13px', cursor: 'pointer',
                   color: 'var(--muted)', fontFamily: 'var(--f-mono)',
                   transition: 'border-color 130ms, color 130ms',
                 }}
@@ -440,7 +444,7 @@ export default function BooksPage() {
         </div>
 
         {books.length === 0 ? (
-          <div className="fade-up" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 10, animationDelay: '80ms', opacity: 0 }}>
+          <div className="fade-up" style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, minmax(0, 1fr))' : 'repeat(auto-fill, minmax(200px, 1fr))', gap: 10, animationDelay: '80ms', opacity: 0 }}>
             {Array.from({ length: slotLimit }).map((_, i) => (
               <EmptySlotCard key={`empty-${i}`} onClick={() => setShowAddModal(true)} />
             ))}
@@ -448,7 +452,7 @@ export default function BooksPage() {
         ) : (
           <>
             {/* Filter tabs */}
-            <div className="fade-up" style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 24, animationDelay: '40ms', opacity: 0 }}>
+            <div className="fade-up" style={{ display: 'flex', gap: isMobile ? 'var(--sp-2)' : 6, flexWrap: 'wrap', marginBottom: 24, animationDelay: '40ms', opacity: 0 }}>
               <FilterTab
                 label="todos" count={books.length} active={activePhase === null}
                 color="var(--text)" onClick={() => setActivePhase(null)}
@@ -472,7 +476,7 @@ export default function BooksPage() {
             {/* Grid */}
             <div
               className="fade-up"
-              style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: 10, animationDelay: '80ms', opacity: 0 }}
+              style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, minmax(0, 1fr))' : 'repeat(auto-fill, minmax(200px, 1fr))', gap: 10, animationDelay: '80ms', opacity: 0 }}
             >
               {filtered.map(book => (
                 <BookCard

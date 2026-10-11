@@ -72,7 +72,7 @@ const MD_COMPONENTS = {
   ol: ({ children, ...p }: any) => <ol style={{ paddingLeft: 20, margin: '0 0 14px', lineHeight: 1.85, color: 'var(--text)' }} {...p}>{children}</ol>,
   li: ({ children, ...p }: any) => <li style={{ marginBottom: 4 }} {...p}>{children}</li>,
   table: ({ children, ...p }: any) => <div style={{ overflowX: 'auto', marginBottom: 16 }}><table style={{ width: '100%', borderCollapse: 'collapse', fontSize: 12 }} {...p}>{children}</table></div>,
-  th: ({ children, ...p }: any) => <th style={{ padding: '8px 12px', borderBottom: '1px solid var(--border)', textAlign: 'left', color: 'var(--muted)', fontWeight: 600, fontSize: 11, letterSpacing: '0.04em' }} {...p}>{children}</th>,
+  th: ({ children, ...p }: any) => <th style={{ padding: '8px 12px', borderBottom: '1px solid var(--border)', textAlign: 'left', color: 'var(--muted)', fontWeight: 600, fontSize: 'var(--fs-sm)', letterSpacing: '0.04em' }} {...p}>{children}</th>,
   td: ({ children, ...p }: any) => <td style={{ padding: '8px 12px', borderBottom: '1px solid var(--border)', color: 'var(--text)' }} {...p}>{children}</td>,
   hr: () => <hr style={{ border: 'none', borderTop: '1px solid var(--border)', margin: '28px 0' }} />,
   strong: ({ children, ...p }: any) => <strong style={{ color: 'var(--text)', fontWeight: 700 }} {...p}>{children}</strong>,
@@ -98,13 +98,14 @@ const MD_COMPONENTS = {
 
 // ── TOC sidebar ───────────────────────────────────────────────────────────────
 function TocSidebar({ toc, onNavigate }: { toc: TocEntry[]; onNavigate: (id: string) => void }) {
+  const isMobile = useMediaQuery(MOBILE_QUERY)
   if (toc.length === 0) return null
   return (
     <div style={{
       width: 220, flexShrink: 0, borderRight: '1px solid var(--border)',
       overflowY: 'auto', paddingTop: 24, paddingBottom: 24,
     }}>
-      <p style={{ fontSize: 9, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--muted)', padding: '0 16px', marginBottom: 10 }}>
+      <p style={{ fontSize: isMobile ? 'var(--fs-xs)' : 9, fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--muted)', padding: '0 16px', marginBottom: 10 }}>
         índice
       </p>
       {toc.map((entry, i) => (
@@ -114,7 +115,8 @@ function TocSidebar({ toc, onNavigate }: { toc: TocEntry[]; onNavigate: (id: str
           style={{
             display: 'block', width: '100%', textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer',
             padding: `5px 16px 5px ${8 + (entry.level - 1) * 12}px`,
-            fontSize: entry.level === 1 ? 12 : 11,
+            fontSize: isMobile ? 'var(--fs-sm)' : (entry.level === 1 ? 12 : 11),
+            minHeight: isMobile ? 'var(--ctl-md)' : undefined,
             fontWeight: entry.level === 1 ? 600 : 400,
             color: entry.level === 1 ? 'var(--text)' : 'var(--muted)',
             lineHeight: 1.4,
@@ -299,7 +301,7 @@ export default function BookReaderPage() {
   if (loading) {
     return (
       <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <span style={{ fontSize: 12, color: 'var(--muted)' }}>carregando...</span>
+        <span style={{ fontSize: isMobile ? 'var(--fs-sm)' : 12, color: 'var(--muted)' }}>carregando...</span>
       </div>
     )
   }
@@ -307,8 +309,8 @@ export default function BookReaderPage() {
   if (error || !book) {
     return (
       <div style={{ height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12 }}>
-        <p style={{ fontSize: 13, color: 'var(--muted)' }}>{error ?? 'Livro não encontrado'}</p>
-        <button onClick={() => navigate('/books')} className="btn btn-cyan" style={{ fontSize: 11 }}>
+        <p style={{ fontSize: 'var(--fs-base)', color: 'var(--muted)' }}>{error ?? 'Livro não encontrado'}</p>
+        <button onClick={() => navigate('/books')} className="btn btn-cyan" style={{ fontSize: isMobile ? 'var(--fs-base)' : 11, minHeight: isMobile ? 'var(--ctl-md)' : undefined }}>
           ← Biblioteca
         </button>
       </div>
@@ -332,7 +334,7 @@ export default function BookReaderPage() {
       }}>
         <button
           onClick={() => navigate('/books')}
-          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: 11, display: 'flex', alignItems: 'center', gap: 6, padding: '4px 8px', borderRadius: 5, transition: 'color 120ms, background 120ms', flexShrink: 0 }}
+          style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--muted)', fontSize: 'var(--fs-sm)', minHeight: isMobile ? 'var(--ctl-md)' : undefined, display: 'flex', alignItems: 'center', gap: 6, padding: '4px 8px', borderRadius: 5, transition: 'color 120ms, background 120ms', flexShrink: 0 }}
           onMouseEnter={e => { e.currentTarget.style.color = 'var(--text)'; e.currentTarget.style.background = 'var(--bg-hover)' }}
           onMouseLeave={e => { e.currentTarget.style.color = 'var(--muted)'; e.currentTarget.style.background = 'none' }}
         >
@@ -345,17 +347,17 @@ export default function BookReaderPage() {
         <div style={{ width: 1, height: 16, background: 'var(--border)', flexShrink: 0 }} />
 
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          <p style={{ margin: 0, fontSize: 'var(--fs-base)', fontWeight: 700, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {book.title}
           </p>
-          <p style={{ margin: 0, fontSize: 10, color: 'var(--muted)' }}>
+          <p style={{ margin: 0, fontSize: 'var(--fs-xs)', color: 'var(--muted)' }}>
             {book.author}{book.year ? ` · ${book.year}` : ''}
           </p>
         </div>
 
         {phaseLabel && (
           <span style={{
-            fontSize: 9, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase',
+            fontSize: isMobile ? 'var(--fs-xs)' : 9, fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase',
             color: phaseColor, padding: '3px 8px', borderRadius: 4, flexShrink: 0,
             background: `${phaseColor}15`, border: `1px solid ${phaseColor}30`,
           }}>
@@ -364,7 +366,7 @@ export default function BookReaderPage() {
         )}
 
         {book.content_type !== 'markdown' && (numPages > 0 || (textMode && textTotalPages > 0)) && (
-          <span style={{ fontSize: 11, color: 'var(--muted)', fontFamily: 'var(--f-mono)', flexShrink: 0 }}>
+          <span style={{ fontSize: 'var(--fs-sm)', color: 'var(--muted)', fontFamily: 'var(--f-mono)', flexShrink: 0 }}>
             {textMode ? textNavPage : currentPage} / {textMode ? textTotalPages : numPages}
           </span>
         )}
@@ -414,10 +416,10 @@ export default function BookReaderPage() {
                 alignItems: 'center', justifyContent: 'center', gap: 28,
               }}>
                 <div style={{ textAlign: 'center' }}>
-                  <p style={{ margin: '0 0 6px', fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>
+                  <p style={{ margin: '0 0 6px', fontSize: 'var(--fs-base)', fontWeight: 600, color: 'var(--text)' }}>
                     Extraindo texto
                   </p>
-                  <p style={{ margin: 0, fontSize: 11, color: 'var(--muted)' }}>
+                  <p style={{ margin: 0, fontSize: 'var(--fs-sm)', color: 'var(--muted)' }}>
                     Pode levar até 1 minuto em PDFs grandes
                   </p>
                 </div>
@@ -425,7 +427,7 @@ export default function BookReaderPage() {
                 <div style={{ width: 300 }}>
                   <div style={{
                     display: 'flex', justifyContent: 'space-between',
-                    marginBottom: 8, fontSize: 11, fontFamily: 'var(--f-mono)',
+                    marginBottom: 8, fontSize: 'var(--fs-sm)', fontFamily: 'var(--f-mono)',
                     color: 'var(--muted)',
                   }}>
                     <span>processando...</span>
@@ -448,7 +450,7 @@ export default function BookReaderPage() {
               <div style={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
                 {/* Text page nav bar */}
                 <div style={{
-                  flexShrink: 0, height: 40,
+                  flexShrink: 0, height: isMobile ? 'var(--ctl-icon)' : 40,
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                   padding: '0 16px',
                   borderBottom: '1px solid var(--border)',
@@ -461,7 +463,7 @@ export default function BookReaderPage() {
                       display: 'flex', alignItems: 'center', gap: 5,
                       background: 'transparent', border: '1px solid var(--border)',
                       borderRadius: 5, padding: '3px 10px', cursor: 'pointer',
-                      fontSize: 11, color: 'var(--muted)', transition: 'all 120ms',
+                      fontSize: 'var(--fs-sm)', minHeight: isMobile ? 'var(--ctl-md)' : undefined, color: 'var(--muted)', transition: 'all 120ms',
                     }}
                     onMouseEnter={e => { e.currentTarget.style.color = 'var(--text)'; e.currentTarget.style.borderColor = 'var(--faint)' }}
                     onMouseLeave={e => { e.currentTarget.style.color = 'var(--muted)'; e.currentTarget.style.borderColor = 'var(--border)' }}
@@ -479,12 +481,13 @@ export default function BookReaderPage() {
                       disabled={textNavPage <= 1}
                       style={{
                         background: 'none', border: 'none', cursor: textNavPage <= 1 ? 'not-allowed' : 'pointer',
-                        color: textNavPage <= 1 ? 'var(--faint)' : 'var(--muted)', padding: '4px 8px', borderRadius: 4,
+                        color: textNavPage <= 1 ? 'var(--faint)' : 'var(--muted)', padding: '4px 8px', borderRadius: 'var(--radius-sm)',
+                        minWidth: isMobile ? 'var(--ctl-icon)' : undefined, minHeight: isMobile ? 'var(--ctl-icon)' : undefined,
                       }}
                     >
                       ←
                     </button>
-                    <span style={{ fontSize: 11, color: 'var(--muted)', fontFamily: 'var(--f-mono)' }}>
+                    <span style={{ fontSize: 'var(--fs-sm)', color: 'var(--muted)', fontFamily: 'var(--f-mono)' }}>
                       {textNavPage}{textTotalPages > 0 ? ` / ${textTotalPages}` : ''}
                     </span>
                     <button
@@ -494,7 +497,8 @@ export default function BookReaderPage() {
                         background: 'none', border: 'none',
                         cursor: (textTotalPages > 0 && textNavPage >= textTotalPages) ? 'not-allowed' : 'pointer',
                         color: (textTotalPages > 0 && textNavPage >= textTotalPages) ? 'var(--faint)' : 'var(--muted)',
-                        padding: '4px 8px', borderRadius: 4,
+                        padding: '4px 8px', borderRadius: 'var(--radius-sm)',
+                        minWidth: isMobile ? 'var(--ctl-icon)' : undefined, minHeight: isMobile ? 'var(--ctl-icon)' : undefined,
                       }}
                     >
                       →
@@ -513,7 +517,7 @@ export default function BookReaderPage() {
                         {textCacheRef.current.get(textNavPage)!}
                       </ReactMarkdown>
                     ) : (
-                      <p style={{ color: 'var(--muted)', fontSize: 12 }}>carregando página {textNavPage}...</p>
+                      <p style={{ color: 'var(--muted)', fontSize: isMobile ? 'var(--fs-sm)' : 12 }}>carregando página {textNavPage}...</p>
                     )}
                   </div>
                 </div>
