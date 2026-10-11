@@ -12,3 +12,9 @@ const STATUS: Record<string, string> = { passed: 'concluído', failed: 'falhou',
 export function statusWord(status: string): string {
   return STATUS[status] ?? status
 }
+
+export function promptUser(name: string): string {
+  const first = name.trim().split(/\s+/)[0] ?? ''
+  const user = first.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().replace(/[^a-z0-9]/g, '')
+  return user || 'dev'
+}

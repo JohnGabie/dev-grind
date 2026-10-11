@@ -15,7 +15,7 @@ const COVER_EXCEPTION = 'profile/IdentitySection.tsx'
 
 describe('src/mobile contract', () => {
   it('has the building blocks', () => {
-    for (const name of ['MobilePage', 'Section', 'Surface', 'Stat', 'RankCard', 'WindowFrame', 'ListRow', 'Readout', 'SectionState']) {
+    for (const name of ['MobilePage', 'Section', 'Surface', 'Stat', 'RankCard', 'WindowFrame', 'PromptLine', 'ListRow', 'Readout', 'SectionState']) {
       assert.ok(files.some(f => f.name === `${name}.tsx`), `${name}.tsx is missing`)
     }
   })

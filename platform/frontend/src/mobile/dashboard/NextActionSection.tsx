@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AsciiButton from './AsciiButton'
 import { distinctModeCount, pickModes, pickNextAction, type ModeKey } from '../nextAction'
+import PromptLine from '../PromptLine'
 import { MODE_COLOR } from '../palette'
 import { rankColor } from '../rank'
 import Section from '../Section'
@@ -10,11 +11,11 @@ import WindowFrame from '../WindowFrame'
 import type { Slot } from '../useSlot'
 import type { Exercise, Resume } from '../types'
 
-interface Props { resume: Slot<Resume | null>; exercises: Slot<Exercise[]> }
+interface Props { resume: Slot<Resume | null>; exercises: Slot<Exercise[]>; user: string }
 
 const MODES: ModeKey[] = ['rankup', 'warmup', 'practice']
 
-export default function NextActionSection({ resume, exercises }: Props) {
+export default function NextActionSection({ resume, exercises, user }: Props) {
   const navigate = useNavigate()
   const [mode, setMode] = useState<ModeKey>('rankup')
 
@@ -45,8 +46,8 @@ export default function NextActionSection({ resume, exercises }: Props) {
   return (
     <div style={{ marginTop: 'var(--sp-4)' }}>
       <WindowFrame title="treinar.sh" titleColor={accent}>
-        <div style={{ fontSize: 'var(--fs-base)', lineHeight: 'var(--lh-base)', color: accent, marginBottom: 'var(--sp-2)' }}>
-          $ {resuming ? 'continuar' : `treinar --modo ${mode}`}
+        <div style={{ marginBottom: 'var(--sp-2)' }}>
+          <PromptLine user={user} command={resuming ? 'continuar' : `treinar --modo ${mode}`} commandColor={accent} />
         </div>
         {showTabs && (
           <div role="tablist" aria-label="modo" style={{ display: 'flex', gap: 'var(--sp-2)', marginBottom: 'var(--sp-2)' }}>

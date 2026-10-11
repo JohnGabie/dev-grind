@@ -5,18 +5,16 @@ interface SectionProps {
   summary?: string              // one line shown next to the label while collapsed
   collapsible?: boolean
   defaultOpen?: boolean
-  dot?: boolean                 // "new" marker
   onToggle?: (open: boolean) => void
   children: ReactNode
 }
 
-export default function Section({ label, summary, collapsible = false, defaultOpen = false, dot = false, onToggle, children }: SectionProps) {
+export default function Section({ label, summary, collapsible = false, defaultOpen = false, onToggle, children }: SectionProps) {
   const [open, setOpen] = useState(defaultOpen)
 
   const head = (
     <>
       <span className="section-label">{label}</span>
-      {dot && <span style={{ fontSize: 'var(--fs-xs)', color: 'var(--cyan)', flexShrink: 0 }}>● novo</span>}
       {summary && !open && (
         <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 'var(--fs-sm)', color: 'var(--muted)' }}>
           {summary}

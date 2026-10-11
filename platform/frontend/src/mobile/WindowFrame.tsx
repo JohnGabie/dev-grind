@@ -12,7 +12,7 @@ export default function WindowFrame({ title, titleColor, children, onClick, aria
   const onKeyDown = (e: KeyboardEvent) => { if (onClick && (e.key === 'Enter' || e.key === ' ')) onClick() }
   return (
     <div
-      role={onClick ? 'button' : undefined}
+      role={onClick ? 'button' : ariaLabel ? 'group' : undefined}
       tabIndex={onClick ? 0 : undefined}
       aria-label={ariaLabel}
       onClick={onClick}

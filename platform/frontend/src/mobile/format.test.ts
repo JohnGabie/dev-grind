@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import { statusWord, timeAgo } from './format.ts'
+import { promptUser, statusWord, timeAgo } from './format.ts'
 
 const NOW = Date.parse('2026-10-11T12:00:00Z')
 
@@ -15,5 +15,13 @@ describe('format', () => {
     assert.equal(statusWord('failed'), 'falhou')
     assert.equal(statusWord('in_progress'), 'em progresso')
     assert.equal(statusWord('whatever'), 'whatever')
+  })
+
+  it('derives the shell user from the first name', () => {
+    assert.equal(promptUser('João Gabie'), 'joao')
+    assert.equal(promptUser(''), 'dev')
+    assert.equal(promptUser('Ana-Maria'), 'anamaria')
+    assert.equal(promptUser('ÁÉÍ'), 'aei')
+    assert.equal(promptUser('  - !'), 'dev')
   })
 })

@@ -1,13 +1,14 @@
 import { useNavigate } from 'react-router-dom'
 import Section from '../Section'
 import SectionState from '../SectionState'
+import PromptLine from '../PromptLine'
 import { buildStatusLines } from '../statusJson'
 import type { Slot } from '../useSlot'
 import type { UserStats } from '../types'
 import WindowFrame from '../WindowFrame'
 import StatusJson from './StatusJson'
 
-export default function StatusSection({ stats }: { stats: Slot<UserStats> }) {
+export default function StatusSection({ stats, user }: { stats: Slot<UserStats>; user: string }) {
   const navigate = useNavigate()
   const s = stats.data
   if (stats.status !== 'ready' || !s) {
@@ -31,6 +32,9 @@ export default function StatusSection({ stats }: { stats: Slot<UserStats> }) {
           onClick={() => navigate('/profile')}
           ariaLabel={`status: ${s.rank}, ${s.honor} de honor, streak ${s.current_streak}, semana ${weekly}`}
         >
+          <div style={{ marginBottom: 'var(--sp-2)' }}>
+            <PromptLine user={user} command="cat status.json" commandColor="var(--cyan)" cursor={false} />
+          </div>
           <StatusJson lines={lines} />
         </WindowFrame>
       </SectionState>
