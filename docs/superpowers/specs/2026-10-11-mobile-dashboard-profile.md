@@ -1,6 +1,6 @@
 # Mobile Dashboard and Profile redesign
 
-Status: draft, awaiting João's review. Nothing below is implemented.
+Status: Profile implemented and approved by João; Dashboard revision 2 (terminal and colour) awaiting review.
 Scope: viewports `<= 768px` (`MOBILE_QUERY`) only. Desktop stays pixel-identical.
 Branch: `feat/mobile-dashboard-profile` (based on `feat/course-lesson-progress`, which has the mobile scale tokens).
 
@@ -25,6 +25,7 @@ João, in his words:
 |---|---|
 | Dashboard header | **Kept as is**: the greeting, the cyan name and the date. Only size and spacing follow the scale. |
 | Profile identity | **Kept as is**: photo, cover, kyu number and the progress circle. Mobile means resize and re-space, not redesign. |
+| Dashboard look (revision 2) | Terminal feel plus colour: prompt line, block-character bar, mode tabs always visible in their colours, log-style history; prompt text `$ treinar --modo <modo>` |
 | Dashboard hierarchy | **Status first**: header, status card, next action, analysis collapsed, history |
 | Profile, visible without a tap | Identity + rank progress, activity heatmap, badges |
 | Profile, collapsible rows | Bio, social links |
@@ -54,15 +55,19 @@ João, in his words:
 - Sizes only from the scale tokens (`var(--fs-*)`, `var(--ctl-*)`, `var(--sp-*)`, `var(--radius-*)`). One justified exception: heatmap cells (data marks, not tap targets).
 - Section labels use the app's existing `.section-label` style.
 
-### Dashboard (mobile)
+### Dashboard (mobile), revision 2: terminal and colour
 
-1. **Header (kept)**: the existing greeting ("boa noite, João" with the cyan name) and the date, exactly as they are today. Only their size and spacing follow the scale tokens. No profile entry here (it lives in "Mais").
-2. **Status card** (surface 1): rank line `8kyu` at `--fs-xl` in the rank colour with `84 / 120 honor` at the right; a 4px bar filled to `rank_progress`; a line "faltam 36 para 7kyu"; then three figures in a row separated by 1px vertical lines: streak (dias), completed this week, honor. Words as labels. The whole card opens the Profile.
-3. **Next action** (surface 2): the in-progress item if one exists ("continuar"), otherwise today's first exercise ("começar"). Title as heading, kyu tag, one 48px primary button. A small "mudar modo" link reveals the existing modes (Rank Up / Aquecimento / Praticar); it is hidden when there are fewer than two distinct choices.
-4. **Agent analysis**: one 52px row: "análise do agente" with its date and the first line, ellipsized, plus a dot when there is something new. Tap expands it inline to the full text and the gap tokens as plain text. Older insights sit behind an "anteriores" row.
-5. **History**: a plain list of the last 5 items from `/progress/recent-exercises` (kyu tag, title ellipsized, status word, age). Status words are never relabelled ("em progresso" stays "em progresso"). Empty state: "nada por aqui ainda". No "ver tudo" until a history page exists.
+João found the first version generic ("lost the personality"). Direction chosen: **terminal feel plus colour**, same structure (status first), same independent sections. The Profile is unchanged. The first version of this section is superseded by what follows.
 
-Removed on mobile: stat pills, the "iniciar chat com a IA" pill (the chat button exists), carousel arrows, the gradient trainer widget, all mock data.
+1. **Header (kept)**: the existing greeting with the cyan name and the date, exactly as on desktop.
+2. **Status card** (surface 1): the rank (`8kyu`) large in the **rank colour**; `2 / 30 honor` at the right; a **block-character progress bar** (filled `█` blocks in the rank colour, empty `░` in `--border`, plus the percentage) sized from `rank_progress`; "faltam 28 para 7kyu". Three figures: **streak** in orange (`#f97316`) when above 0 and muted at 0, **semana** in green (`--green`), **honor** in yellow (`--yellow`). Words as labels, no emoji. The whole card opens the Profile.
+3. **Prompt line**: `$ treinar --modo <modo>` in the colour of the selected mode (rankup cyan `#22d3ee`, warmup orange `#f97316`, practice green `#22c55e`, the existing desktop mode colours). It changes when the mode changes. When the next action is a resume it reads `$ continuar` in cyan.
+4. **Mode tabs, always visible** (when there are at least two distinct modes): three mono tabs `rankup  warmup  practice`, 36px chips with a tap area of 44px, each in its own mode colour (selected: coloured text and a 1px coloured border, others muted). They sit directly under the prompt line. With fewer than two distinct modes they are not shown.
+5. **Next action** (surface 2): the kyu tag in its rank colour, the exercise title, and one 48px primary button whose text, border and tint use the **mode colour** ("começar" or "continuar").
+6. **Agent analysis**: one log-style row: `> análise do agente` with its date and the first line, ellipsized, and a `● novo` dot in cyan when new. Tap expands it inline as before.
+7. **History**: log lines, 5 rows: a status glyph (`✓` passed in green, `✗` failed in orange, `◉` in progress in cyan), the kyu tag in its rank colour, the title, and the age. Status words are never relabelled. Empty state: "nada por aqui ainda".
+
+Colour rules (the guard test is updated to allow colour, still forbids decoration): colour is carried only by text, the bar and the button; no gradients, glow, `text-shadow`, frosted glass, emoji or accent stripes. Colours come from existing palette values (the rank and mode colours already used by the desktop dashboard, `--green`, `--yellow`, `--cyan`, `--muted`), exposed as named constants in `src/mobile/palette.ts` so no page hard-codes a hex. Sizes still only from the scale tokens. The animated store background stays behind the content.
 
 ### Profile (mobile)
 
