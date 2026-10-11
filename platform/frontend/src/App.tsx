@@ -18,6 +18,7 @@ import StoreItemPage from './pages/StoreItemPage'
 import CommunityPage from './pages/CommunityPage'
 import FriendsPage from './pages/FriendsPage'
 import GuildPage from './pages/GuildPage'
+import AnalysisPage from './pages/AnalysisPage'
 
 export default function App() {
   return (
@@ -41,6 +42,7 @@ export default function App() {
             <Route path="community" element={<CommunityPage />} />
             <Route path="friends" element={<FriendsPage />} />
             <Route path="guild" element={<GuildPage />} />
+            <Route path="analysis" element={<AnalysisPage />} />
           </Route>
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
