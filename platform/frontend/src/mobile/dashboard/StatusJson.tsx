@@ -1,7 +1,6 @@
 import type { StatusLine } from '../statusJson'
-import { KEY_COLOR, SYNTAX_MUTED } from '../palette'
 
-const syntax = { color: SYNTAX_MUTED } as const
+const syntax = { color: 'var(--muted)' } as const
 
 export default function StatusJson({ lines }: { lines: StatusLine[] }) {
   return (
@@ -15,7 +14,7 @@ export default function StatusJson({ lines }: { lines: StatusLine[] }) {
       <span style={syntax}>{'{'}</span>
       {lines.map(line => (
         <div key={line.key}>
-          <span style={syntax}>{'  "'}</span><span style={{ color: KEY_COLOR }}>{line.key}</span><span style={syntax}>{'": '}</span>
+          <span style={syntax}>{'  "'}</span><span style={syntax}>{line.key}</span><span style={syntax}>{'": '}</span>
           {typeof line.value === 'string'
             ? <span style={{ color: line.color }}><span style={syntax}>"</span>{line.value}<span style={syntax}>"</span></span>
             : <span style={{ color: line.color }}>{line.value}</span>}

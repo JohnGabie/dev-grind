@@ -23,7 +23,7 @@ const gapList = (gaps: unknown): string => (Array.isArray(gaps) ? gaps.join(' ·
 function Frame({ children }: { children: ReactNode }) {
   return (
     <div style={{ marginTop: 'var(--sp-4)' }}>
-      <WindowFrame title="analise.log" titleColor="var(--yellow)" ariaLabel="análise do agente">{children}</WindowFrame>
+      <WindowFrame title="analise.log" ariaLabel="análise do agente">{children}</WindowFrame>
     </div>
   )
 }
@@ -33,7 +33,7 @@ export default function AnalysisSection({ insights, user }: { insights: Slot<Ins
   const [open, setOpen] = useState(false)
   const list = insights.data ?? []
   const latest = list[0]
-  const prompt = <PromptLine user={user} command="tail analise.log" commandColor="var(--yellow)" cursor={false} />
+  const prompt = <PromptLine user={user} command="tail analise.log" cursor={false} />
 
   if (insights.status !== 'ready' || !latest) {
     return (
@@ -58,6 +58,7 @@ export default function AnalysisSection({ insights, user }: { insights: Slot<Ins
       {prompt}
       <button
         type="button"
+        aria-label="análise do agente"
         aria-expanded={open}
         onClick={toggle}
         style={{

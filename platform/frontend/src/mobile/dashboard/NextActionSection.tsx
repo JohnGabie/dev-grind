@@ -3,9 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import AsciiButton from './AsciiButton'
 import { distinctModeCount, pickModes, pickNextAction, type ModeKey } from '../nextAction'
 import PromptLine from '../PromptLine'
-import { MODE_COLOR } from '../palette'
 import { rankColor } from '../rank'
-import Section from '../Section'
 import SectionState from '../SectionState'
 import WindowFrame from '../WindowFrame'
 import type { Slot } from '../useSlot'
@@ -29,31 +27,34 @@ export default function NextActionSection({ resume, exercises, user }: Props) {
 
   if (!action || status === 'loading') {
     return (
-      <Section label="treinar agora">
-        <SectionState
-          status={status}
-          empty
-          emptyText="sem exercício por hoje"
-          onRetry={() => { resume.retry(); exercises.retry() }}
-        >{null}</SectionState>
-      </Section>
+      <div style={{ marginTop: 'var(--sp-4)' }}>
+        <WindowFrame title="treinar.sh" ariaLabel="treinar agora">
+          <div style={{ marginBottom: 'var(--sp-2)' }}>
+            <PromptLine user={user} command="treinar" />
+          </div>
+          <SectionState
+            status={status}
+            empty
+            emptyText="sem exercício por hoje"
+            onRetry={() => { resume.retry(); exercises.retry() }}
+          >{null}</SectionState>
+        </WindowFrame>
+      </div>
     )
   }
 
   const resuming = action.kind === 'resume'
-  const accent = resuming ? 'var(--cyan)' : MODE_COLOR[mode]
 
   return (
     <div style={{ marginTop: 'var(--sp-4)' }}>
-      <WindowFrame title="treinar.sh" titleColor={accent}>
+      <WindowFrame title="treinar.sh">
         <div style={{ marginBottom: 'var(--sp-2)' }}>
-          <PromptLine user={user} command={resuming ? 'continuar' : `treinar -m ${mode}`} commandColor={accent} />
+          <PromptLine user={user} command={resuming ? 'continuar' : `treinar -m ${mode}`} />
         </div>
         {showTabs && (
           <div role="tablist" aria-label="modo" style={{ display: 'flex', gap: 'var(--sp-2)', marginBottom: 'var(--sp-2)' }}>
             {MODES.map(k => {
               const selected = k === mode
-              const color = MODE_COLOR[k]
               return (
                 <button
                   key={k}
@@ -69,8 +70,8 @@ export default function NextActionSection({ resume, exercises, user }: Props) {
                 >
                   <span style={{
                     minHeight: 'var(--ctl-chip)', display: 'inline-flex', alignItems: 'center', padding: '0 var(--sp-3)',
-                    border: `1px solid ${selected ? color : 'var(--border)'}`, borderRadius: 'var(--radius-md)',
-                    color: selected ? color : 'var(--muted)', fontSize: 'var(--fs-sm)', fontWeight: selected ? 700 : 400,
+                    border: `1px solid ${selected ? 'var(--cyan)' : 'var(--border)'}`, borderRadius: 'var(--radius-md)',
+                    color: selected ? 'var(--cyan)' : 'var(--muted)', fontSize: 'var(--fs-sm)', fontWeight: selected ? 700 : 400,
                   }}>
                     {k}
                   </span>
@@ -85,7 +86,7 @@ export default function NextActionSection({ resume, exercises, user }: Props) {
         </div>
         <AsciiButton
           label={resuming ? 'continuar' : 'começar'}
-          color={accent}
+          color="var(--cyan)"
           onClick={() => navigate(`/exercise/${action.slug}`)}
         />
       </WindowFrame>

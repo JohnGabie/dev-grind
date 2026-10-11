@@ -1,5 +1,4 @@
 import { useNavigate } from 'react-router-dom'
-import Section from '../Section'
 import SectionState from '../SectionState'
 import PromptLine from '../PromptLine'
 import { buildStatusLines } from '../statusJson'
@@ -13,9 +12,14 @@ export default function StatusSection({ stats, user }: { stats: Slot<UserStats>;
   const s = stats.data
   if (stats.status !== 'ready' || !s) {
     return (
-      <Section label="estado">
-        <SectionState status={stats.status} onRetry={stats.retry}>{null}</SectionState>
-      </Section>
+      <div style={{ marginTop: 'var(--sp-5)' }}>
+        <WindowFrame title="status.json" ariaLabel="estado">
+          <div style={{ marginBottom: 'var(--sp-2)' }}>
+            <PromptLine user={user} command="cat status.json" cursor={false} />
+          </div>
+          <SectionState status={stats.status} onRetry={stats.retry}>{null}</SectionState>
+        </WindowFrame>
+      </div>
     )
   }
   const weekly = s.weekly_summary.completed_last_7_days
@@ -28,12 +32,11 @@ export default function StatusSection({ stats, user }: { stats: Slot<UserStats>;
       <SectionState status={stats.status} onRetry={stats.retry}>
         <WindowFrame
           title="status.json"
-          titleColor="var(--cyan)"
           onClick={() => navigate('/profile')}
           ariaLabel={`status: ${s.rank}, ${s.honor} de honor, streak ${s.current_streak}, semana ${weekly}`}
         >
           <div style={{ marginBottom: 'var(--sp-2)' }}>
-            <PromptLine user={user} command="cat status.json" commandColor="var(--cyan)" cursor={false} />
+            <PromptLine user={user} command="cat status.json" cursor={false} />
           </div>
           <StatusJson lines={lines} />
         </WindowFrame>

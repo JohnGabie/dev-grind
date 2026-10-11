@@ -2,7 +2,6 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { buildStatusLines } from './statusJson.ts'
 import { rankColor } from './rank.ts'
-import { SYNTAX_MUTED, STREAK_COLOR, WEEK_COLOR } from './palette.ts'
 
 const base = { rank: '8kyu', honor: 2, honor_for_next_rank: 30, rank_progress: 0.067, current_streak: 0, weekly: 3 }
 
@@ -14,11 +13,9 @@ test('buildStatusLines lists keys in order with colours', () => {
   assert.equal(by('faltam').value, 28)
   assert.equal(by('progresso').value, '7%')
   assert.equal(buildStatusLines({ ...base, rank_progress: 0.62 }).find(l => l.key === 'progresso')!.value, '62%')
-  assert.equal(by('streak').color, SYNTAX_MUTED)
-  assert.equal(buildStatusLines({ ...base, current_streak: 3 }).find(l => l.key === 'streak')!.color, STREAK_COLOR)
-  assert.equal(by('semana').color, WEEK_COLOR)
   assert.equal(by('rank').color, rankColor('8kyu'))
-  assert.equal(by('proximo').color, rankColor('7kyu'))
+  for (const l of lines.filter(x => x.key !== 'rank')) assert.equal(l.color, 'var(--text)', l.key)
+  assert.equal(buildStatusLines({ ...base, current_streak: 3 }).find(l => l.key === 'streak')!.color, 'var(--text)')
 })
 
 test('top rank has no proximo or faltam', () => {

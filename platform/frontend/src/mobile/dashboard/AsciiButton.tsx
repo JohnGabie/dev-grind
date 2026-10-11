@@ -20,7 +20,7 @@ export default function AsciiButton({ label, color, onClick }: { label: string; 
         fontFamily: 'var(--font)', fontSize: 'var(--fs-base)', lineHeight: 'var(--lh-base)', color,
       }}
     >
-      <pre aria-hidden="true" style={{ display: 'block', margin: 0, font: 'inherit', lineHeight: 'var(--lh-base)', color: 'inherit', whiteSpace: 'pre' }}>{box(label)}</pre>
+      <span aria-hidden="true" style={{ display: 'block', whiteSpace: 'pre' }}>{box(label)}</span>
     </button>
   )
 }
