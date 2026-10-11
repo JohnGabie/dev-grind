@@ -52,10 +52,6 @@ const PROGRESS_OPTIONS: { value: ProgressKey; label: string }[] = [
   { value: 'completed',     label: 'completados' },
 ]
 
-// Os dois Filter* aparecem dentro e fora do sheet e não recebem props de
-// layout; consultar a media query direto evita furar a assinatura deles.
-const isMobileVP = () => window.matchMedia(MOBILE_QUERY).matches
-
 // ── FilterSelect (single-select dropdown) ───────────────────────────────────
 function FilterSelect<T extends string>({
   label, value, options, onChange, hideLabel = false,
@@ -66,6 +62,7 @@ function FilterSelect<T extends string>({
   onChange: (v: T) => void
   hideLabel?: boolean
 }) {
+  const isMobile = useMediaQuery(MOBILE_QUERY)
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
 
@@ -83,7 +80,7 @@ function FilterSelect<T extends string>({
     <div ref={ref} style={{ position: 'relative' }}>
       {!hideLabel && (
         <p style={{
-          fontSize: 9, fontWeight: 700, letterSpacing: '0.12em',
+          fontSize: isMobile ? 'var(--fs-xs)' : 9, fontWeight: 700, letterSpacing: '0.12em',
           textTransform: 'uppercase', color: 'var(--muted)', margin: '0 0 6px',
         }}>
           {label}
@@ -92,11 +89,11 @@ function FilterSelect<T extends string>({
       <button
         onClick={() => setOpen(o => !o)}
         style={{
-          width: '100%', height: isMobileVP() ? 44 : 30, padding: '0 10px',
+          width: '100%', height: isMobile ? 'var(--ctl-md)' : 30, padding: '0 10px',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           background: 'var(--bg)', border: `1px solid ${open ? 'var(--border-lit)' : 'var(--border)'}`,
           borderRadius: 5, color: 'var(--text)', cursor: 'pointer',
-          fontSize: 12, fontFamily: 'var(--f-mono)',
+          fontSize: isMobile ? 'var(--fs-sm)' : 12, fontFamily: 'var(--f-mono)',
           transition: 'border-color 120ms',
         }}
       >
@@ -121,11 +118,11 @@ function FilterSelect<T extends string>({
               key={opt.value}
               onClick={() => { onChange(opt.value); setOpen(false) }}
               style={{
-                width: '100%', padding: '7px 10px', textAlign: 'left',
+                width: '100%', minHeight: isMobile ? 'var(--ctl-md)' : undefined, padding: '7px 10px', textAlign: 'left',
                 background: opt.value === value ? 'rgba(34,211,238,0.06)' : 'transparent',
                 border: 'none', cursor: 'pointer',
                 color: opt.value === value ? 'var(--cyan)' : 'var(--text)',
-                fontSize: 12, fontFamily: 'var(--f-mono)',
+                fontSize: isMobile ? 'var(--fs-sm)' : 12, fontFamily: 'var(--f-mono)',
                 display: 'flex', alignItems: 'center', gap: 8,
                 transition: 'background 80ms',
               }}
@@ -160,6 +157,7 @@ function FilterMultiSelect({
   placeholder?: string
   searchable?: boolean
 }) {
+  const isMobile = useMediaQuery(MOBILE_QUERY)
   const [open, setOpen] = useState(false)
   const [q, setQ] = useState('')
   const ref = useRef<HTMLDivElement>(null)
@@ -195,14 +193,14 @@ function FilterMultiSelect({
     <div ref={ref} style={{ position: 'relative' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
         <p style={{
-          fontSize: 9, fontWeight: 700, letterSpacing: '0.12em',
+          fontSize: isMobile ? 'var(--fs-xs)' : 9, fontWeight: 700, letterSpacing: '0.12em',
           textTransform: 'uppercase', color: 'var(--muted)', margin: 0,
         }}>
           {label}
         </p>
         {values.size > 0 && (
           <button onClick={e => { e.stopPropagation(); onChange(new Set()) }}
-            style={{ fontSize: 9, color: 'var(--muted)', background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}>
+            style={{ fontSize: isMobile ? 'var(--fs-xs)' : 9, color: 'var(--muted)', background: 'none', border: 'none', cursor: 'pointer', padding: isMobile ? '0 var(--sp-3)' : 0, minHeight: isMobile ? 'var(--ctl-md)' : undefined, margin: isMobile ? '-16px calc(-1 * var(--sp-3)) -16px 0' : undefined }}>
             limpar
           </button>
         )}
@@ -210,11 +208,11 @@ function FilterMultiSelect({
       <button
         onClick={() => setOpen(o => !o)}
         style={{
-          width: '100%', height: isMobileVP() ? 44 : 30, padding: '0 10px',
+          width: '100%', height: isMobile ? 'var(--ctl-md)' : 30, padding: '0 10px',
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           background: 'var(--bg)', border: `1px solid ${open ? 'var(--border-lit)' : 'var(--border)'}`,
           borderRadius: 5, color: values.size > 0 ? 'var(--text)' : 'var(--muted)', cursor: 'pointer',
-          fontSize: 12, fontFamily: 'var(--f-mono)',
+          fontSize: isMobile ? 'var(--fs-sm)' : 12, fontFamily: 'var(--f-mono)',
           transition: 'border-color 120ms',
         }}
       >
@@ -242,9 +240,9 @@ function FilterMultiSelect({
                 value={q} onChange={e => setQ(e.target.value)}
                 autoFocus
                 style={{
-                  width: '100%', height: 24, padding: '0 8px', boxSizing: 'border-box',
+                  width: '100%', height: isMobile ? 'var(--ctl-md)' : 24, padding: '0 8px', boxSizing: 'border-box',
                   background: 'var(--bg)', border: '1px solid var(--border)',
-                  borderRadius: 3, color: 'var(--text)', fontSize: 11,
+                  borderRadius: 3, color: 'var(--text)', fontSize: isMobile ? 'var(--fs-input)' : 11,
                   fontFamily: 'var(--f-mono)', outline: 'none',
                 }}
               />
@@ -259,11 +257,11 @@ function FilterMultiSelect({
                   key={opt.value}
                   onClick={() => toggle(opt.value)}
                   style={{
-                    width: '100%', padding: '6px 10px', textAlign: 'left',
+                    width: '100%', minHeight: isMobile ? 'var(--ctl-md)' : undefined, padding: '6px 10px', textAlign: 'left',
                     background: active ? `${c}0f` : 'transparent',
                     border: 'none', cursor: 'pointer',
                     color: active ? c : 'var(--text)',
-                    fontSize: 12, fontFamily: 'var(--f-mono)',
+                    fontSize: isMobile ? 'var(--fs-sm)' : 12, fontFamily: 'var(--f-mono)',
                     display: 'flex', alignItems: 'center', gap: 8,
                     transition: 'background 80ms',
                   }}
@@ -297,6 +295,7 @@ function FilterMultiSelect({
 
 // ── HexBadge ─────────────────────────────────────────────────────────────────
 function HexBadge({ rank, size = 54 }: { rank: string; size?: number }) {
+  const isMobile = useMediaQuery(MOBILE_QUERY)
   const color = DIFF_COLOR[rank] || '#9b9b9b'
   const num = rank.replace('kyu', '')
   return (
@@ -311,7 +310,7 @@ function HexBadge({ rank, size = 54 }: { rank: string; size?: number }) {
         alignItems: 'center', justifyContent: 'center',
       }}>
         <span style={{ fontSize: 15, fontWeight: 800, color, fontFamily: 'var(--f-mono)', lineHeight: 1 }}>{num}</span>
-        <span style={{ fontSize: 8, fontWeight: 600, color, fontFamily: 'var(--f-mono)', opacity: 0.75, lineHeight: 1.4 }}>kyu</span>
+        <span style={{ fontSize: isMobile ? 'var(--fs-xs)' : 8, fontWeight: 600, color, fontFamily: 'var(--f-mono)', opacity: 0.75, lineHeight: 1.4 }}>kyu</span>
       </div>
     </div>
   )
@@ -344,7 +343,7 @@ function KataCard({ ex, query, isMobile }: { ex: Exercise; query: string; isMobi
         padding: '14px 16px',
         background: hovered ? 'var(--bg-hover)' : 'var(--bg-card)',
         border: `1px solid ${hovered ? 'var(--border-lit)' : 'var(--border)'}`,
-        borderRadius: 6, marginBottom: 5,
+        borderRadius: 'var(--radius-md)', marginBottom: 5,
         transition: 'background 120ms, border-color 120ms',
       }}
     >
@@ -354,7 +353,7 @@ function KataCard({ ex, query, isMobile }: { ex: Exercise; query: string; isMobi
         <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 5 }}>
           <StatusDot status={ex.user_status} />
           <div style={{
-            fontSize: 13, fontWeight: 700, color: hovered ? 'var(--cyan)' : 'var(--text)',
+            fontSize: 'var(--fs-base)', fontWeight: 700, color: hovered ? 'var(--cyan)' : 'var(--text)',
             letterSpacing: '-0.01em',
             overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
             transition: 'color 120ms',
@@ -364,7 +363,7 @@ function KataCard({ ex, query, isMobile }: { ex: Exercise; query: string; isMobi
         </div>
 
         <div style={{
-          fontSize: 10, color: 'var(--muted)', marginBottom: 7,
+          fontSize: 'var(--fs-xs)', color: 'var(--muted)', marginBottom: 7,
           fontFamily: 'var(--f-mono)', display: 'flex', alignItems: 'center', gap: 10,
         }}>
           <span style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -385,7 +384,7 @@ function KataCard({ ex, query, isMobile }: { ex: Exercise; query: string; isMobi
             const isMatch = query && t.toLowerCase().includes(query.toLowerCase())
             return (
               <span key={t} style={{
-                fontSize: 9, fontWeight: 700, letterSpacing: '0.07em',
+                fontSize: isMobile ? 'var(--fs-xs)' : 9, fontWeight: 700, letterSpacing: '0.07em',
                 textTransform: 'uppercase', padding: '2px 6px', borderRadius: 3,
                 background: isMatch ? 'rgba(34,211,238,0.08)' : 'rgba(255,255,255,0.03)',
                 border: `1px solid ${isMatch ? 'rgba(34,211,238,0.25)' : 'var(--border)'}`,
@@ -520,7 +519,7 @@ export default function KataListPage() {
 
   if (loading) return (
     <div style={{ height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <span style={{ color: 'var(--muted)', fontSize: 11, fontFamily: 'var(--f-mono)' }}>_</span>
+      <span style={{ color: 'var(--muted)', fontSize: 'var(--fs-sm)', fontFamily: 'var(--f-mono)' }}>_</span>
     </div>
   )
 
@@ -547,8 +546,8 @@ export default function KataListPage() {
       value={search} onChange={e => setSearch(e.target.value)}
       style={{
         width: '100%', paddingLeft: isMobile ? 34 : 28, paddingRight: search ? 28 : 10,
-        height: isMobile ? 44 : 30,
-        fontSize: isMobile ? 16 : 12,
+        height: isMobile ? 'var(--ctl-md)' : 30,
+        fontSize: isMobile ? 'var(--fs-input)' : 12,
         boxSizing: 'border-box',
         background: 'var(--bg)', border: '1px solid var(--border)',
         borderRadius: 5, color: 'var(--text)',
@@ -561,9 +560,10 @@ export default function KataListPage() {
     {search && (
       <button onClick={() => setSearch('')}
         style={{
-          position: 'absolute', right: 8, top: '50%', transform: 'translateY(-50%)',
+          position: 'absolute', right: isMobile ? 0 : 8, top: '50%', transform: 'translateY(-50%)',
           background: 'none', border: 'none', cursor: 'pointer',
-          color: 'var(--muted)', fontSize: 14, lineHeight: 1, padding: 0,
+          color: 'var(--muted)', fontSize: isMobile ? 'var(--fs-base)' : 14, lineHeight: 1, padding: 0,
+          width: isMobile ? 'var(--ctl-icon)' : undefined, height: isMobile ? 'var(--ctl-icon)' : undefined,
         }}>×</button>
     )}
   </div>
@@ -621,11 +621,11 @@ export default function KataListPage() {
     <div style={{
       marginBottom: 16, padding: '8px 14px', borderRadius: 5,
       background: m.color + '0f', border: `1px solid ${m.color}25`,
-      fontSize: 11, color: m.color, fontFamily: 'var(--f-mono)',
+      fontSize: 'var(--fs-sm)', color: m.color, fontFamily: 'var(--f-mono)',
       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
     }}>
       <span>{m.label}</span>
-      <button onClick={resetAll} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', fontSize: 11, padding: 0, opacity: 0.7 }}>
+      <button onClick={resetAll} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'inherit', fontSize: 'var(--fs-sm)', padding: isMobile ? '0 var(--sp-2)' : 0, opacity: 0.7, minHeight: isMobile ? 'var(--ctl-md)' : undefined, margin: isMobile ? '-12px calc(-1 * var(--sp-2)) -12px 0' : undefined }}>
         limpar
       </button>
     </div>
@@ -633,17 +633,17 @@ export default function KataListPage() {
 })()}
 
 <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 18 }}>
-  <h1 style={{ fontSize: 16, fontWeight: 800, margin: 0, letterSpacing: '-0.02em' }}>
+  <h1 style={{ fontSize: isMobile ? 'var(--fs-xl)' : 16, fontWeight: 800, margin: 0, letterSpacing: '-0.02em' }}>
     kata library
   </h1>
   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
     {hasFilters && (
       <button onClick={resetAll}
-        style={{ fontSize: 10, color: 'var(--muted)', background: 'none', border: 'none', cursor: 'pointer', padding: 0, fontFamily: 'var(--f-mono)' }}>
+        style={{ fontSize: 'var(--fs-xs)', color: 'var(--muted)', background: 'none', border: 'none', cursor: 'pointer', padding: isMobile ? '0 var(--sp-2)' : 0, minHeight: isMobile ? 'var(--ctl-md)' : undefined, margin: isMobile ? '-14px calc(-1 * var(--sp-2))' : undefined, fontFamily: 'var(--f-mono)' }}>
         limpar filtros
       </button>
     )}
-    <span style={{ fontSize: 10, color: 'var(--muted)', fontFamily: 'var(--f-mono)' }}>
+    <span style={{ fontSize: 'var(--fs-xs)', color: 'var(--muted)', fontFamily: 'var(--f-mono)' }}>
       {filtered.length}{hasFilters ? ` / ${exercises.length}` : ''} katas
     </span>
   </div>
@@ -654,7 +654,7 @@ export default function KataListPage() {
   const lista = (<>
 {filtered.length === 0 ? (
   <div style={{ padding: '40px 0', textAlign: 'center' }}>
-    <p style={{ fontSize: 13, color: 'var(--muted)', margin: 0 }}>
+    <p style={{ fontSize: 'var(--fs-base)', color: 'var(--muted)', margin: 0 }}>
       {exercises.length === 0 ? 'nenhum kata disponível ainda.' : 'nenhum resultado.'}
     </p>
   </div>
@@ -703,13 +703,13 @@ export default function KataListPage() {
             onClick={toggleFiltros}
             aria-expanded={filtrosAbertos}
             style={{
-              flexShrink: 0, height: 44, padding: '0 14px',
+              flexShrink: 0, height: isMobile ? 'var(--ctl-md)' : 44, padding: '0 14px',
               display: 'flex', alignItems: 'center', gap: 7,
               background: filtrosAbertos || filterCount ? 'var(--cyan-faint)' : 'var(--bg)',
               border: `1px solid ${filtrosAbertos || filterCount ? 'var(--cyan-glow)' : 'var(--border)'}`,
               borderRadius: 5, cursor: 'pointer',
               color: filtrosAbertos || filterCount ? 'var(--cyan)' : 'var(--text)',
-              fontSize: 12, fontFamily: 'var(--f-mono)',
+              fontSize: isMobile ? 'var(--fs-sm)' : 12, fontFamily: 'var(--f-mono)',
               transition: 'background 130ms, border-color 130ms, color 130ms',
             }}
           >
@@ -723,7 +723,7 @@ export default function KataListPage() {
               <span style={{
                 minWidth: 17, height: 17, borderRadius: 9, padding: '0 5px',
                 background: 'var(--cyan)', color: 'var(--bg)',
-                fontSize: 10, fontWeight: 800,
+                fontSize: 'var(--fs-xs)', fontWeight: 800,
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
                 {filterCount}
@@ -766,9 +766,9 @@ export default function KataListPage() {
                 <button
                   onClick={resetAll}
                   style={{
-                    alignSelf: 'flex-start', minHeight: 44,
+                    alignSelf: 'flex-start', minHeight: isMobile ? 'var(--ctl-md)' : 44,
                     background: 'none', border: 'none', cursor: 'pointer',
-                    color: 'var(--muted)', fontSize: 11, fontFamily: 'var(--f-mono)',
+                    color: 'var(--muted)', fontSize: 'var(--fs-sm)', fontFamily: 'var(--f-mono)',
                     padding: 0,
                   }}
                 >
