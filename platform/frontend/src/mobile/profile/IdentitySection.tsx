@@ -78,9 +78,9 @@ export default function IdentitySection({ stats }: { stats: Slot<UserStats> }) {
               </div>
             </div>
             <div style={{ padding: 'var(--sp-4) var(--sp-5) 0' }}>
-              {next && (
+              {next && s.honor < s.honor_for_next_rank && (
                 <div style={{ fontSize: 'var(--fs-sm)', color: 'var(--muted)' }}>
-                  faltam {honorMissing(s.honor, s.honor_for_next_rank).toLocaleString('pt-BR')} de honor para {next}
+                  faltam {honorMissing(s.honor, s.honor_for_next_rank).toLocaleString('pt-BR')} para {next}
                 </div>
               )}
               <StatRow>

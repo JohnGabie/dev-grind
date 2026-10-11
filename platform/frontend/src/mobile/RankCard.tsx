@@ -15,7 +15,7 @@ export default function RankCard({ rank, honor, honorForNext, progress }: RankCa
       <div style={{ height: 4, background: 'var(--border)', marginTop: 'var(--sp-3)' }} role="progressbar" aria-valuenow={pct} aria-valuemin={0} aria-valuemax={100}>
         <div style={{ width: `${pct}%`, height: '100%', background: color }} />
       </div>
-      {next && (
+      {next && honor < honorForNext && (
         <div style={{ fontSize: 'var(--fs-sm)', color: 'var(--muted)', marginTop: 'var(--sp-2)' }}>
           faltam {honorMissing(honor, honorForNext).toLocaleString('pt-BR')} para {next}
         </div>

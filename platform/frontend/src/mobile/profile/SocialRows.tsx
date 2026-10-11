@@ -38,12 +38,20 @@ export default function SocialRows({ initialLinks }: { initialLinks: Record<stri
     }
   }
 
-  const editor = (id: string) => (
-    <div style={{ padding: 'var(--sp-2) 0' }}>
+  const editor = (id: string) => {
+    const label = NETWORKS.find(n => n.id === id)?.label ?? id
+    return (
+    <form onSubmit={e => { e.preventDefault(); if (!saving) save(id) }} style={{ padding: 'var(--sp-2) 0' }}>
       <input
         value={draft}
         onChange={e => setDraft(e.target.value)}
         autoFocus
+        inputMode="url"
+        autoCapitalize="none"
+        autoCorrect="off"
+        spellCheck={false}
+        aria-label={label}
+        placeholder={label}
         style={{
           width: '100%', boxSizing: 'border-box', minHeight: 'var(--ctl-md)', padding: '0 var(--sp-3)',
           background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)',
@@ -51,12 +59,13 @@ export default function SocialRows({ initialLinks }: { initialLinks: Record<stri
         }}
       />
       <div style={{ display: 'flex', gap: 'var(--sp-2)', marginTop: 'var(--sp-2)' }}>
-        <button type="button" disabled={saving} onClick={() => save(id)} style={{ minHeight: 'var(--ctl-md)', padding: '0 var(--sp-4)', background: 'none', border: '1px solid rgba(34,211,238,0.3)', borderRadius: 'var(--radius-md)', color: 'var(--cyan)', fontSize: 'var(--fs-base)', fontFamily: 'var(--font)', cursor: 'pointer' }}>salvar</button>
+        <button type="submit" disabled={saving} style={{ minHeight: 'var(--ctl-md)', padding: '0 var(--sp-4)', background: 'none', border: '1px solid rgba(34,211,238,0.3)', borderRadius: 'var(--radius-md)', color: 'var(--cyan)', fontSize: 'var(--fs-base)', fontFamily: 'var(--font)', cursor: 'pointer' }}>salvar</button>
         <button type="button" onClick={() => { setEditing(null); setFailed(false) }} style={{ minHeight: 'var(--ctl-md)', padding: '0 var(--sp-4)', background: 'none', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', color: 'var(--muted)', fontSize: 'var(--fs-base)', fontFamily: 'var(--font)', cursor: 'pointer' }}>cancelar</button>
       </div>
       {failed && <div style={{ fontSize: 'var(--fs-sm)', color: 'var(--red)', marginTop: 'var(--sp-2)' }}>não foi possível salvar</div>}
-    </div>
-  )
+    </form>
+    )
+  }
 
   return (
     <Section label="redes" summary={filled.map(n => n.label).join(', ') || 'nenhuma'} collapsible>

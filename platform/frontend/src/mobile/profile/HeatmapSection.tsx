@@ -29,7 +29,7 @@ export default function HeatmapSection({ heatmap }: { heatmap: Record<string, He
     <Section label={full ? 'atividade · 365 dias' : 'atividade · 20 semanas'}>
       <div ref={scroller} style={{ overflowX: full ? 'auto' : 'hidden' }}>
         <div
-          onPointerDown={pick}
+          onPointerUp={pick}
           onPointerMove={e => { if (e.buttons === 1) pick(e) }}
           style={{ display: 'flex', gap: GAP, touchAction: full ? 'pan-x pan-y' : 'pan-y', width: 'max-content' }}
         >
