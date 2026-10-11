@@ -44,3 +44,13 @@ describe('mobile ui scale tokens', () => {
     assert.deepEqual(mobile, MOBILE_CHANGES)
   })
 })
+
+describe('mobile .btn override', () => {
+  it('comes after the base .btn rule so it wins at equal specificity', () => {
+    const base = css.search(/^\.btn \{/m)
+    const mobile = css.search(/^[ \t]+\.btn \{/m)
+    assert.ok(base >= 0, 'base .btn rule is missing')
+    assert.ok(mobile >= 0, 'mobile .btn override is missing')
+    assert.ok(mobile > base, 'mobile .btn override must come after the base .btn rule')
+  })
+})

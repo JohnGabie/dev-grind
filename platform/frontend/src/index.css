@@ -228,13 +228,6 @@ body {
   ::-webkit-scrollbar { display: none; }
   * { scrollbar-width: none; }
 
-  .btn {
-    font-size: var(--fs-base);
-    min-height: var(--ctl-md);
-    padding: 0 var(--sp-4);
-    border-radius: var(--radius-md);
-  }
-
   .cfg-ctrl { width: 100%; }
   .cfg-ctrl > div { flex-wrap: wrap; }
 
@@ -306,6 +299,16 @@ body {
   color: var(--green);
 }
 .btn-green:not(:disabled):hover { background: rgba(34, 197, 94, 0.13); }
+
+/* Depois da regra base: mesma especificidade, quem vem por ultimo vence. */
+@media (max-width: 768px) {
+  .btn {
+    font-size: var(--fs-base);
+    min-height: var(--ctl-md);
+    padding: 0 var(--sp-4);
+    border-radius: var(--radius-md);
+  }
+}
 
 /* ─── Tags ──────────────────────────────────────────────── */
 .tag {
