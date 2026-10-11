@@ -25,7 +25,7 @@ João, in his words:
 |---|---|
 | Dashboard header | **Kept as is**: the greeting, the cyan name and the date. Only size and spacing follow the scale. |
 | Profile identity | **Kept as is**: photo, cover, kyu number and the progress circle. Mobile means resize and re-space, not redesign. |
-| Dashboard look (revision 2) | Terminal feel plus colour: prompt line, block-character bar, mode tabs always visible in their colours, log-style history; prompt text `$ treinar --modo <modo>` |
+| Dashboard look (revision 2) | Terminal feel plus colour: status rendered as a JSON object (João's idea), prompt line `$ treinar --modo <modo>`, mode tabs always visible in their colours, log-style history |
 | Dashboard hierarchy | **Status first**: header, status card, next action, analysis collapsed, history |
 | Profile, visible without a tap | Identity + rank progress, activity heatmap, badges |
 | Profile, collapsible rows | Bio, social links |
@@ -60,7 +60,19 @@ João, in his words:
 João found the first version generic ("lost the personality"). Direction chosen: **terminal feel plus colour**, same structure (status first), same independent sections. The Profile is unchanged. The first version of this section is superseded by what follows.
 
 1. **Header (kept)**: the existing greeting with the cyan name and the date, exactly as on desktop.
-2. **Status card** (surface 1): the rank (`8kyu`) large in the **rank colour**; `2 / 30 honor` at the right; a **block-character progress bar** (filled `█` blocks in the rank colour, empty `░` in `--border`, plus the percentage) sized from `rank_progress`; "faltam 28 para 7kyu". Three figures: **streak** in orange (`#f97316`) when above 0 and muted at 0, **semana** in green (`--green`), **honor** in yellow (`--yellow`). Words as labels, no emoji. The whole card opens the Profile.
+2. **Status as JSON** (surface 1, João's idea): the status is rendered as a real, valid JSON object in monospace, 14px (`--fs-base`), inside the first raised surface:
+   ```
+   {
+     "rank": "8kyu",
+     "honor": 2,
+     "proximo": "7kyu",
+     "faltam": 28,
+     "progresso": "██░░░░░░░░ 7%",
+     "streak": 0,
+     "semana": 3
+   }
+   ```
+   Syntax colouring carries the colour: brackets, quotes and keys in `--muted`; `rank` and `progresso` strings in the **rank colour**; `proximo` in the next rank's colour; `honor` and `faltam` numbers in yellow (`--yellow`); `streak` in orange (`#f97316`) when above 0 and muted at 0; `semana` in green (`--green`). The `progresso` string is the block-character bar (`█` filled in proportion to `rank_progress`, `░` empty, then the percentage). Real quotes, no comments, so the text could be copied as JSON. Tapping anywhere on it opens the Profile (`Surface` with `onClick`). At the top rank (honor at or above the next threshold) `proximo` and `faltam` are omitted. The block is exposed to assistive technology as a single labelled button ("status: 8kyu, 2 de honor, streak 0, semana 3") and the JSON is `aria-hidden` to avoid reading punctuation.
 3. **Prompt line**: `$ treinar --modo <modo>` in the colour of the selected mode (rankup cyan `#22d3ee`, warmup orange `#f97316`, practice green `#22c55e`, the existing desktop mode colours). It changes when the mode changes. When the next action is a resume it reads `$ continuar` in cyan.
 4. **Mode tabs, always visible** (when there are at least two distinct modes): three mono tabs `rankup  warmup  practice`, 36px chips with a tap area of 44px, each in its own mode colour (selected: coloured text and a 1px coloured border, others muted). They sit directly under the prompt line. With fewer than two distinct modes they are not shown.
 5. **Next action** (surface 2): the kyu tag in its rank colour, the exercise title, and one 48px primary button whose text, border and tint use the **mode colour** ("começar" or "continuar").
