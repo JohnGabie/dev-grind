@@ -1,5 +1,4 @@
 import MobilePage from '../MobilePage'
-import SectionState from '../SectionState'
 import BadgesSection from './BadgesSection'
 import BioRow from './BioRow'
 import HeatmapSection from './HeatmapSection'
@@ -13,16 +12,14 @@ export default function ProfileMobile() {
 
   return (
     <MobilePage header={<IdentitySection stats={stats} />}>
-      <SectionState status={stats.status === 'ready' ? 'ready' : 'loading'}>
-        {s && (
-          <>
-            <HeatmapSection heatmap={s.heatmap ?? {}} />
-            <BadgesSection stats={s} />
-            <BioRow initialBio={s.user.bio} />
-            <SocialRows initialLinks={s.user.social_links ?? {}} />
-          </>
-        )}
-      </SectionState>
+      {s && stats.status === 'ready' && (
+        <>
+          <HeatmapSection heatmap={s.heatmap ?? {}} />
+          <BadgesSection stats={s} />
+          <BioRow initialBio={s.user.bio} />
+          <SocialRows initialLinks={s.user.social_links ?? {}} />
+        </>
+      )}
     </MobilePage>
   )
 }

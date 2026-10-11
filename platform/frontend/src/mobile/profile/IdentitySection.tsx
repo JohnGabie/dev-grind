@@ -14,6 +14,14 @@ export default function IdentitySection({ stats }: { stats: Slot<UserStats> }) {
   const { bg } = useCosmetics()
   const s = stats.data
 
+  if (stats.status !== 'ready') {
+    return (
+      <div style={{ padding: 'calc(var(--sp-5) + env(safe-area-inset-top, 0px)) var(--sp-5) 0' }}>
+        <SectionState status={stats.status} onRetry={stats.retry}>{null}</SectionState>
+      </div>
+    )
+  }
+
   return (
     <SectionState status={stats.status} onRetry={stats.retry}>
       {s && (() => {
