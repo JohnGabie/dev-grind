@@ -38,6 +38,16 @@ This replaces proposal A. The windows look like an editor showing real files:
 - Syntax colours stay as in the revision above (JSON keys blue, strings green, numbers orange, etc.) but muted so blue still reads as "where you are": keys use a softer blue than the focus blue.
 - The greeting keeps its cyan name, unchanged.
 
+## Revision: three tabs, no scrolling on the Dashboard (João: "count the lines on analise.md, stopped counting at 2. i was think put together historico.log with analises.md ... i dont wanna scroll in dash")
+
+Status: **proposal, awaiting approval.**
+
+1. **Tabs:** the first window gets a third tab, so it reads `status.json | analise.md | historico.log`. The separate `historico.log` window is removed. The Dashboard becomes greeting + the tabbed window + `treinar.sh`, which should fit in 844px with the dock and no scroll.
+2. **`historico.log` tab:** the last 3 exercises as 52px rows (touch target rule), same glyph, kyu tag, title and age as today, inside the same fixed-height panel (9 lines), prompt `tail historico.log`. Empty state "nada por aqui ainda". Footer `Log`.
+3. **Tab strip width at 390px:** three tabs fit in about 332px of the 346px available; if it does not fit at 390px the strip scrolls sideways or the labels are shortened (`status`, `analise`, `historico`). Undecided; I will measure first and pick the shorter labels only if needed.
+4. **Line numbers:** the gutter counts the wrapped (visual) lines, so the 5-line analysis preview shows 2..6, like an editor without soft-wrap numbering. This fixes the current gutter that stops at 2. Applies to the reading page too.
+5. **Acceptance:** no vertical scroll of the page at 390x844 with real data; panel height identical on all three tabs; no control under 36px; guard test green.
+
 ## Out of scope
 
 Editing or deleting analyses, a desktop reading page, creating analyses from the app, changes to the Profile, changes to the agent or MCP tool.
