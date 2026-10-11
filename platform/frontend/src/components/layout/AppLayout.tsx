@@ -158,6 +158,15 @@ function ChatBubble() {
   const location = useLocation()
   const [open, setOpen] = useState(false)
   const isMobile = useMediaQuery(MOBILE_QUERY)
+  const [lessonDock, setLessonDock] = useState(false)
+  useEffect(() => {
+    const sync = () => setLessonDock(document.body.dataset.courseLesson === '1')
+    sync()
+    const observer = new MutationObserver(sync)
+    observer.observe(document.body, { attributes: true, attributeFilter: ['data-course-lesson'] })
+    return () => observer.disconnect()
+  }, [])
+  const onAbout = /^\/exercise\/[^/]+$/.test(location.pathname)
 
   const slug = location.pathname.startsWith('/exercise/')
     ? location.pathname.split('/exercise/')[1]
@@ -169,8 +178,15 @@ function ChatBubble() {
   const context = slug ? `kata:${slug}` : location.pathname === '/' ? 'dashboard' : 'general'
 
   // No mobile a bolha sobe para não cobrir a tab bar.
-  const bubbleBottom = isMobile ? `calc(24px + ${MOBILE_NAV_SPACE})` : 24
-  const panelBottom = isMobile ? `calc(84px + ${MOBILE_NAV_SPACE})` : 84
+  // Com um CTA fixo no rodape (licao, "sobre" do exercicio) a bolha sobe --ctl-primary + 16.
+  const raised = lessonDock || onAbout
+  const bubbleBottom = raised
+    ? (isMobile ? `calc(96px + ${MOBILE_NAV_SPACE})` : 96)
+    : (isMobile ? `calc(24px + ${MOBILE_NAV_SPACE})` : 24)
+  const panelBottom = raised
+    ? (isMobile ? `calc(156px + ${MOBILE_NAV_SPACE})` : 156)
+    : (isMobile ? `calc(84px + ${MOBILE_NAV_SPACE})` : 84)
+  const rightOffset = isMobile ? 20 : 24
 
   if (naTelaDeResolver) return null
 
@@ -178,7 +194,7 @@ function ChatBubble() {
     <>
       {open && (
         <div style={{
-          position: 'fixed', bottom: panelBottom, right: 24, zIndex: 41,
+          position: 'fixed', bottom: panelBottom, right: rightOffset, zIndex: 41,
           width: 'min(320px, calc(100vw - 48px))', height: 420,
           background: 'var(--bg-card)',
           border: '1px solid var(--border-lit)',
@@ -194,7 +210,7 @@ function ChatBubble() {
         onClick={() => setOpen(o => !o)}
         title="Chat"
         style={{
-          position: 'fixed', bottom: bubbleBottom, right: 24, zIndex: 42,
+          position: 'fixed', bottom: bubbleBottom, right: rightOffset, zIndex: 42,
           width: 48, height: 48, borderRadius: '50%',
           background: open ? 'var(--cyan-faint)' : 'var(--bg-card)',
           border: `1px solid ${open ? 'var(--cyan)' : 'var(--cyan-glow)'}`,
