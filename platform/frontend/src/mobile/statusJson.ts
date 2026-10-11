@@ -17,12 +17,6 @@ export interface StatusLine {
   comma: boolean
 }
 
-export function blockBar(progress: number, width = 10): string {
-  const p = Number.isFinite(progress) ? Math.min(1, Math.max(0, progress)) : 0
-  const filled = Math.round(p * width)
-  return '█'.repeat(filled) + '░'.repeat(width - filled)
-}
-
 export function buildStatusLines(s: StatusInput): StatusLine[] {
   const next = nextRank(s.rank)
   const lines: Omit<StatusLine, 'comma'>[] = [
@@ -34,7 +28,7 @@ export function buildStatusLines(s: StatusInput): StatusLine[] {
     lines.push({ key: 'faltam', value: honorMissing(s.honor, s.honor_for_next_rank), color: HONOR_COLOR })
   }
   lines.push(
-    { key: 'progresso', value: `${blockBar(s.rank_progress)} ${progressPercent(s.rank_progress)}%`, color: rankColor(s.rank) },
+    { key: 'progresso', value: `${progressPercent(s.rank_progress)}%`, color: rankColor(s.rank) },
     { key: 'streak', value: s.current_streak, color: s.current_streak > 0 ? STREAK_COLOR : SYNTAX_MUTED },
     { key: 'semana', value: s.weekly, color: WEEK_COLOR },
   )

@@ -4,6 +4,7 @@ export const STREAK_COLOR = '#f97316'
 export const HONOR_COLOR = '#eab308'
 export const WEEK_COLOR = '#22c55e'
 export const SYNTAX_MUTED = '#717171'
+export const KEY_COLOR = '#3b82f6'
 
 export const BADGE_COLOR = {
   orange: '#f97316', yellow: '#eab308', red: '#ef4444', green: '#22c55e',
