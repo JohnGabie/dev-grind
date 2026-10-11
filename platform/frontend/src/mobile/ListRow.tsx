@@ -7,9 +7,10 @@ interface ListRowProps {
   title: string
   meta?: string
   onClick?: () => void
+  ariaLabel?: string
 }
 
-export default function ListRow({ lead, tag, tagColor, title, meta, onClick }: ListRowProps) {
+export default function ListRow({ lead, tag, tagColor, title, meta, onClick, ariaLabel }: ListRowProps) {
   const style = {
     width: '100%', minHeight: 'var(--ctl-row)', display: 'flex', alignItems: 'center', gap: 'var(--sp-3)',
     background: 'none', border: 'none', borderBottom: '1px solid var(--border)', padding: 0,
@@ -24,6 +25,6 @@ export default function ListRow({ lead, tag, tagColor, title, meta, onClick }: L
     </>
   )
   return onClick
-    ? <button type="button" onClick={onClick} style={style}>{body}</button>
+    ? <button type="button" aria-label={ariaLabel} onClick={onClick} style={style}>{body}</button>
     : <div style={style}>{body}</div>
 }

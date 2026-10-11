@@ -24,7 +24,7 @@ export default function HistorySection({ recent, user }: { recent: Slot<RecentEx
   return (
     <div style={{ marginTop: 'var(--sp-4)' }}>
       <WindowFrame title="historico.log" titleColor="var(--blue)" ariaLabel="histórico">
-        <PromptLine user={user} command="tail -n 5 historico.log" commandColor="var(--blue)" cursor={false} />
+        <PromptLine user={user} command="tail historico.log" commandColor="var(--blue)" cursor={false} />
         <div style={{ marginTop: 'var(--sp-2)' }}>
           <SectionState status={recent.status} empty={items.length === 0} emptyText="nada por aqui ainda" onRetry={recent.retry}>
             {items.map(item => (
@@ -34,7 +34,8 @@ export default function HistorySection({ recent, user }: { recent: Slot<RecentEx
                 tag={item.difficulty}
                 tagColor={rankColor(item.difficulty)}
                 title={item.title}
-                meta={`${statusWord(item.status)} · ${timeAgo(item.submitted_at)}`}
+                meta={timeAgo(item.submitted_at)}
+                ariaLabel={`${item.title}, ${statusWord(item.status)}, ${timeAgo(item.submitted_at)}`}
                 onClick={() => navigate(`/exercise/${item.slug}`)}
               />
             ))}
