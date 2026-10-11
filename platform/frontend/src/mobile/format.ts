@@ -18,3 +18,7 @@ export function promptUser(name: string): string {
   const user = first.normalize('NFD').replace(/\p{M}/gu, '').toLowerCase().replace(/[^a-z0-9]/g, '')
   return user || 'dev'
 }
+
+export function shortDate(iso: string): string {
+  return new Date(iso).toLocaleDateString('pt-BR', { day: 'numeric', month: 'short' })
+}

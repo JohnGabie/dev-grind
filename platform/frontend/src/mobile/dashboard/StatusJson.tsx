@@ -1,27 +1,30 @@
+import type { ReactNode } from 'react'
+import CodeBlock from '../CodeBlock'
 import type { StatusLine } from '../statusJson'
 
-const syntax = { color: 'var(--muted)' } as const
+const punct = 'var(--muted)'
+
+export function statusJsonRows(lines: StatusLine[]): ReactNode[] {
+  const rows: ReactNode[] = [<span style={{ color: punct }}>{'{'}</span>]
+  for (const line of lines) {
+    const isString = typeof line.value === 'string'
+    const valueColor = line.color ?? (isString ? 'var(--green)' : 'var(--orange)')
+    rows.push(
+      <>
+        <span style={{ color: punct }}>{'  "'}</span>
+        <span style={{ color: 'var(--blue-soft)' }}>{line.key}</span>
+        <span style={{ color: punct }}>{'": '}</span>
+        {isString
+          ? <span style={{ color: valueColor }}><span style={{ color: punct }}>"</span>{line.value}<span style={{ color: punct }}>"</span></span>
+          : <span style={{ color: valueColor }}>{line.value}</span>}
+        {line.comma && <span style={{ color: punct }}>,</span>}
+      </>,
+    )
+  }
+  rows.push(<span style={{ color: punct }}>{'}'}</span>)
+  return rows
+}
 
 export default function StatusJson({ lines }: { lines: StatusLine[] }) {
-  return (
-    <pre
-      aria-hidden="true"
-      style={{
-        margin: 0, fontFamily: 'var(--font)', fontSize: 'var(--fs-base)', lineHeight: 'var(--lh-base)',
-        whiteSpace: 'pre', overflow: 'hidden',
-      }}
-    >
-      <span style={syntax}>{'{'}</span>
-      {lines.map(line => (
-        <div key={line.key}>
-          <span style={syntax}>{'  "'}</span><span style={syntax}>{line.key}</span><span style={syntax}>{'": '}</span>
-          {typeof line.value === 'string'
-            ? <span style={{ color: line.color }}><span style={syntax}>"</span>{line.value}<span style={syntax}>"</span></span>
-            : <span style={{ color: line.color }}>{line.value}</span>}
-          {line.comma && <span style={syntax}>,</span>}
-        </div>
-      ))}
-      <span style={syntax}>{'}'}</span>
-    </pre>
-  )
+  return <div aria-hidden="true"><CodeBlock lines={statusJsonRows(lines)} /></div>
 }
