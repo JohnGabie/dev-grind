@@ -1,3 +1,4 @@
+import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
 import { placeSkillPath, NODE, type NodeState, type PathLesson } from '../lib/skillPath'
 import type { Section } from '../lib/courseModel'
 
@@ -26,6 +27,7 @@ export default function SkillPath({
   completed: string[]
   onOpen: (key: string) => void
 }) {
+  const isMobile = useMediaQuery(MOBILE_QUERY)
   const lessons: PathLesson[] = sections.flatMap(section => section.lessons.map(lesson => ({
     key: `${lesson.sectionIndex}-${lesson.lessonIndex}`,
     title: lesson.title,
@@ -73,7 +75,7 @@ export default function SkillPath({
               transform: 'translateX(-50%)',
               margin: 0,
               fontFamily: 'var(--font)',
-              fontSize: 12,
+              fontSize: isMobile ? 'var(--fs-sm)' : 12,
               letterSpacing: '0.06em',
               textTransform: 'uppercase',
               color: 'var(--faint)',
@@ -138,7 +140,7 @@ export default function SkillPath({
                 padding: '0 4px',
                 boxSizing: 'border-box',
                 fontFamily: 'var(--font)',
-                fontSize: 12,
+                fontSize: isMobile ? 'var(--fs-sm)' : 12,
                 lineHeight: 1.35,
                 maxHeight: 33,
                 overflow: 'hidden',
@@ -153,7 +155,7 @@ export default function SkillPath({
                   display: 'block',
                   marginTop: 4,
                   fontFamily: 'var(--font)',
-                  fontSize: 10,
+                  fontSize: 'var(--fs-xs)',
                   letterSpacing: '0.06em',
                   textTransform: 'uppercase',
                   textAlign: 'center',
