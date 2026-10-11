@@ -3,6 +3,7 @@ import { BackgroundFooter } from '../../components/BackgroundRenderer'
 import { useCosmetics } from '../../contexts/CosmeticsContext'
 import { promptUser } from '../format'
 import MobilePage from '../MobilePage'
+import BrandRow from './BrandRow'
 import GreetingHeader from './GreetingHeader'
 import NextActionSection from './NextActionSection'
 import StatusSection from './StatusSection'
@@ -16,6 +17,7 @@ export default function DashboardMobile() {
 
   return (
     <MobilePage background={<BackgroundFooter height="100%" config={bg('bg_dashboard')} />}>
+      <BrandRow />
       <GreetingHeader name={user?.name ?? ''} />
       <StatusSection stats={data.stats} insights={data.insights} recent={data.recent} user={shellUser} />
       <NextActionSection resume={data.resume} exercises={data.exercises} user={shellUser} />
