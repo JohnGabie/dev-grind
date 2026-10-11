@@ -1,7 +1,7 @@
 import { useState, type ReactNode } from 'react'
 
 interface SectionProps {
-  label: string
+  label: ReactNode
   summary?: string              // one line shown next to the label while collapsed
   collapsible?: boolean
   defaultOpen?: boolean
@@ -16,7 +16,7 @@ export default function Section({ label, summary, collapsible = false, defaultOp
   const head = (
     <>
       <span className="section-label">{label}</span>
-      {dot && <span aria-label="novo" style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--cyan)', flexShrink: 0 }} />}
+      {dot && <span style={{ fontSize: 'var(--fs-xs)', color: 'var(--cyan)', flexShrink: 0 }}>● novo</span>}
       {summary && !open && (
         <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: 'var(--fs-sm)', color: 'var(--muted)' }}>
           {summary}

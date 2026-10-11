@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { isInsightNew } from '../insightSeen'
+import { MODE_COLOR } from '../palette'
 import Section from '../Section'
 import SectionState from '../SectionState'
 import type { Slot } from '../useSlot'
@@ -33,7 +34,7 @@ export default function AnalysisSection({ insights }: { insights: Slot<Insight[]
 
   return (
     <Section
-      label="análise do agente"
+      label={<><span style={{ color: MODE_COLOR.rankup }}>{'>'}</span> análise do agente</>}
       summary={`${day(latest.generated_at)} · ${latest.message.split('\n')[0]}`}
       collapsible
       dot={isInsightNew(latest.generated_at, openedAt)}

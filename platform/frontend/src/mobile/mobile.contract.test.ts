@@ -40,6 +40,11 @@ describe('src/mobile contract', () => {
       assert.doesNotMatch(f.text, /textShadow|backdropFilter|WebkitBackdropFilter|boxShadow|linear-gradient|radial-gradient|conic-gradient|filter:\s*['"`]?\s*blur/i, `${f.name} has decoration`)
     }
   })
+  it('keeps hex colours inside palette.ts and rank.ts', () => {
+    for (const f of files.filter(x => x.name !== COVER_EXCEPTION && x.name !== 'palette.ts' && x.name !== 'rank.ts')) {
+      assert.doesNotMatch(f.text, /#[0-9a-fA-F]{3,8}\b/, `${f.name} has a hex colour`)
+    }
+  })
   it('keeps long titles from breaking the layout', () => {
     for (const name of ['ListRow.tsx', 'ActionCard.tsx']) {
       const f = files.find(x => x.name === name)

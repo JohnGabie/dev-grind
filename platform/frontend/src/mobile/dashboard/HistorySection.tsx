@@ -1,11 +1,19 @@
 import { useNavigate } from 'react-router-dom'
 import { statusWord, timeAgo } from '../format'
 import ListRow from '../ListRow'
+import { STATUS_COLOR } from '../palette'
 import { rankColor } from '../rank'
 import Section from '../Section'
 import SectionState from '../SectionState'
 import type { Slot } from '../useSlot'
 import type { RecentExercise } from '../types'
+
+const GLYPH: Record<string, string> = { passed: '✓', failed: '✗', in_progress: '◉' }
+
+function Glyph({ status }: { status: string }) {
+  const color = STATUS_COLOR[status as keyof typeof STATUS_COLOR] ?? 'var(--muted)'
+  return <span aria-hidden="true" style={{ color, fontSize: 'var(--fs-base)', flexShrink: 0, width: '1ch' }}>{GLYPH[status] ?? '◉'}</span>
+}
 
 export default function HistorySection({ recent }: { recent: Slot<RecentExercise[]> }) {
   const navigate = useNavigate()
@@ -18,6 +26,7 @@ export default function HistorySection({ recent }: { recent: Slot<RecentExercise
         {items.map(item => (
           <ListRow
             key={item.id}
+            lead={<Glyph status={item.status} />}
             tag={item.difficulty}
             tagColor={rankColor(item.difficulty)}
             title={item.title}
