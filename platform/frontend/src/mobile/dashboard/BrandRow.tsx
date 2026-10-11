@@ -5,7 +5,7 @@ export default function BrandRow() {
         <path d="M16 3L29 10V22L16 29L3 22V10Z" stroke="var(--cyan)" strokeWidth="1.5" fill="var(--cyan-faint)" />
         <path d="M16 3V29M3 10L29 22M29 10L3 22" stroke="var(--cyan)" strokeWidth="0.5" opacity="0.4" />
       </svg>
-      <span style={{ fontSize: 'var(--fs-xl)', fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.02em' }}>DevGrind</span>
+      <span style={{ fontSize: 'var(--fs-base)', fontWeight: 800, color: 'var(--text)', letterSpacing: '-0.02em' }}>DevGrind</span>
     </div>
   )
 }
