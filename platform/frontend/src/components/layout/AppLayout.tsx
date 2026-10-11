@@ -196,6 +196,7 @@ function ChatBubble() {
         <div style={{
           position: 'fixed', bottom: panelBottom, right: rightOffset, zIndex: 41,
           width: 'min(320px, calc(100vw - 48px))', height: 420,
+          maxHeight: isMobile ? `calc(100dvh - ${panelBottom} - 16px)` : undefined,
           background: 'var(--bg-card)',
           border: '1px solid var(--border-lit)',
           borderRadius: 12,
