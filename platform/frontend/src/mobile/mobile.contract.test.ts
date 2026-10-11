@@ -15,7 +15,7 @@ const COVER_EXCEPTION = 'profile/IdentitySection.tsx'
 
 describe('src/mobile contract', () => {
   it('has the building blocks', () => {
-    for (const name of ['MobilePage', 'Section', 'Surface', 'Stat', 'RankCard', 'ActionCard', 'ListRow', 'Readout', 'SectionState']) {
+    for (const name of ['MobilePage', 'Section', 'Surface', 'Stat', 'RankCard', 'WindowFrame', 'ListRow', 'Readout', 'SectionState']) {
       assert.ok(files.some(f => f.name === `${name}.tsx`), `${name}.tsx is missing`)
     }
   })
@@ -46,7 +46,7 @@ describe('src/mobile contract', () => {
     }
   })
   it('keeps long titles from breaking the layout', () => {
-    for (const name of ['ListRow.tsx', 'ActionCard.tsx']) {
+    for (const name of ['ListRow.tsx', 'dashboard/NextActionSection.tsx']) {
       const f = files.find(x => x.name === name)
       assert.ok(f, `${name} is missing`)
       assert.match(f.text, /textOverflow:\s*'ellipsis'/, `${name} must ellipsize its title`)

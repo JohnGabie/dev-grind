@@ -2,9 +2,9 @@ import { useNavigate } from 'react-router-dom'
 import Section from '../Section'
 import SectionState from '../SectionState'
 import { buildStatusLines } from '../statusJson'
-import Surface from '../Surface'
 import type { Slot } from '../useSlot'
 import type { UserStats } from '../types'
+import WindowFrame from '../WindowFrame'
 import StatusJson from './StatusJson'
 
 export default function StatusSection({ stats }: { stats: Slot<UserStats> }) {
@@ -25,12 +25,14 @@ export default function StatusSection({ stats }: { stats: Slot<UserStats> }) {
   return (
     <div style={{ marginTop: 'var(--sp-5)' }}>
       <SectionState status={stats.status} onRetry={stats.retry}>
-        <Surface
+        <WindowFrame
+          title="status.json"
+          titleColor="var(--cyan)"
           onClick={() => navigate('/profile')}
-          label={`status: ${s.rank}, ${s.honor} de honor, streak ${s.current_streak}, semana ${weekly}`}
+          ariaLabel={`status: ${s.rank}, ${s.honor} de honor, streak ${s.current_streak}, semana ${weekly}`}
         >
           <StatusJson lines={lines} />
-        </Surface>
+        </WindowFrame>
       </SectionState>
     </div>
   )
