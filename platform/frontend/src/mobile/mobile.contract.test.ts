@@ -37,7 +37,7 @@ describe('src/mobile contract', () => {
   })
   it('has no glow, blur or gradient outside the cover exception', () => {
     for (const f of files.filter(x => x.name !== COVER_EXCEPTION)) {
-      assert.doesNotMatch(f.text, /textShadow|backdropFilter|linear-gradient|radial-gradient/, `${f.name} has decoration`)
+      assert.doesNotMatch(f.text, /textShadow|backdropFilter|WebkitBackdropFilter|boxShadow|linear-gradient|radial-gradient|conic-gradient|filter:\s*['"`]?\s*blur/i, `${f.name} has decoration`)
     }
   })
   it('keeps long titles from breaking the layout', () => {

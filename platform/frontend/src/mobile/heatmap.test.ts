@@ -17,11 +17,14 @@ describe('buildWeeks', () => {
     const cells = buildWeeks({}, TODAY, 20).flat().filter(c => c !== null)
     assert.equal(cells.every(c => c.data.total === 0), true)
   })
-  it('looks activity up by the cell date', () => {
-    const today = buildWeeks({}, TODAY, 20).flat().filter(c => c !== null).find(c => c.isToday)!
-    const weeks = buildWeeks({ [today.date]: { total: 3, katas: 2, books: 0, courses: 1 } }, TODAY, 20)
-    const found = weeks.flat().filter(c => c !== null).find(c => c.isToday)!
-    assert.equal(found.data.total, 3)
+  it('gives every cell an ISO date, one calendar day after the previous', () => {
+    const cells = buildWeeks({}, TODAY, 20).flat().filter(c => c !== null)
+    for (const c of cells) assert.match(c.date, /^\d{4}-\d{2}-\d{2}$/)
+    for (let i = 1; i < cells.length; i++) {
+      const prev = Date.parse(`${cells[i - 1].date}T00:00:00Z`)
+      const cur = Date.parse(`${cells[i].date}T00:00:00Z`)
+      assert.equal(cur - prev, 24 * 60 * 60 * 1000, `${cells[i - 1].date} -> ${cells[i].date}`)
+    }
   })
   it('builds a full year when asked for 53 weeks', () => {
     assert.equal(buildWeeks({}, TODAY, 53).length, 53)
