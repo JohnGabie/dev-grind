@@ -11,13 +11,13 @@ function Group({ label, children }: { label: string; children: React.ReactNode }
   return (
     <div style={{ marginBottom: 36 }}>
       <p style={{
-        margin: '0 0 8px', fontSize: 10, fontWeight: 700, letterSpacing: '0.08em',
+        margin: '0 0 8px', fontSize: 'var(--fs-xs)', fontWeight: 700, letterSpacing: '0.08em',
         textTransform: 'uppercase', color: 'var(--muted)', fontFamily: 'var(--f-mono)',
       }}>
         {label}
       </p>
       <div style={{
-        border: '1px solid var(--border)', borderRadius: 8,
+        border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)',
         background: 'var(--bg-card)', overflow: 'hidden',
       }}>
         {children}
@@ -36,7 +36,8 @@ function fieldStyle(isMobile: boolean, width: number, accent = false): React.CSS
     border: `1px solid ${accent ? 'rgba(34,211,238,0.4)' : 'var(--border)'}`,
     borderRadius: 5,
     padding: isMobile ? '10px 12px' : '6px 10px',
-    fontSize: isMobile ? 16 : 11,
+    fontSize: isMobile ? 'var(--fs-input)' : 11,
+    minHeight: isMobile ? 'var(--ctl-md)' : undefined,
     outline: 'none',
     color: 'var(--text)',
     fontFamily: 'var(--f-mono)',
@@ -74,13 +75,13 @@ function Row({
     >
       <div style={{ minWidth: 0 }}>
         <p style={{
-          margin: '0 0 2px', fontSize: 13, fontWeight: 600,
+          margin: '0 0 2px', fontSize: 'var(--fs-base)', fontWeight: 600,
           color: danger ? '#f87171' : 'var(--text)',
         }}>
           {label}
         </p>
         {description && (
-          <p style={{ margin: 0, fontSize: 11, color: 'var(--muted)', lineHeight: 1.5 }}>
+          <p style={{ margin: 0, fontSize: 'var(--fs-sm)', color: 'var(--muted)', lineHeight: 1.5 }}>
             {description}
           </p>
         )}
@@ -141,10 +142,10 @@ function ContaSection() {
           </div>
         )}
         <div>
-          <p style={{ margin: '0 0 1px', fontSize: 14, fontWeight: 700, color: 'var(--text)' }}>
+          <p style={{ margin: '0 0 1px', fontSize: isMobile ? 'var(--fs-base)' : 14, fontWeight: 700, color: 'var(--text)' }}>
             {user?.name}
           </p>
-          <p style={{ margin: 0, fontSize: 11, color: 'var(--muted)', fontFamily: 'var(--f-mono)' }}>
+          <p style={{ margin: 0, fontSize: 'var(--fs-sm)', color: 'var(--muted)', fontFamily: 'var(--f-mono)' }}>
             {user?.email}
           </p>
         </div>
@@ -161,26 +162,26 @@ function ContaSection() {
               onKeyDown={e => { if (e.key === 'Enter') saveName(); if (e.key === 'Escape') { setEditing(false); setName(user?.name ?? '') } }}
               style={fieldStyle(isMobile, 180, true)}
             />
-            <button onClick={saveName} style={btnCyan}>
+            <button onClick={saveName} style={btnCyan(isMobile)}>
               {saving ? '…' : saved ? '✓' : 'salvar'}
             </button>
-            <button onClick={() => { setEditing(false); setName(user?.name ?? '') }} style={btnGhost}>
+            <button onClick={() => { setEditing(false); setName(user?.name ?? '') }} style={btnGhost(isMobile)}>
               ✕
             </button>
           </div>
         ) : (
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-            <span style={{ fontSize: 12, color: saved ? 'var(--cyan)' : 'var(--muted)', fontFamily: 'var(--f-mono)' }}>
+            <span style={{ fontSize: isMobile ? 'var(--fs-sm)' : 12, color: saved ? 'var(--cyan)' : 'var(--muted)', fontFamily: 'var(--f-mono)' }}>
               {user?.name}
             </span>
-            <button onClick={startEdit} style={btnGhost}>editar</button>
+            <button onClick={startEdit} style={btnGhost(isMobile)}>editar</button>
           </div>
         )}
       </Row>
 
       {/* Email */}
       <Row label="E-mail" description="Autenticado via Google. Não pode ser alterado.">
-        <span style={{ fontSize: 12, color: 'var(--muted)', fontFamily: 'var(--f-mono)' }}>
+        <span style={{ fontSize: isMobile ? 'var(--fs-sm)' : 12, color: 'var(--muted)', fontFamily: 'var(--f-mono)' }}>
           {user?.email}
         </span>
       </Row>
@@ -190,7 +191,8 @@ function ContaSection() {
         <button
           onClick={() => { logout(); navigate('/login') }}
           style={{
-            fontSize: 11, padding: '6px 14px', borderRadius: 5, cursor: 'pointer',
+            fontSize: isMobile ? 'var(--fs-base)' : 11, padding: '6px 14px', borderRadius: 5, cursor: 'pointer',
+            minHeight: isMobile ? 'var(--ctl-md)' : undefined,
             background: 'transparent', border: '1px solid #3f1515',
             color: '#f87171', transition: 'all 130ms',
           }}
@@ -270,16 +272,16 @@ function IntegracoesSection() {
         padding: '14px 20px', borderBottom: '1px solid var(--border)',
       }}>
         <div>
-          <p style={{ margin: '0 0 2px', fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>
+          <p style={{ margin: '0 0 2px', fontSize: 'var(--fs-base)', fontWeight: 600, color: 'var(--text)' }}>
             MCP — Claude Code
           </p>
-          <p style={{ margin: 0, fontSize: 11, color: 'var(--muted)', lineHeight: 1.5 }}>
+          <p style={{ margin: 0, fontSize: 'var(--fs-sm)', color: 'var(--muted)', lineHeight: 1.5 }}>
             Conecte o Claude Code local à plataforma para acessar exercícios e progresso via tools.
           </p>
         </div>
         <div className="cfg-ctrl" style={{ display: 'flex', gap: 6, flexShrink: 0, paddingTop: 2 }}>
-          <button onClick={downloadClaudeMd} style={btnGhost}>↓ CLAUDE.md</button>
-          <button onClick={() => setCreating(v => !v)} style={creating ? btnGhost : btnCyan}>
+          <button onClick={downloadClaudeMd} style={btnGhost(isMobile)}>↓ CLAUDE.md</button>
+          <button onClick={() => setCreating(v => !v)} style={creating ? btnGhost(isMobile) : btnCyan(isMobile)}>
             {creating ? '✕' : '+ token'}
           </button>
         </div>
@@ -292,7 +294,7 @@ function IntegracoesSection() {
           padding: '10px 20px', borderBottom: '1px solid var(--border)',
           background: 'rgba(34,211,238,0.03)',
         }}>
-          <span style={{ fontSize: 11, color: 'var(--muted)', flexShrink: 0, fontFamily: 'var(--f-mono)' }}>
+          <span style={{ fontSize: 'var(--fs-sm)', color: 'var(--muted)', flexShrink: 0, fontFamily: 'var(--f-mono)' }}>
             nome:
           </span>
           <input
@@ -302,11 +304,12 @@ function IntegracoesSection() {
             onKeyDown={e => { if (e.key === 'Enter') createToken(); if (e.key === 'Escape') setCreating(false) }}
             style={{
               flex: 1, background: 'var(--bg)', border: '1px solid rgba(34,211,238,0.3)',
-              borderRadius: 5, padding: '6px 10px', fontSize: 12,
+              borderRadius: 5, padding: '6px 10px', fontSize: isMobile ? 'var(--fs-input)' : 12,
+              minHeight: isMobile ? 'var(--ctl-md)' : undefined,
               color: 'var(--text)', outline: 'none', fontFamily: 'var(--f-mono)',
             }}
           />
-          <button onClick={createToken} style={btnCyan}>criar</button>
+          <button onClick={createToken} style={btnCyan(isMobile)}>criar</button>
         </div>
       )}
 
@@ -317,28 +320,28 @@ function IntegracoesSection() {
           background: 'rgba(34,211,238,0.04)',
           borderLeft: '3px solid var(--cyan)',
         }}>
-          <p style={{ margin: '0 0 10px', fontSize: 11, fontWeight: 700, color: 'var(--cyan)', fontFamily: 'var(--f-mono)' }}>
+          <p style={{ margin: '0 0 10px', fontSize: 'var(--fs-sm)', fontWeight: 700, color: 'var(--cyan)', fontFamily: 'var(--f-mono)' }}>
             ✓ token gerado — copie agora, não será mostrado novamente
           </p>
 
           {/* Raw token */}
           <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 14 }}>
             <code style={{
-              flex: 1, fontSize: 11, padding: '7px 10px', borderRadius: 5,
+              flex: 1, fontSize: 'var(--fs-sm)', padding: '7px 10px', borderRadius: 5,
               background: 'var(--bg)', border: '1px solid var(--border)',
               color: 'var(--text)', fontFamily: 'var(--f-mono)',
               wordBreak: 'break-all', lineHeight: 1.5,
             }}>
               {freshToken.token}
             </code>
-            <button onClick={() => copy(freshToken.token!, 'raw')} style={copied === 'raw' ? btnCyan : btnGhost}>
+            <button onClick={() => copy(freshToken.token!, 'raw')} style={copied === 'raw' ? btnCyan(isMobile) : btnGhost(isMobile)}>
               {copied === 'raw' ? '✓ copiado' : 'copiar'}
             </button>
           </div>
 
           {/* Server URL + JSON config */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-            <span style={{ fontSize: 10, color: 'var(--muted)', fontFamily: 'var(--f-mono)', flexShrink: 0 }}>
+            <span style={{ fontSize: 'var(--fs-xs)', color: 'var(--muted)', fontFamily: 'var(--f-mono)', flexShrink: 0 }}>
               servidor:
             </span>
             <input
@@ -346,7 +349,8 @@ function IntegracoesSection() {
               onChange={e => setServerUrl(e.target.value)}
               style={{
                 flex: 1, maxWidth: 260, background: 'var(--bg)', border: '1px solid var(--border)',
-                borderRadius: 5, padding: '4px 8px', fontSize: 11, outline: 'none',
+                borderRadius: 5, padding: '4px 8px', fontSize: isMobile ? 'var(--fs-input)' : 11, outline: 'none',
+                minHeight: isMobile ? 'var(--ctl-md)' : undefined,
                 color: 'var(--text)', fontFamily: 'var(--f-mono)',
               }}
             />
@@ -354,7 +358,7 @@ function IntegracoesSection() {
 
           <div style={{ position: 'relative' }}>
             <pre style={{
-              margin: 0, fontSize: 10.5, lineHeight: 1.65,
+              margin: 0, fontSize: isMobile ? 'var(--fs-xs)' : 10.5, lineHeight: 1.65,
               color: 'var(--muted)', background: 'var(--bg)',
               border: '1px solid var(--border)', borderRadius: 6,
               padding: '12px 14px', overflow: 'auto', fontFamily: 'var(--f-mono)',
@@ -364,7 +368,7 @@ function IntegracoesSection() {
             <button
               onClick={() => copy(mcpConfig(freshToken.token!), 'json')}
               style={{
-                ...(copied === 'json' ? btnCyan : btnGhost),
+                ...(copied === 'json' ? btnCyan(isMobile) : btnGhost(isMobile)),
                 position: 'absolute', top: 8, right: 8,
               }}
             >
@@ -372,7 +376,7 @@ function IntegracoesSection() {
             </button>
           </div>
 
-          <p style={{ margin: '8px 0 0', fontSize: 10, color: 'var(--muted)', opacity: 0.7, lineHeight: 1.6 }}>
+          <p style={{ margin: '8px 0 0', fontSize: 'var(--fs-xs)', color: 'var(--muted)', opacity: 0.7, lineHeight: 1.6 }}>
             Cole em <code style={{ fontFamily: 'var(--f-mono)' }}>~/.claude.json</code> sob <code style={{ fontFamily: 'var(--f-mono)' }}>mcpServers</code>
             {' '}ou rode: <code style={{ fontFamily: 'var(--f-mono)' }}>claude mcp add --transport http devgrind {serverUrl}/mcp</code>
           </p>
@@ -382,7 +386,7 @@ function IntegracoesSection() {
       {/* Token list */}
       {tokens.length === 0 ? (
         <div style={{ padding: '16px 20px' }}>
-          <p style={{ margin: 0, fontSize: 11, color: 'var(--muted)' }}>
+          <p style={{ margin: 0, fontSize: 'var(--fs-sm)', color: 'var(--muted)' }}>
             Nenhum token ainda. Crie um para conectar o Claude Code.
           </p>
         </div>
@@ -398,19 +402,19 @@ function IntegracoesSection() {
             background: t.last_used_at ? 'var(--cyan)' : 'var(--faint)',
             boxShadow: t.last_used_at ? '0 0 4px var(--cyan)' : 'none',
           }} />
-          <span style={{ flex: 1, fontSize: 12, color: 'var(--text)', fontFamily: 'var(--f-mono)' }}>
+          <span style={{ flex: 1, fontSize: isMobile ? 'var(--fs-sm)' : 12, color: 'var(--text)', fontFamily: 'var(--f-mono)' }}>
             {t.name}
           </span>
-          <span style={{ fontSize: 10, color: 'var(--muted)', fontFamily: 'var(--f-mono)' }}>
+          <span style={{ fontSize: 'var(--fs-xs)', color: 'var(--muted)', fontFamily: 'var(--f-mono)' }}>
             {t.last_used_at
               ? `usado ${new Date(t.last_used_at).toLocaleDateString('pt-BR')}`
               : `criado ${new Date(t.created_at).toLocaleDateString('pt-BR')}`}
           </span>
           <button
             onClick={() => revokeToken(t.id)}
-            style={btnGhost}
+            style={btnGhost(isMobile)}
             onMouseOver={e => { e.currentTarget.style.color = '#f87171'; e.currentTarget.style.borderColor = '#3f1515' }}
-            onMouseOut={e => { e.currentTarget.style.color = (btnGhost as any).color; e.currentTarget.style.borderColor = (btnGhost as any).borderColor }}
+            onMouseOut={e => { e.currentTarget.style.color = 'var(--muted)'; e.currentTarget.style.borderColor = 'var(--border)' }}
           >
             revogar
           </button>
@@ -486,25 +490,26 @@ function IASection() {
             background: configured ? 'var(--cyan)' : 'var(--faint)',
             boxShadow: configured ? '0 0 5px var(--cyan)' : 'none',
           }} />
-          <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: 'var(--text)' }}>
+          <p style={{ margin: 0, fontSize: 'var(--fs-base)', fontWeight: 600, color: 'var(--text)' }}>
             {configured ? `${url.replace('https://', '').split('/')[0]} · ${model}` : 'não configurado'}
           </p>
         </div>
         {saved && (
-          <span style={{ fontSize: 11, color: 'var(--cyan)', fontFamily: 'var(--f-mono)' }}>✓ salvo</span>
+          <span style={{ fontSize: 'var(--fs-sm)', color: 'var(--cyan)', fontFamily: 'var(--f-mono)' }}>✓ salvo</span>
         )}
       </div>
 
       {/* Provider presets */}
       <Row label="Provedor" description="Use OpenRouter para acessar qualquer modelo com uma única chave.">
-        <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap', justifyContent: isMobile ? 'flex-start' : 'flex-end' }}>
+        <div style={{ display: 'flex', gap: isMobile ? 'var(--sp-2)' : 5, flexWrap: 'wrap', justifyContent: isMobile ? 'flex-start' : 'flex-end' }}>
           {PRESETS.map(p => (
             <button
               key={p.url}
               onClick={() => pickPreset(p.url)}
               title={p.hint}
               style={{
-                padding: '5px 10px', borderRadius: 5, fontSize: 11,
+                padding: '5px 10px', borderRadius: 5, fontSize: isMobile ? 'var(--fs-base)' : 11,
+                minHeight: isMobile ? 'var(--ctl-chip)' : undefined,
                 cursor: 'pointer', fontFamily: 'var(--f-mono)', transition: 'all 130ms',
                 background: url === p.url ? 'rgba(34,211,238,0.1)' : 'var(--bg)',
                 border: `1px solid ${url === p.url ? 'rgba(34,211,238,0.4)' : 'var(--border)'}`,
@@ -540,7 +545,7 @@ function IASection() {
             style={fieldStyle(isMobile, 260)}
             onFocus={e => e.currentTarget.style.borderColor = 'rgba(34,211,238,0.4)'}
           />
-          <button onClick={() => setShowKey(v => !v)} style={btnGhost}>
+          <button onClick={() => setShowKey(v => !v)} style={btnGhost(isMobile)}>
             {showKey ? 'ocultar' : 'mostrar'}
           </button>
         </div>
@@ -557,13 +562,14 @@ function IASection() {
             onFocus={e => e.currentTarget.style.borderColor = 'rgba(34,211,238,0.4)'}
           />
           {hints.length > 0 && (
-            <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap', justifyContent: isMobile ? 'flex-start' : 'flex-end' }}>
+            <div style={{ display: 'flex', gap: isMobile ? 'var(--sp-2)' : 4, flexWrap: 'wrap', justifyContent: isMobile ? 'flex-start' : 'flex-end' }}>
               {hints.map(h => (
                 <button
                   key={h}
                   onClick={() => { setModel(h); save(key, url, h) }}
                   style={{
-                    padding: '3px 8px', borderRadius: 4, fontSize: 10,
+                    padding: '3px 8px', borderRadius: 'var(--radius-sm)', fontSize: isMobile ? 'var(--fs-base)' : 10,
+                    minHeight: isMobile ? 'var(--ctl-chip)' : undefined,
                     cursor: 'pointer', fontFamily: 'var(--f-mono)', transition: 'all 130ms',
                     background: model === h ? 'rgba(34,211,238,0.08)' : 'transparent',
                     border: `1px solid ${model === h ? 'rgba(34,211,238,0.3)' : 'var(--border)'}`,
@@ -597,19 +603,20 @@ function ls(key: string, def: string) { try { return localStorage.getItem(key) ?
 function lsSet(key: string, v: string) { try { localStorage.setItem(key, v) } catch { /* */ } }
 
 function AprendizadoSection() {
+  const isMobile = useMediaQuery(MOBILE_QUERY)
   const [goal, setGoal] = useState(() => ls('study_daily_goal', '3'))
   const [diff, setDiff] = useState(() => ls('study_default_difficulty', ''))
 
   return (
     <Group label="Aprendizado">
       <Row label="Meta diária" description="Exercícios que você quer completar por dia.">
-        <div style={{ display: 'flex', gap: 5 }}>
+        <div style={{ display: 'flex', gap: isMobile ? 'var(--sp-2)' : 5 }}>
           {GOAL_OPTIONS.map(n => (
             <button
               key={n}
               onClick={() => { setGoal(String(n)); lsSet('study_daily_goal', String(n)) }}
               style={{
-                width: 36, height: 32, borderRadius: 5, fontSize: 12, fontWeight: 600,
+                width: isMobile ? 'var(--ctl-md)' : 36, height: 'var(--ctl-md)', borderRadius: 5, fontSize: isMobile ? 'var(--fs-sm)' : 12, fontWeight: 600,
                 cursor: 'pointer', fontFamily: 'var(--f-mono)', transition: 'all 130ms',
                 background: goal === String(n) ? 'rgba(34,211,238,0.12)' : 'var(--bg)',
                 border: `1px solid ${goal === String(n) ? 'rgba(34,211,238,0.4)' : 'var(--border)'}`,
@@ -623,13 +630,14 @@ function AprendizadoSection() {
       </Row>
 
       <Row label="Dificuldade padrão" description="Filtro inicial ao abrir a lista de kata." last>
-        <div style={{ display: 'flex', gap: 5 }}>
+        <div style={{ display: 'flex', gap: isMobile ? 'var(--sp-2)' : 5 }}>
           {DIFF_OPTIONS.map(opt => (
             <button
               key={opt.value}
               onClick={() => { setDiff(opt.value); lsSet('study_default_difficulty', opt.value) }}
               style={{
-                padding: '5px 10px', borderRadius: 5, fontSize: 11, fontWeight: 600,
+                padding: '5px 10px', borderRadius: 5, fontSize: isMobile ? 'var(--fs-base)' : 11, fontWeight: 600,
+                minHeight: isMobile ? 'var(--ctl-chip)' : undefined,
                 cursor: 'pointer', fontFamily: 'var(--f-mono)', transition: 'all 130ms',
                 background: diff === opt.value ? `${opt.color}18` : 'var(--bg)',
                 border: `1px solid ${diff === opt.value ? `${opt.color}55` : 'var(--border)'}`,
@@ -647,17 +655,21 @@ function AprendizadoSection() {
 
 // ── Shared button styles ──────────────────────────────────────────────────────
 
-const btnCyan: React.CSSProperties = {
-  fontSize: 11, padding: '5px 12px', borderRadius: 5, cursor: 'pointer',
+const btnCyan = (isMobile: boolean): React.CSSProperties => ({
+  fontSize: isMobile ? 'var(--fs-base)' : 11,
+  minHeight: isMobile ? 'var(--ctl-md)' : undefined,
+  padding: '5px 12px', borderRadius: 5, cursor: 'pointer',
   background: 'rgba(34,211,238,0.1)', border: '1px solid rgba(34,211,238,0.3)',
   color: 'var(--cyan)', transition: 'all 130ms', fontFamily: 'var(--f-mono)',
-}
+})
 
-const btnGhost: React.CSSProperties = {
-  fontSize: 11, padding: '5px 12px', borderRadius: 5, cursor: 'pointer',
+const btnGhost = (isMobile: boolean): React.CSSProperties => ({
+  fontSize: isMobile ? 'var(--fs-base)' : 11,
+  minHeight: isMobile ? 'var(--ctl-md)' : undefined,
+  padding: '5px 12px', borderRadius: 5, cursor: 'pointer',
   background: 'transparent', border: '1px solid var(--border)',
   color: 'var(--muted)', transition: 'all 130ms', fontFamily: 'var(--f-mono)',
-}
+})
 
 // ── Page ──────────────────────────────────────────────────────────────────────
 
@@ -667,7 +679,7 @@ export default function ConfigPage() {
     <div style={{ height: '100%', overflowY: 'auto' }}>
       <div style={{ maxWidth: 640, margin: '0 auto', padding: pagePadding('44px 40px 80px', isMobile, true) }}>
         <h1 style={{
-          margin: '0 0 36px', fontSize: 20, fontWeight: 800,
+          margin: '0 0 36px', fontSize: isMobile ? 'var(--fs-xl)' : 20, fontWeight: 800,
           letterSpacing: '-0.03em', color: 'var(--text)',
         }}>
           Configurações

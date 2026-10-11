@@ -238,11 +238,12 @@ body {
   .cfg-ctrl { width: 100%; }
   .cfg-ctrl > div { flex-wrap: wrap; }
 
-  /* Alvo de toque: 44px é o mínimo do HIG e da WCAG 2.5.5. Os chips vinham
-     com 30px e os campos com 40. */
+  /* Alvo de toque: campos e botões de ação sobem para --ctl-md (44px, mínimo
+     do HIG e da WCAG 2.5.5); chips de opção ficam em --ctl-chip e ganham
+     espaço entre si pelo gap. A regra de chip vem por último para vencer. */
   .cfg-ctrl input,
-  .cfg-ctrl button,
-  .cfg-row button { min-height: 44px; }
+  .cfg-row button { min-height: var(--ctl-md); }
+  .cfg-ctrl button { min-height: var(--ctl-chip); }
 }
 
 /* ─── Mobile "Mais" sheet ───────────────────────────────── */
