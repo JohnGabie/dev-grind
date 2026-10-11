@@ -128,7 +128,7 @@ Big display numbers (rank 28, streak 20) stay as-is: they are numbers, not text.
 
 ### Spacing grid (`--sp-*`)
 
-Base unit **4px**. Steps `--sp-1..--sp-8` = 4, 8, 12, 16, 20, 24, 32 (same on desktop and mobile). Gutter stays 20 (`MOBILE_GUTTER`).
+Base unit **4px**. Steps `--sp-1..--sp-7` = 4, 8, 12, 16, 20, 24, 32 (same on desktop and mobile). Gutter stays 20 (`MOBILE_GUTTER`).
 Gap inside a control/row: 8. Between controls: 8–12. Between cards: 12. Between sections: 24 (32 for
 page-title → content). Off-grid values (2, 3, 5, 6, 7, 9, 10, 14, 18, 22, 28, 36) map to the nearest step
 when a page is migrated. `letterSpacing` and `lineHeight` collapse to the line-heights in the type table.
