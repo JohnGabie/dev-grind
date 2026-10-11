@@ -179,7 +179,7 @@ function ChatBubble() {
 
   // No mobile a bolha sobe para não cobrir a tab bar.
   // Com um CTA fixo no rodape (licao, "sobre" do exercicio) a bolha sobe --ctl-primary + 16.
-  const raised = lessonDock || onAbout
+  const raised = lessonDock || (isMobile && onAbout)
   const bubbleBottom = raised
     ? (isMobile ? `calc(96px + ${MOBILE_NAV_SPACE})` : 96)
     : (isMobile ? `calc(24px + ${MOBILE_NAV_SPACE})` : 24)
