@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../auth/AuthContext'
 import { fetchInsights } from '../api'
@@ -41,6 +41,7 @@ export default function AnalysisMobile() {
   const navigate = useNavigate()
   const insights = useSlot(fetchInsights)
   const shellUser = promptUser(user?.name ?? '')
+  const [visualLines, setVisualLines] = useState(1)
   const lines = analysisLines(insights.data ?? [])
 
   useEffect(() => { writeInsightOpenedAt() }, [])
@@ -58,12 +59,12 @@ export default function AnalysisMobile() {
       >
         ‹ voltar
       </button>
-      <WindowFrame title="analise.md" ariaLabel="análise do agente" footer={{ language: 'Markdown', ln: Math.max(lines.length, 1) }}>
+      <WindowFrame title="analise.md" ariaLabel="análise do agente" footer={{ language: 'Markdown', ln: lines.length === 0 ? 1 : visualLines }}>
         <div style={{ marginBottom: 'var(--sp-2)' }}>
           <PromptLine user={shellUser} command="cat analise.md" cursor={false} />
         </div>
         <SectionState status={insights.status} empty={lines.length === 0} emptyText="sem análise ainda" onRetry={insights.retry}>
-          <CodeBlock lines={lines.map(renderLine)} />
+          <CodeBlock lines={lines.map(renderLine)} onLineCount={setVisualLines} />
         </SectionState>
       </WindowFrame>
     </MobilePage>
