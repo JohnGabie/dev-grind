@@ -31,6 +31,13 @@ This replaces proposal A. The windows look like an editor showing real files:
 - **Theme (undecided):** colours come only from the app tokens already in `index.css` (`--cyan --green --red --yellow --blue`, plus orange and purple added as tokens), so it matches the rest of the app. The app has no theme switcher and no Monaco theme to reuse, so "our themes" is read as these tokens. If you meant a specific IDE theme (e.g. One Dark, Dracula), say which.
 - This reintroduces colour, but as syntax colour in code and only inside windows. The reading page uses the same Markdown highlighting.
 
+## Decision: black theme, blue on focus (João: "IDE looks, BLACK THEME WITH OUR BLUE ON FOCOUS")
+
+- Windows use a near-black editor background (darker than `--bg-card`, e.g. `#0a0a0a`, one token) with a 1px `--border`.
+- **Blue (`--blue`, `#3b82f6`) is the focus colour:** active tab underline, selected mode tab, the ASCII button, the prompt `$` and command, the cursor, the focus ring, and the status-bar language label. This replaces cyan as the Dashboard accent.
+- Syntax colours stay as in the revision above (JSON keys blue, strings green, numbers orange, etc.) but muted so blue still reads as "where you are": keys use a softer blue than the focus blue.
+- The greeting keeps its cyan name, unchanged.
+
 ## Out of scope
 
 Editing or deleting analyses, a desktop reading page, creating analyses from the app, changes to the Profile, changes to the agent or MCP tool.
