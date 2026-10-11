@@ -70,8 +70,8 @@ export default function NextActionSection({ resume, exercises, user }: Props) {
                 >
                   <span style={{
                     minHeight: 'var(--ctl-chip)', display: 'inline-flex', alignItems: 'center', padding: '0 var(--sp-3)',
-                    border: `1px solid ${selected ? 'var(--blue)' : 'var(--border)'}`, borderRadius: 'var(--radius-md)',
-                    color: selected ? 'var(--blue)' : 'var(--muted)', fontSize: 'var(--fs-sm)', fontWeight: selected ? 700 : 400,
+                    border: `1px solid ${selected ? 'var(--cyan)' : 'var(--border)'}`, borderRadius: 'var(--radius-md)',
+                    color: selected ? 'var(--cyan)' : 'var(--muted)', fontSize: 'var(--fs-sm)', fontWeight: selected ? 700 : 400,
                   }}>
                     {k}
                   </span>
@@ -86,7 +86,7 @@ export default function NextActionSection({ resume, exercises, user }: Props) {
         </div>
         <AsciiButton
           label={resuming ? 'continuar' : 'começar'}
-          color="var(--blue)"
+          color="var(--cyan)"
           onClick={() => navigate(`/exercise/${action.slug}`)}
         />
       </WindowFrame>

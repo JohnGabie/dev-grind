@@ -52,7 +52,7 @@ export default function AnalysisMobile() {
         onClick={() => navigate('/')}
         style={{
           minHeight: 'var(--ctl-row)', display: 'flex', alignItems: 'center', padding: 0, marginBottom: 'var(--sp-2)',
-          background: 'none', border: 'none', cursor: 'pointer', color: 'var(--blue)',
+          background: 'none', border: 'none', cursor: 'pointer', color: 'var(--cyan)',
           fontFamily: 'var(--font)', fontSize: 'var(--fs-base)',
         }}
       >

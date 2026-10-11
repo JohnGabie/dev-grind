@@ -59,7 +59,7 @@ export default function WindowFrame({ title, children, onClick, ariaLabel, tabs,
                   <span style={{
                     height: 'var(--ctl-chip)', display: 'inline-flex', alignItems: 'center', padding: '0 var(--sp-3)',
                     color: active ? 'var(--text)' : 'var(--muted)', whiteSpace: 'nowrap', boxSizing: 'border-box',
-                    borderBottom: `2px solid ${active ? 'var(--blue)' : 'transparent'}`,
+                    borderBottom: `2px solid ${active ? 'var(--cyan)' : 'transparent'}`,
                   }}>
                     {t.label}
                   </span>
@@ -79,7 +79,7 @@ export default function WindowFrame({ title, children, onClick, ariaLabel, tabs,
           display: 'flex', gap: 'var(--sp-3)', padding: 'var(--sp-1) var(--sp-3)', borderTop: '1px solid var(--border)',
           fontFamily: 'var(--font)', fontSize: 'var(--fs-xs)', color: 'var(--muted)', whiteSpace: 'pre',
         }}>
-          <span style={{ color: 'var(--blue)' }}>{footer.language}</span>
+          <span style={{ color: 'var(--cyan)' }}>{footer.language}</span>
           <span>UTF-8</span>
           <span>{`Ln ${footer.ln ?? 1}, Col 1`}</span>
         </div>

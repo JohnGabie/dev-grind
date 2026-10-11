@@ -64,7 +64,7 @@ export default function StatusSection({ stats, insights, user }: Props) {
         <span style={{ display: 'block', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
           {latest.message.split('\n')[0]}
         </span>,
-        ...(isNew ? [<span style={{ color: 'var(--blue)' }}>● novo</span>] : []),
+        ...(isNew ? [<span style={{ color: 'var(--cyan)' }}>● novo</span>] : []),
       ]
       lineCount = rows.length
       body = (
@@ -76,7 +76,7 @@ export default function StatusSection({ stats, insights, user }: Props) {
             onClick={() => navigate('/analysis')}
             style={{
               width: '100%', minHeight: 'var(--ctl-primary)', marginTop: 'var(--sp-2)', background: 'none', cursor: 'pointer',
-              border: '1px solid var(--blue)', borderRadius: 'var(--radius-md)', color: 'var(--blue)',
+              border: '1px solid var(--cyan)', borderRadius: 'var(--radius-md)', color: 'var(--cyan)',
               fontFamily: 'var(--font)', fontSize: 'var(--fs-base)',
             }}
           >

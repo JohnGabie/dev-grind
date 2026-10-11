@@ -2,7 +2,7 @@ export type MarkdownKind = 'heading' | 'marker' | 'bold' | 'code' | 'text'
 export interface MarkdownToken { text: string; kind: MarkdownKind }
 
 export const MARKDOWN_COLOR: Record<MarkdownKind, string> = {
-  heading: 'var(--blue)', marker: 'var(--orange)', bold: 'var(--yellow)', code: 'var(--cyan)', text: 'var(--text)',
+  heading: 'var(--blue-soft)', marker: 'var(--orange)', bold: 'var(--yellow)', code: 'var(--cyan)', text: 'var(--text)',
 }
 
 const SPAN = /\*\*[^*]+\*\*|`[^`]+`/g
