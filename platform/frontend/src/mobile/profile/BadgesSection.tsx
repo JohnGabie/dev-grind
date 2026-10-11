@@ -17,7 +17,7 @@ export default function BadgesSection({ stats }: { stats: BadgeStats }) {
             <button
               key={def.id}
               type="button"
-              aria-label={def.label}
+              aria-label={`${def.label}, ${on ? 'conquistada' : 'bloqueada'}`}
               aria-pressed={selected === def.id}
               onClick={() => setSelected(def.id)}
               style={{

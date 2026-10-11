@@ -16,7 +16,7 @@ export default function ListRow({ tag, tagColor, title, meta, onClick }: ListRow
     <>
       {tag && <span style={{ fontSize: 'var(--fs-xs)', fontWeight: 700, color: tagColor ?? 'var(--muted)', flexShrink: 0, minWidth: 36 }}>{tag}</span>}
       <span style={{ flex: 1, minWidth: 0, fontSize: 'var(--fs-base)', color: 'var(--text)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{title}</span>
-      {meta && <span style={{ fontSize: 'var(--fs-sm)', color: 'var(--muted)', flexShrink: 0 }}>{meta}</span>}
+      {meta && <span style={{ fontSize: 'var(--fs-sm)', color: 'var(--muted)', flexShrink: 1, minWidth: 0, maxWidth: '60%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{meta}</span>}
     </>
   )
   return onClick

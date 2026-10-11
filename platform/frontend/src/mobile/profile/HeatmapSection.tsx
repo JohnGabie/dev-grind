@@ -31,7 +31,7 @@ export default function HeatmapSection({ heatmap }: { heatmap: Record<string, He
         <div
           onPointerDown={pick}
           onPointerMove={e => { if (e.buttons === 1) pick(e) }}
-          style={{ display: 'flex', gap: GAP, touchAction: full ? 'pan-x' : 'none', width: 'max-content' }}
+          style={{ display: 'flex', gap: GAP, touchAction: full ? 'pan-x pan-y' : 'pan-y', width: 'max-content' }}
         >
           {weeks.map((week, wi) => (
             <div key={wi} style={{ display: 'flex', flexDirection: 'column', gap: GAP }}>

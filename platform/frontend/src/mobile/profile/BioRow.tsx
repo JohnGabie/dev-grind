@@ -44,7 +44,7 @@ export default function BioRow({ initialBio }: { initialBio: string | null }) {
           />
           <div style={{ display: 'flex', gap: 'var(--sp-2)', marginTop: 'var(--sp-2)' }}>
             <button type="button" disabled={saving} onClick={save} style={{ ...button, border: '1px solid rgba(34,211,238,0.3)', color: 'var(--cyan)' }}>salvar</button>
-            <button type="button" onClick={() => setEditing(false)} style={{ ...button, border: '1px solid var(--border)', color: 'var(--muted)' }}>cancelar</button>
+            <button type="button" onClick={() => { setEditing(false); setFailed(false) }} style={{ ...button, border: '1px solid var(--border)', color: 'var(--muted)' }}>cancelar</button>
           </div>
           {failed && <div style={{ fontSize: 'var(--fs-sm)', color: 'var(--red)', marginTop: 'var(--sp-2)' }}>não foi possível salvar</div>}
         </div>
@@ -53,7 +53,7 @@ export default function BioRow({ initialBio }: { initialBio: string | null }) {
           <p style={{ margin: 0, fontSize: 'var(--fs-base)', lineHeight: 'var(--lh-base)', color: bio ? 'var(--text)' : 'var(--muted)', whiteSpace: 'pre-wrap' }}>
             {bio || 'sem descrição'}
           </p>
-          <button type="button" onClick={() => { setDraft(bio); setEditing(true) }} style={{ ...button, marginTop: 'var(--sp-2)', border: '1px solid var(--border)', color: 'var(--cyan)' }}>
+          <button type="button" onClick={() => { setDraft(bio); setFailed(false); setEditing(true) }} style={{ ...button, marginTop: 'var(--sp-2)', border: '1px solid var(--border)', color: 'var(--cyan)' }}>
             editar
           </button>
         </div>

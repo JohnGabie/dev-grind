@@ -15,6 +15,7 @@ export default function SocialRows({ initialLinks }: { initialLinks: Record<stri
   const [adding, setAdding] = useState(false)
   const [draft, setDraft] = useState('')
   const [failed, setFailed] = useState(false)
+  const [saving, setSaving] = useState(false)
 
   const filled = NETWORKS.filter(n => links[n.id])
   const free = NETWORKS.filter(n => !links[n.id])
@@ -24,12 +25,16 @@ export default function SocialRows({ initialLinks }: { initialLinks: Record<stri
   const save = async (id: string) => {
     const updated = { ...links, [id]: draft.trim() }
     if (!draft.trim()) delete updated[id]
+    setSaving(true)
+    setFailed(false)
     try {
       await api.patch('/users/me', { social_links: updated })
       setLinks(updated)
       setEditing(null)
     } catch {
       setFailed(true)
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -46,8 +51,8 @@ export default function SocialRows({ initialLinks }: { initialLinks: Record<stri
         }}
       />
       <div style={{ display: 'flex', gap: 'var(--sp-2)', marginTop: 'var(--sp-2)' }}>
-        <button type="button" onClick={() => save(id)} style={{ minHeight: 'var(--ctl-md)', padding: '0 var(--sp-4)', background: 'none', border: '1px solid rgba(34,211,238,0.3)', borderRadius: 'var(--radius-md)', color: 'var(--cyan)', fontSize: 'var(--fs-base)', fontFamily: 'var(--font)', cursor: 'pointer' }}>salvar</button>
-        <button type="button" onClick={() => setEditing(null)} style={{ minHeight: 'var(--ctl-md)', padding: '0 var(--sp-4)', background: 'none', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', color: 'var(--muted)', fontSize: 'var(--fs-base)', fontFamily: 'var(--font)', cursor: 'pointer' }}>cancelar</button>
+        <button type="button" disabled={saving} onClick={() => save(id)} style={{ minHeight: 'var(--ctl-md)', padding: '0 var(--sp-4)', background: 'none', border: '1px solid rgba(34,211,238,0.3)', borderRadius: 'var(--radius-md)', color: 'var(--cyan)', fontSize: 'var(--fs-base)', fontFamily: 'var(--font)', cursor: 'pointer' }}>salvar</button>
+        <button type="button" onClick={() => { setEditing(null); setFailed(false) }} style={{ minHeight: 'var(--ctl-md)', padding: '0 var(--sp-4)', background: 'none', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', color: 'var(--muted)', fontSize: 'var(--fs-base)', fontFamily: 'var(--font)', cursor: 'pointer' }}>cancelar</button>
       </div>
       {failed && <div style={{ fontSize: 'var(--fs-sm)', color: 'var(--red)', marginTop: 'var(--sp-2)' }}>não foi possível salvar</div>}
     </div>
