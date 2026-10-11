@@ -1,5 +1,32 @@
 # Mobile Dashboard and Profile redesign
 
+Status: Profile implemented and approved by João; Dashboard revision 3 (terminal windows, one accent) implemented, calming pass in progress.
+Scope: viewports `<= 768px` (`MOBILE_QUERY`) only. Desktop stays pixel-identical.
+Branch: `feat/mobile-dashboard-profile` (based on `feat/course-lesson-progress`, which has the mobile scale tokens).
+
+## The request
+
+João, in his words:
+
+> "i wanna redesign both for mobile ONLY, and we need make a brainstorm and make a spec"
+> "i dont feel the things are placed correct. the analysis is good to show, but idk need to be on focus, because you read only 2 times per week"
+> "now im care about the thing fit better, and looks right and not vibecoded and create a standard pattern. after that when the project gaining maturity i will change adding and remove, this applies to profile. I wanna organize, and dont let broken"
+
+## Reading of it
+
+- Two existing screens get a **mobile-only layout of their own**. The desktop files are not edited.
+- No single hero thing. The numbers (kyu, streak, honor) are valuable and today sit in the wrong place. The agent's analysis is valuable but is read about twice a week, so it must be reachable and visibly new, not a main block.
+- The result is a **repeatable pattern**: a small set of mobile building blocks and a page that is an ordered list of independent sections, so adding or removing a section later cannot break the others.
+- It must look intentional, not generated: the existing palette, JetBrains Mono, the size scale, 1px borders, no decoration.
+
+## Decisions already taken (with João)
+
+| Topic | Decision |
+|---|---|
+| Dashboard header | **Kept as is**: the greeting, the cyan name and the date. Only size and spacing follow the scale. |
+| Profile identity | **Kept as is**: photo, cover, kyu number and the progress circle. Mobile means resize and re-space, not redesign. |
+| Dashboard look (revision 3) | Four terminal windows (`status.json`, `treinar.sh`, `analise.log`, `historico.log`) with a `joao@devgrind:~# Mobile Dashboard and Profile redesign
+
 Status: Profile implemented and approved by João; Dashboard revision 2 (terminal and colour) awaiting review.
 Scope: viewports `<= 768px` (`MOBILE_QUERY`) only. Desktop stays pixel-identical.
 Branch: `feat/mobile-dashboard-profile` (based on `feat/course-lesson-progress`, which has the mobile scale tokens).
@@ -25,7 +52,7 @@ João, in his words:
 |---|---|
 | Dashboard header | **Kept as is**: the greeting, the cyan name and the date. Only size and spacing follow the scale. |
 | Profile identity | **Kept as is**: photo, cover, kyu number and the progress circle. Mobile means resize and re-space, not redesign. |
-| Dashboard look (revision 2) | Terminal feel plus colour: status rendered as a JSON object (João's idea), prompt line `$ treinar --modo <modo>`, mode tabs always visible in their colours, log-style history |
+ prompt and block cursor; one accent colour (cyan); colour only for meaning (rank colour, status glyphs); ASCII button; status as JSON without a bar |
 | Dashboard hierarchy | **Status first**: header, status card, next action, analysis collapsed, history |
 | Profile, visible without a tap | Identity + rank progress, activity heatmap, badges |
 | Profile, collapsible rows | Bio, social links |
@@ -55,31 +82,22 @@ João, in his words:
 - Sizes only from the scale tokens (`var(--fs-*)`, `var(--ctl-*)`, `var(--sp-*)`, `var(--radius-*)`). One justified exception: heatmap cells (data marks, not tap targets).
 - Section labels use the app's existing `.section-label` style.
 
-### Dashboard (mobile), revision 2: terminal and colour
+### Dashboard (mobile), revision 3: terminal windows, one accent
 
-João found the first version generic ("lost the personality"). Direction chosen: **terminal feel plus colour**, same structure (status first), same independent sections. The Profile is unchanged. The first version of this section is superseded by what follows.
+João found the first version generic, then the colourful second version "too much colours". Final direction: **terminal windows, one accent colour (cyan), colour only where it carries meaning.** Same structure (status first) and the same independent sections. The Profile is unchanged. This section supersedes revisions 1 and 2.
 
-1. **Header (kept)**: the existing greeting with the cyan name and the date, exactly as on desktop.
-2. **Status as JSON** (surface 1, João's idea): the status is rendered as a real, valid JSON object in monospace, 14px (`--fs-base`), inside the first raised surface:
-   ```
-   {
-     "rank": "8kyu",
-     "honor": 2,
-     "proximo": "7kyu",
-     "faltam": 28,
-     "progresso": "██░░░░░░░░ 7%",
-     "streak": 0,
-     "semana": 3
-   }
-   ```
-   Syntax colouring carries the colour: brackets, quotes and keys in `--muted`; `rank` and `progresso` strings in the **rank colour**; `proximo` in the next rank's colour; `honor` and `faltam` numbers in yellow (`--yellow`); `streak` in orange (`#f97316`) when above 0 and muted at 0; `semana` in green (`--green`). The `progresso` string is the block-character bar (`█` filled in proportion to `rank_progress`, `░` empty, then the percentage). Real quotes, no comments, so the text could be copied as JSON. Tapping anywhere on it opens the Profile (`Surface` with `onClick`). At the top rank (honor at or above the next threshold) `proximo` and `faltam` are omitted. The block is exposed to assistive technology as a single labelled button ("status: 8kyu, 2 de honor, streak 0, semana 3") and the JSON is `aria-hidden` to avoid reading punctuation.
-3. **Prompt line**: `$ treinar --modo <modo>` in the colour of the selected mode (rankup cyan `#22d3ee`, warmup orange `#f97316`, practice green `#22c55e`, the existing desktop mode colours). It changes when the mode changes. When the next action is a resume it reads `$ continuar` in cyan.
-4. **Mode tabs, always visible** (when there are at least two distinct modes): three mono tabs `rankup  warmup  practice`, 36px chips with a tap area of 44px, each in its own mode colour (selected: coloured text and a 1px coloured border, others muted). They sit directly under the prompt line. With fewer than two distinct modes they are not shown.
-5. **Next action** (surface 2): the kyu tag in its rank colour, the exercise title, and one 48px primary button whose text, border and tint use the **mode colour** ("começar" or "continuar").
-6. **Agent analysis**: one log-style row: `> análise do agente` with its date and the first line, ellipsized, and a `● novo` dot in cyan when new. Tap expands it inline as before.
-7. **History**: log lines, 5 rows: a status glyph (`✓` passed in green, `✗` failed in orange, `◉` in progress in cyan), the kyu tag in its rank colour, the title, and the age. Status words are never relabelled. Empty state: "nada por aqui ainda".
+Look and feel (inspired by terminal UI components: title bar, shell prompt, block cursor):
 
-Colour rules (the guard test is updated to allow colour, still forbids decoration): colour is carried only by text, the bar and the button; no gradients, glow, `text-shadow`, frosted glass, emoji or accent stripes. Colours come from existing palette values (the rank and mode colours already used by the desktop dashboard, `--green`, `--yellow`, `--cyan`, `--muted`), exposed as named constants in `src/mobile/palette.ts` so no page hard-codes a hex. Sizes still only from the scale tokens. The animated store background stays behind the content.
+- **Greeting (kept)**: "boa tarde, João" with the cyan name, and the date, exactly as on desktop.
+- **Four windows**, same chrome (`WindowFrame`): a title bar `name.ext` with the decorative controls `_ □ X` (muted, not buttons, `aria-hidden`), a 1px border, `--bg-card`, `--radius-lg`, and a shell prompt (`PromptLine`) `joao@devgrind:~$ <command>` where the user is the first name in lower case without accents (fallback `dev`). The block cursor `█` is static.
+  1. **`status.json`**: prompt `cat status.json`, then the status as a valid JSON object: `rank`, `honor`, `proximo`, `faltam`, `progresso` (just the percentage, e.g. `"7%"`, no bar), `streak`, `semana`. Keys muted, values in the normal text colour, and the `rank` value in its rank colour. At the top rank `proximo` and `faltam` are omitted. The whole window is one labelled button that opens the Profile ("status: 8kyu, 2 de honor, streak 0, semana 3"); the JSON is `aria-hidden`.
+  2. **`treinar.sh`**: prompt `treinar -m <modo>` (resume: `continuar`); the three mode tabs (always visible when there are at least two distinct modes; 36px chips with a 44px hit area; selected tab in the accent colour); the exercise line (kyu tag in its rank colour and the title, ellipsized); and the **ASCII button**: a real button drawn with plain ASCII (`+----+`, `|  > começar  |`, `+----+`, 24 characters wide), at least 48px tall, in the accent colour. Plain ASCII is used because box-drawing characters are missing from the web font and fall back to another font with different widths.
+  3. **`analise.log`**: prompt `tail analise.log`; one line with the date, the first line of the message (ellipsized) and `● novo` (accent) when the analysis is new on this device; tap to expand the full message inline (`aria-expanded`, accessible name "análise do agente"), older analyses behind a nested "anteriores" row. Loading, empty and error states render inside the same window.
+  4. **`historico.log`**: prompt `tail historico.log`; the last 5 exercises as log lines: status glyph (`✓` green, `✗` orange, `◉` cyan), kyu tag in its rank colour, title (ellipsized) and the age. The status word is not shown but is part of the accessible name of each row (`<kyu>, <title>, <status word>, <age>`) and is never relabelled. Empty state: "nada por aqui ainda".
+
+Colour rules: the accent is cyan (prompt `$` and command, button, selected tab, "novo" dot). Everything else is the normal text or muted grey. Colour appears only where it means something: the rank colour on the rank and the kyu tags, and the status glyph colours. No per-mode colours, no coloured window controls. No gradients, glow, `text-shadow`, frosted glass, emoji or accent stripes. Colours come from `palette.ts` constants or existing CSS variables; the guard test forbids hex colours elsewhere.
+
+Known limits: some glyphs (`█ ● □ ✓ ✗ ◉`) are not in the web font subset and fall back to the system font; the layout does not depend on their width. The muted grey on the dark card is about 3.9:1 contrast (an existing token).
 
 ### Profile (mobile)
 
