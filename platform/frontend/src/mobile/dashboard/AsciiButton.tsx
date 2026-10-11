@@ -4,7 +4,8 @@ function box(label: string) {
   const text = `> ${label}`
   const left = Math.floor((INNER - text.length) / 2)
   const middle = ' '.repeat(left) + text + ' '.repeat(INNER - text.length - left)
-  return `╔${'═'.repeat(INNER)}╗\n║${middle}║\n╚${'═'.repeat(INNER)}╝`
+  const edge = `+${'-'.repeat(INNER)}+`
+  return `${edge}\n|${middle}|\n${edge}`
 }
 
 export default function AsciiButton({ label, color, onClick }: { label: string; color: string; onClick: () => void }) {
@@ -19,7 +20,7 @@ export default function AsciiButton({ label, color, onClick }: { label: string; 
         fontFamily: 'var(--font)', fontSize: 'var(--fs-base)', lineHeight: 'var(--lh-base)', color,
       }}
     >
-      <pre aria-hidden="true" style={{ display: 'block', margin: 0, font: 'inherit', lineHeight: 1, color: 'inherit', whiteSpace: 'pre' }}>{box(label)}</pre>
+      <pre aria-hidden="true" style={{ display: 'block', margin: 0, font: 'inherit', lineHeight: 'var(--lh-base)', color: 'inherit', whiteSpace: 'pre' }}>{box(label)}</pre>
     </button>
   )
 }

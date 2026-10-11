@@ -47,7 +47,7 @@ export default function NextActionSection({ resume, exercises, user }: Props) {
     <div style={{ marginTop: 'var(--sp-4)' }}>
       <WindowFrame title="treinar.sh" titleColor={accent}>
         <div style={{ marginBottom: 'var(--sp-2)' }}>
-          <PromptLine user={user} command={resuming ? 'continuar' : `treinar --modo ${mode}`} commandColor={accent} />
+          <PromptLine user={user} command={resuming ? 'continuar' : `treinar -m ${mode}`} commandColor={accent} />
         </div>
         {showTabs && (
           <div role="tablist" aria-label="modo" style={{ display: 'flex', gap: 'var(--sp-2)', marginBottom: 'var(--sp-2)' }}>

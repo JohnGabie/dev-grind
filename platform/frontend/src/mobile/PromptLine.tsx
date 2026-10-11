@@ -7,7 +7,7 @@ interface PromptLineProps {
 
 export default function PromptLine({ user, command, commandColor = 'var(--text)', cursor = true }: PromptLineProps) {
   return (
-    <div style={{ fontFamily: 'var(--font)', fontSize: 'var(--fs-base)', lineHeight: 'var(--lh-base)', overflowWrap: 'anywhere' }}>
+    <div style={{ fontFamily: 'var(--font)', fontSize: 'var(--fs-base)', lineHeight: 'var(--lh-base)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
       <span style={{ color: 'var(--green)' }}>{user}@devgrind</span>
       <span style={{ color: 'var(--muted)' }}>:</span>
       <span style={{ color: 'var(--blue)' }}>~</span>
