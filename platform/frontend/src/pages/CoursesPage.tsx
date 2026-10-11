@@ -102,6 +102,7 @@ function StepView({
                   boxSizing: 'border-box',
                   margin: 0,
                   padding: '0 6px',
+                  minHeight: isMobile ? 'var(--ctl-md)' : undefined,
                   borderRadius: 'var(--radius-md)',
                   fontFamily: 'var(--f-mono)',
                   fontSize: isMobile ? 'var(--fs-input)' : 14,
