@@ -32,6 +32,9 @@ João, in his words:
 | Locked badges | A lock icon only, no progress numbers |
 | Section labels | Match the app's existing label style |
 | Animated store background | Kept on mobile, behind the content (content sits on solid surfaces) |
+| Progress circle on mobile Profile | Shows the real `rank_progress`. Desktop ring unchanged until DEV-27. |
+| Cover edit on mobile | Display only; adjust and upload stay desktop-only until a touch version is specced |
+| Rank on the Dashboard status card | Bar and numbers (the Profile keeps its circle) |
 | Build approach | Separate mobile components chosen by one `useMediaQuery` check; desktop files untouched |
 
 ## Today (facts from the code)
@@ -130,6 +133,5 @@ A page is an **ordered list of sections**. Each section receives its data as pro
 3. Does the stats API return active days? [Show it only if present.]
 4. Do Friends and Guild also appear in the desktop navigation later? [Not in this work.]
 5. Is 20 weeks the right default window on a real phone? [Yes; verify on device in PR 3.]
-6. The progress circle on the mobile Profile: [feed it the real `rank_progress`; the desktop ring stays hardcoded at 50% until DEV-27] or [keep it exactly as is, including the 50%].
-7. Cover edit (adjust/upload) on mobile: [desktop-only for now, the cover is display-only on a phone] or [rebuild the controls for touch in a later spec].
-8. The Dashboard status card shows rank as a bar and the Profile keeps the circle: [fine, different jobs] or [use the circle on the Dashboard card too, for consistency].
+
+(Questions 6 to 8 of the first draft were answered by João and moved to the decisions table.)
