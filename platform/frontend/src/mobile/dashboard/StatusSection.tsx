@@ -7,21 +7,29 @@ import { MARKDOWN_COLOR } from '../markdown'
 import PromptLine from '../PromptLine'
 import SectionState from '../SectionState'
 import { buildStatusLines } from '../statusJson'
-import type { Insight, UserStats } from '../types'
+import type { Insight, RecentExercise, UserStats } from '../types'
 import type { Slot } from '../useSlot'
 import WindowFrame from '../WindowFrame'
+import HistoryRows, { uniqueRecent } from './HistoryRows'
 import StatusJson from './StatusJson'
 
-const TABS = [{ id: 'status', label: 'status.json' }, { id: 'analysis', label: 'analise.md' }]
+const TABS = [{ id: 'status', label: 'status' }, { id: 'analysis', label: 'analise' }, { id: 'history', label: 'historico' }]
+const FILE: Record<string, { name: string; command: string }> = {
+  status: { name: 'status.json', command: 'cat status.json' },
+  analysis: { name: 'analise.md', command: 'cat analise.md' },
+  history: { name: 'historico.log', command: 'tail historico.log' },
+}
 const PANEL_MIN_HEIGHT = 'calc(9 * var(--lh-base) * var(--fs-base))'
 const EMPTY_PREVIEW_LINES = 1
 const PREVIEW_LINES = 5
+const HISTORY_ROWS = 3
 
-interface Props { stats: Slot<UserStats>; insights: Slot<Insight[]>; user: string }
+interface Props { stats: Slot<UserStats>; insights: Slot<Insight[]>; recent: Slot<RecentExercise[]>; user: string }
 
-export default function StatusSection({ stats, insights, user }: Props) {
+export default function StatusSection({ stats, insights, recent, user }: Props) {
   const navigate = useNavigate()
   const [tab, setTab] = useState('status')
+  const [previewLines, setPreviewLines] = useState(EMPTY_PREVIEW_LINES)
   const [openedAt] = useState<string | null>(readInsightOpenedAt)
   const s = stats.data
   const latest = (insights.data ?? [])[0]
@@ -54,6 +62,15 @@ export default function StatusSection({ stats, insights, user }: Props) {
         </div>
       )
     }
+  } else if (tab === 'history') {
+    language = 'Log'
+    const items = uniqueRecent(recent.data ?? [], HISTORY_ROWS)
+    lineCount = Math.max(items.length, 1)
+    body = (
+      <SectionState status={recent.status} empty={items.length === 0} emptyText="nada por aqui ainda" onRetry={recent.retry}>
+        <HistoryRows items={items} />
+      </SectionState>
+    )
   } else {
     language = 'Markdown'
     if (insights.status !== 'ready' || !latest) {
@@ -69,10 +86,10 @@ export default function StatusSection({ stats, insights, user }: Props) {
           {latest.message.replace(/\s*\n+\s*/g, ' ')}
         </span>,
       ]
-      lineCount = rows.length
+      lineCount = previewLines
       body = (
         <>
-          <div style={{ flex: 1 }}><CodeBlock lines={rows} /></div>
+          <div style={{ flex: 1 }}><CodeBlock lines={rows} onLineCount={setPreviewLines} /></div>
           <button
             type="button"
             aria-label="abrir análise do agente"
@@ -93,14 +110,14 @@ export default function StatusSection({ stats, insights, user }: Props) {
   return (
     <div style={{ marginTop: 'var(--sp-5)' }}>
       <WindowFrame
-        title={statusTab ? 'status.json' : 'analise.md'}
+        title={FILE[tab].name}
         tabs={TABS}
         activeTab={tab}
         onTab={setTab}
         footer={{ language, ln: lineCount }}
       >
         <div style={{ marginBottom: 'var(--sp-2)' }}>
-          <PromptLine user={user} command={statusTab ? 'cat status.json' : 'cat analise.md'} cursor={false} />
+          <PromptLine user={user} command={FILE[tab].command} cursor={false} />
         </div>
         <div style={{ minHeight: PANEL_MIN_HEIGHT, display: 'flex', flexDirection: 'column' }}>{body}</div>
       </WindowFrame>
