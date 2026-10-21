@@ -46,14 +46,14 @@ export const MOBILE_NAV_SPACE =
  * atrás das barras, em vez de parar antes delas e deixar uma faixa preta em
  * volta de cada uma.
  */
-export function pagePadding(desktop: string, isMobile: boolean, absorbTopBar = false): string {
+export function pagePadding(desktop: string, isMobile: boolean, absorbTopBar = false, reserveDock = true): string {
   if (!isMobile) return desktop
 
   const p = desktop.trim().split(/\s+/)
   const g = `${MOBILE_GUTTER}px`
   const t = absorbTopBar ? `calc(${MOBILE_TOP_GAP}px + ${MOBILE_TOP_INSET})` : p[0]
   const bottomBase = p.length >= 3 ? p[2] : p[0]
-  const b = `calc(${bottomBase} + ${MOBILE_NAV_SPACE})`
+  const b = reserveDock ? `calc(${bottomBase} + ${MOBILE_NAV_SPACE})` : bottomBase
 
   switch (p.length) {
     case 1:

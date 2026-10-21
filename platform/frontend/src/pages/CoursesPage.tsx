@@ -336,10 +336,10 @@ function LessonPlayer({
   return (
     <div style={{ flex: 1, minHeight: 0, width: '100%', display: 'flex', flexDirection: 'column' }}>
       <div ref={scrollRef} style={{ flex: 1, minHeight: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
-        <div style={{ maxWidth: 1080, width: '100%', margin: '0 auto', padding: pagePadding('24px 48px 12px', isMobile, true), flex: 1, display: 'flex', flexDirection: 'column' }}>
+        <div style={{ maxWidth: 1080, width: '100%', margin: '0 auto', padding: pagePadding('24px 48px 12px', isMobile, true, false), flex: 1, display: 'flex', flexDirection: 'column' }}>
           <div style={{ maxWidth: 860, width: '100%', margin: '0 auto', flex: 1, display: 'flex', flexDirection: 'column' }}>
             <div style={{ flexShrink: 0 }}>
-              <button onClick={onBack} style={{ background: 'none', border: 'none', color: 'var(--cyan)', cursor: 'pointer', padding: 0, marginBottom: 14, display: isMobile ? 'inline-flex' : undefined, alignItems: isMobile ? 'center' : undefined, minHeight: isMobile ? 'var(--ctl-md)' : undefined, fontSize: isMobile ? 'var(--fs-base)' : undefined }}>
+              <button onClick={onBack} style={{ background: 'none', border: 'none', color: 'var(--cyan)', cursor: 'pointer', padding: 0, marginBottom: 14, maxWidth: '100%', paddingRight: isMobile ? 'calc(var(--ctl-md) + var(--sp-2))' : undefined, textAlign: 'left', display: isMobile ? 'inline-flex' : undefined, alignItems: isMobile ? 'center' : undefined, minHeight: isMobile ? 'var(--ctl-md)' : undefined, fontSize: isMobile ? 'var(--fs-base)' : undefined }}>
                 ← {courseTitle}
               </button>
               <div style={{ display: 'flex', gap: 6, marginBottom: 8 }}>
@@ -375,7 +375,7 @@ function LessonPlayer({
         </div>
       </div>
       <div style={{ width: '100%', borderTop: `1px solid ${wrong ? '#f07178' : 'var(--border)'}` }}>
-        <div style={{ padding: pagePadding('14px 48px 14px', isMobile, false) }}>
+        <div style={{ padding: pagePadding('14px 48px 14px', isMobile, false, false) }}>
           <div
             role="status"
             style={{ fontSize: 13, textAlign: 'right', marginBottom: statusText ? 8 : 0, color: wrong ? '#f07178' : 'var(--green)' }}
@@ -445,7 +445,7 @@ export default function CoursesPage() {
       <div style={{
         flex: lesson ? '0 0 auto' : 1, minHeight: 0, display: lesson ? 'none' : 'flex', flexDirection: 'column',
         maxWidth: 1080, width: '100%', margin: '0 auto',
-        padding: pagePadding('40px 48px 72px', isMobile, true),
+        padding: pagePadding('40px 48px 72px', isMobile, true, !courseId),
       }}>
         {loadError && (
           <div>
