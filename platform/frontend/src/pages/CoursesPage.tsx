@@ -448,7 +448,7 @@ export default function CoursesPage() {
   return (
     <div style={{ height: '100%', overflow: lesson ? 'hidden' : 'auto', display: 'flex', flexDirection: 'column' }}>
       <div style={{
-        flex: lesson ? '0 0 auto' : 1, minHeight: 0, display: lesson ? 'none' : 'flex', flexDirection: 'column',
+        flex: lesson ? '0 0 auto' : '1 0 auto', minHeight: 0, display: lesson ? 'none' : 'flex', flexDirection: 'column',
         maxWidth: 1080, width: '100%', margin: '0 auto',
         padding: pagePadding('40px 48px 72px', isMobile, true, !courseId),
       }}>

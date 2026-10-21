@@ -22,7 +22,7 @@ export function matchesQuery(item: { title: string; description?: string | null 
   return normalizeText(item.title).includes(q) || normalizeText(item.description ?? '').includes(q)
 }
 
-function percentOf(course: Course): number {
+function fractionDone(course: Course): number {
   const { done, total } = courseProgress(course)
   return total > 0 ? done / total : 0
 }
@@ -34,7 +34,7 @@ export function sortCourses<T extends Course>(courses: T[], key: SortKey): T[] {
   const indexed = courses.map((course, index) => ({ course, index }))
   indexed.sort((a, b) => {
     if (key === 'name') return byTitle(a.course, b.course) || a.index - b.index
-    if (key === 'progress') return percentOf(b.course) - percentOf(a.course) || byTitle(a.course, b.course) || a.index - b.index
+    if (key === 'progress') return fractionDone(b.course) - fractionDone(a.course) || byTitle(a.course, b.course) || a.index - b.index
     const ca = a.course.created_at ?? ''
     const cb = b.course.created_at ?? ''
     if (ca !== cb) {

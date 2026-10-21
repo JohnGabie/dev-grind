@@ -373,3 +373,5 @@ body {
 }
 .fade-up { animation: fadeUp 240ms ease forwards; }
 .fade-in { animation: fadeIn 200ms ease forwards; }
+
+input[type="search"]::-webkit-search-cancel-button { -webkit-appearance: none; appearance: none; }

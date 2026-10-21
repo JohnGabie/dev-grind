@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useRef, type ReactNode } from 'react'
 import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
 import { SORTS, VIEWS, type SortKey, type ViewKey } from '../lib/courseView'
 
@@ -44,6 +44,7 @@ const ICONS: Record<ViewKey, ReactNode> = {
 
 export default function CourseToolbar({ query, onQuery, sort, onSort, view, onView, placeholder }: Props) {
   const isMobile = useMediaQuery(MOBILE_QUERY)
+  const inputRef = useRef<HTMLInputElement>(null)
   const height = isMobile ? 'var(--ctl-md)' : 36
   const fontSize = isMobile ? 'var(--fs-input)' : 13
   const field = {
@@ -62,8 +63,9 @@ export default function CourseToolbar({ query, onQuery, sort, onSort, view, onVi
     <div style={{ width: '100%', marginBottom: 16, display: 'flex', flexDirection: 'column', gap: 8 }}>
       <div style={{ position: 'relative', width: '100%' }}>
         <input
+          ref={inputRef}
           type="search"
-          aria-label="buscar cursos"
+          aria-label={placeholder}
           placeholder={placeholder}
           value={query}
           onChange={event => onQuery(event.target.value)}
@@ -72,7 +74,7 @@ export default function CourseToolbar({ query, onQuery, sort, onSort, view, onVi
         {query && (
           <button
             type="button"
-            onClick={() => onQuery('')}
+            onClick={() => { onQuery(''); inputRef.current?.focus() }}
             style={{
               position: 'absolute', top: 0, right: 0, height, padding: '0 12px',
               background: 'none', border: 'none', color: 'var(--cyan)', cursor: 'pointer',
@@ -83,12 +85,12 @@ export default function CourseToolbar({ query, onQuery, sort, onSort, view, onVi
           </button>
         )}
       </div>
-      <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
         <select
           aria-label="ordenar"
           value={sort}
           onChange={event => onSort(event.target.value as SortKey)}
-          style={{ ...field, flex: 1, padding: '0 8px' }}
+          style={{ ...field, flex: '1 1 160px', padding: '0 8px' }}
         >
           {SORTS.map(item => <option key={item.key} value={item.key}>{item.label}</option>)}
         </select>
