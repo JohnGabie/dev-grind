@@ -8,7 +8,7 @@
 
 **Tech Stack:** React 19, react-router-dom, Vite, TypeScript; tests with `node --experimental-strip-types --test`.
 
-**Spec:** `docs/superpowers/specs/2026-10-21-courses-home.md` (approved by João on 2026-10-21). Its Acceptance scenarios are the final check (Task 5).
+**Spec:** `docs/superpowers/specs/2026-10-21-courses.md`, Part 1 only (approved by João on 2026-10-21). Its Part 1 Acceptance scenarios are the final check (Task 5). Parts 2 and 3 get their own plans.
 
 ## Global Constraints
 
