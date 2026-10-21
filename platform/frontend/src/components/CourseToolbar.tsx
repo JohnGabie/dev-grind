@@ -90,9 +90,9 @@ export default function CourseToolbar({ query, onQuery, sort, onSort, view, onVi
           aria-label="ordenar"
           value={sort}
           onChange={event => onSort(event.target.value as SortKey)}
-          style={{ ...field, flex: '1 1 160px', padding: '0 8px' }}
+          style={{ ...field, background: 'var(--bg-card)', colorScheme: 'dark', flex: '1 1 160px', padding: '0 8px' }}
         >
-          {SORTS.map(item => <option key={item.key} value={item.key}>{item.label}</option>)}
+          {SORTS.map(item => <option key={item.key} value={item.key} style={{ background: 'var(--bg-card)', color: 'var(--text)' }}>{item.label}</option>)}
         </select>
         <div role="group" aria-label="visualização" style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
           {VIEWS.map(key => {
