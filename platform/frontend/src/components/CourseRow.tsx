@@ -12,7 +12,7 @@ export default function CourseRow({ course, onOpen, onAction }: { course: Course
     <div
       className="card"
       onClick={onOpen}
-      style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', maxWidth: 640, padding: '10px 14px', marginBottom: 8, cursor: 'pointer', boxSizing: 'border-box' }}
+      style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', padding: '10px 14px', cursor: 'pointer', boxSizing: 'border-box' }}
     >
       <div style={{ flex: 1, minWidth: 0 }}>
         <button

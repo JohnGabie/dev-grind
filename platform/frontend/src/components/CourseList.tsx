@@ -32,8 +32,9 @@ export default function CourseList({ courses, view, onOpen, onAction }: Props) {
     )
   }
   const Item = view === 'lista' ? CourseRow : CourseCard
+  const columns = view === 'lista' || isMobile ? 'minmax(0, 1fr)' : 'repeat(auto-fill, minmax(420px, 1fr))'
   return (
-    <div>
+    <div style={grid(columns)}>
       {courses.map(course => <Item key={course.id} course={course} onOpen={() => onOpen(course)} onAction={() => onAction(course)} />)}
     </div>
   )
