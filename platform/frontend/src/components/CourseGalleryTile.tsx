@@ -1,7 +1,7 @@
 import type { Course } from '../lib/courseModel'
 import { actionLabel, courseProgress } from '../lib/courseProgress'
 import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
-import { STATE_COLOR, percentOf } from './ProgressBar'
+import { STATE_COLOR, percentOf } from '../lib/courseDisplay'
 
 const RADIUS = 26
 const CIRC = 2 * Math.PI * RADIUS
@@ -18,15 +18,17 @@ export default function CourseGalleryTile({ course, onOpen, onAction }: { course
       style={{ minWidth: 0, padding: '20px', cursor: 'pointer', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: 12 }}
     >
       <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-        <svg width="64" height="64" viewBox="0 0 64 64" role="img" aria-label={`${percent}%`} style={{ flexShrink: 0 }}>
-          <circle cx="32" cy="32" r={RADIUS} fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="6" />
-          <circle
-            cx="32" cy="32" r={RADIUS} fill="none" strokeWidth="6" strokeLinecap="round"
-            stroke={state === 'concluído' ? 'var(--green)' : 'var(--cyan)'}
-            strokeDasharray={`${(CIRC * percent) / 100} ${CIRC}`}
-            transform="rotate(-90 32 32)"
-          />
-          <text x="32" y="36" textAnchor="middle" fontSize="13" fontFamily="var(--font)" fill="var(--text)">{percent}%</text>
+        <svg width="64" height="64" viewBox="0 0 64 64" role="img" aria-label={`${course.title}: ${percent}%`} style={{ flexShrink: 0 }}>
+          <circle cx="32" cy="32" r={RADIUS} strokeWidth="6" style={{ fill: 'none', stroke: 'rgba(255,255,255,0.12)' }} />
+          {percent > 0 && (
+            <circle
+              cx="32" cy="32" r={RADIUS} strokeWidth="6" strokeLinecap="round"
+              style={{ fill: 'none', stroke: state === 'concluído' ? 'var(--green)' : 'var(--cyan)' }}
+              strokeDasharray={`${(CIRC * percent) / 100} ${CIRC}`}
+              transform="rotate(-90 32 32)"
+            />
+          )}
+          <text x="32" y="36" textAnchor="middle" fontSize="13" style={{ fontFamily: 'var(--font)', fill: 'var(--text)' }}>{percent}%</text>
         </svg>
         <button
           type="button"

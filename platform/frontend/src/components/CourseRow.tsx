@@ -1,7 +1,8 @@
 import type { Course } from '../lib/courseModel'
 import { actionLabel, courseProgress } from '../lib/courseProgress'
 import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
-import ProgressBar, { STATE_COLOR } from './ProgressBar'
+import { STATE_COLOR } from '../lib/courseDisplay'
+import ProgressBar from './ProgressBar'
 
 export default function CourseRow({ course, onOpen, onAction }: { course: Course; onOpen: () => void; onAction: () => void }) {
   const isMobile = useMediaQuery(MOBILE_QUERY)

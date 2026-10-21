@@ -1,9 +1,10 @@
 import type { Course } from '../lib/courseModel'
 import { courseProgress } from '../lib/courseProgress'
 import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
-import ProgressBar, { STATE_COLOR } from './ProgressBar'
+import { STATE_COLOR } from '../lib/courseDisplay'
+import ProgressBar from './ProgressBar'
 
-export default function CourseTile({ course, onOpen }: { course: Course; onOpen: () => void; onAction?: () => void }) {
+export default function CourseTile({ course, onOpen }: { course: Course; onOpen: () => void }) {
   const isMobile = useMediaQuery(MOBILE_QUERY)
   const { done, total, state } = courseProgress(course)
   return (
