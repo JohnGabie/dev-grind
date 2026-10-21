@@ -72,6 +72,7 @@ export interface Course {
   sections: Section[]
   completed: string[]
   parts: Record<string, number>
+  created_at?: string
 }
 
 function lessonParts(value: unknown): Record<string, number> {
@@ -113,5 +114,6 @@ export function asCourse(row: Record<string, unknown>): Course | null {
     sections,
     completed: Array.isArray(row.completed_lessons) ? row.completed_lessons.map(String) : [],
     parts: lessonParts(row.lesson_parts),
+    created_at: typeof row.created_at === 'string' && row.created_at ? row.created_at : undefined,
   }
 }

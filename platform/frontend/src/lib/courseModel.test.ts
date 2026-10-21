@@ -106,4 +106,19 @@ describe('asCourse', () => {
     assert.equal(asCourse({ id: 'vazio', title: 'Vazio', modules: [] }), null)
     assert.equal(asCourse({ id: 'ruim', title: 'Ruim', modules: 'nope' }), null)
   })
+
+  it('keeps created_at when the row has it', () => {
+    const course = asCourse({
+      id: 'c1', title: 'T', description: null, completed_lessons: [], created_at: '2026-10-01 10:00:00',
+      modules: [{ title: 'S', lessons: [{ title: 'L', steps: [{ type: 'text', body: 'x' }] }] }],
+    })
+    assert.equal(course?.created_at, '2026-10-01 10:00:00')
+  })
+  it('leaves created_at undefined when the row has none', () => {
+    const course = asCourse({
+      id: 'c1', title: 'T', description: null, completed_lessons: [],
+      modules: [{ title: 'S', lessons: [{ title: 'L', steps: [{ type: 'text', body: 'x' }] }] }],
+    })
+    assert.equal(course?.created_at, undefined)
+  })
 })
