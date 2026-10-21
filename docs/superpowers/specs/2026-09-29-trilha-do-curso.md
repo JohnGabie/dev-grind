@@ -4,7 +4,7 @@
 |---|---|
 | **Autor** | a preencher |
 | **Data** | 2026-09-29 |
-| **Status** | Draft |
+| **Status** | Approved, implemented (plan 2026-10-02-trilha-do-curso, tasks 1-5) |
 | **Repositório** | `C:\Users\joaog\PycharmProjects\dev-grind` |
 
 ## Overview

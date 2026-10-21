@@ -1,6 +1,6 @@
 # Mobile Dashboard and Profile redesign
 
-Status: Profile implemented and approved by João; Dashboard revision 3 (terminal windows, one accent) implemented, calming pass in progress.
+Status: Profile and Dashboard implemented and approved; the Dashboard is now the three-tab window described in 2026-10-11-mobile-dashboard-tabs-analysis-page.md (revision 3 below is superseded by it).
 Scope: viewports `<= 768px` (`MOBILE_QUERY`) only. Desktop stays pixel-identical.
 Branch: `feat/mobile-dashboard-profile` (based on `feat/course-lesson-progress`, which has the mobile scale tokens).
 

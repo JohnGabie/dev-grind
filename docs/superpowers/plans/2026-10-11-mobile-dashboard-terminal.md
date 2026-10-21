@@ -35,11 +35,11 @@
 **Interfaces:**
 - Produces `blockBar(progress: number, width = 10): string` (filled `█` = `Math.round(clamp(progress,0,1) * width)`, rest `░`), `buildStatusLines(s: StatusInput): StatusLine[]` where `StatusInput = { rank: string; honor: number; honor_for_next_rank: number; rank_progress: number; current_streak: number; weekly: number }` and `StatusLine = { key: string; value: string | number; color: string; comma: boolean }`; `percentOf(progress)` via `progressPercent` from `rank.ts`.
 
-- [ ] **Step 1: Write the failing tests** (`statusJson.test.ts`): (a) `blockBar(0.07)` is `'█░░░░░░░░░'` (1 filled), `blockBar(0)` all `░`, `blockBar(1.4)` all `█`, `blockBar(NaN)` all `░`; (b) for `{rank:'8kyu', honor:2, honor_for_next_rank:30, rank_progress:0.067, current_streak:0, weekly:3}` the keys in order are `rank, honor, proximo, faltam, progresso, streak, semana`, `proximo` is `'7kyu'`, `faltam` is `28`, `progresso` is `'█░░░░░░░░░ 7%'`, `streak` color is `SYNTAX_MUTED` (0) and becomes `STREAK_COLOR` when `current_streak` is 3, `semana` color is `WEEK_COLOR`, `rank` color is the rank colour of `8kyu`, `proximo` color is the rank colour of `7kyu`; (c) at `rank:'3kyu', honor:4500, honor_for_next_rank:4000` there is no `proximo` and no `faltam`; (d) only the last line has `comma: false`.
-- [ ] **Step 2: Run and watch it fail** (`ERR_MODULE_NOT_FOUND`).
-- [ ] **Step 3: Implement** `palette.ts` and `statusJson.ts` (pure, imports only `./rank` and `./palette`; use `rankColor`, `nextRank`, `honorMissing`, `progressPercent`).
-- [ ] **Step 4: Run** the new test, `npm test`, `npx tsc -b`. Expected: all green.
-- [ ] **Step 5: Commit** "Add the pure status JSON model and palette for the mobile Dashboard".
+- [x] **Step 1: Write the failing tests** (`statusJson.test.ts`): (a) `blockBar(0.07)` is `'█░░░░░░░░░'` (1 filled), `blockBar(0)` all `░`, `blockBar(1.4)` all `█`, `blockBar(NaN)` all `░`; (b) for `{rank:'8kyu', honor:2, honor_for_next_rank:30, rank_progress:0.067, current_streak:0, weekly:3}` the keys in order are `rank, honor, proximo, faltam, progresso, streak, semana`, `proximo` is `'7kyu'`, `faltam` is `28`, `progresso` is `'█░░░░░░░░░ 7%'`, `streak` color is `SYNTAX_MUTED` (0) and becomes `STREAK_COLOR` when `current_streak` is 3, `semana` color is `WEEK_COLOR`, `rank` color is the rank colour of `8kyu`, `proximo` color is the rank colour of `7kyu`; (c) at `rank:'3kyu', honor:4500, honor_for_next_rank:4000` there is no `proximo` and no `faltam`; (d) only the last line has `comma: false`.
+- [x] **Step 2: Run and watch it fail** (`ERR_MODULE_NOT_FOUND`).
+- [x] **Step 3: Implement** `palette.ts` and `statusJson.ts` (pure, imports only `./rank` and `./palette`; use `rankColor`, `nextRank`, `honorMissing`, `progressPercent`).
+- [x] **Step 4: Run** the new test, `npm test`, `npx tsc -b`. Expected: all green.
+- [x] **Step 5: Commit** "Add the pure status JSON model and palette for the mobile Dashboard".
 
 ### Task 2: Status as JSON, prompt line, mode tabs
 
@@ -47,27 +47,27 @@
 
 **Interfaces:** Consumes `buildStatusLines`, `MODE_COLOR`, `MODE_LABEL`, `pickModes`, `distinctModeCount`, `pickNextAction`.
 
-- [ ] **Step 1: StatusJson.tsx**: render `{`, one line per `StatusLine` indented 2 spaces (`"key": value,`) and `}`; keys, quotes, colons, commas, braces in `SYNTAX_MUTED`; string values quoted and in `line.color`; numbers in `line.color`; `fontFamily: 'var(--font)'`, `fontSize: 'var(--fs-base)'`, `lineHeight: 'var(--lh-base)'`, `white-space: pre`, `overflow: hidden`. The block is `aria-hidden`.
-- [ ] **Step 2: StatusSection.tsx**: keep `SectionState` and the labelled non-ready states; in the ready state render a `Surface` with `onClick={() => navigate('/profile')}` and `aria-label` "status: {rank}, {honor} de honor, streak {n}, semana {n}" around `StatusJson`.
-- [ ] **Step 3: NextActionSection.tsx**: above the card render the prompt line `$ treinar --modo {mode}` (resume: `$ continuar`) in `MODE_COLOR[mode]` (resume: cyan) with `fontSize: var(--fs-base)`, the `$` muted; render the three mode tabs always when `distinctModeCount(list) >= 2` and `action.kind === 'start'` (tabs: `rankup`, `warmup`, `practice`; 36px chips with a 44px hit area as a transparent wrapper; selected = text in its mode colour plus 1px border in that colour; unselected = muted text, `--border` border); remove the "mudar modo" link and its list. Pass `accent={MODE_COLOR[mode]}` to the ActionCard (resume: cyan). Keep the 48px button, the tag in the rank colour and the existing resume/start logic.
-- [ ] **Step 4: Verify** `npx tsc -b`, `npm test`.
-- [ ] **Step 5: Commit** "Render the Dashboard status as JSON and colour the next action by mode".
+- [x] **Step 1: StatusJson.tsx**: render `{`, one line per `StatusLine` indented 2 spaces (`"key": value,`) and `}`; keys, quotes, colons, commas, braces in `SYNTAX_MUTED`; string values quoted and in `line.color`; numbers in `line.color`; `fontFamily: 'var(--font)'`, `fontSize: 'var(--fs-base)'`, `lineHeight: 'var(--lh-base)'`, `white-space: pre`, `overflow: hidden`. The block is `aria-hidden`.
+- [x] **Step 2: StatusSection.tsx**: keep `SectionState` and the labelled non-ready states; in the ready state render a `Surface` with `onClick={() => navigate('/profile')}` and `aria-label` "status: {rank}, {honor} de honor, streak {n}, semana {n}" around `StatusJson`.
+- [x] **Step 3: NextActionSection.tsx**: above the card render the prompt line `$ treinar --modo {mode}` (resume: `$ continuar`) in `MODE_COLOR[mode]` (resume: cyan) with `fontSize: var(--fs-base)`, the `$` muted; render the three mode tabs always when `distinctModeCount(list) >= 2` and `action.kind === 'start'` (tabs: `rankup`, `warmup`, `practice`; 36px chips with a 44px hit area as a transparent wrapper; selected = text in its mode colour plus 1px border in that colour; unselected = muted text, `--border` border); remove the "mudar modo" link and its list. Pass `accent={MODE_COLOR[mode]}` to the ActionCard (resume: cyan). Keep the 48px button, the tag in the rank colour and the existing resume/start logic.
+- [x] **Step 4: Verify** `npx tsc -b`, `npm test`.
+- [x] **Step 5: Commit** "Render the Dashboard status as JSON and colour the next action by mode".
 
 ### Task 3: Log-style analysis and history
 
 **Files:** Modify `AnalysisSection.tsx`, `HistorySection.tsx`; create no new files; modify the guard test as stated in Global Constraints.
 
-- [ ] **Step 1: HistorySection**: each row is a `ListRow`-like line: glyph (`✓`/`✗`/`◉` from `statusWord` mapping to `STATUS_COLOR`), the kyu tag in its rank colour, the title, the age; keep 52px rows, ellipsis, `statusWord` unchanged (no relabelling). If `ListRow` needs a `lead` prop for the glyph, add it (optional, default none) without changing existing callers.
-- [ ] **Step 2: AnalysisSection**: the collapsed row reads `> análise do agente` (the `>` in `MODE_COLOR.rankup`), date and first line ellipsized, the `● novo` dot (cyan) when new; expanded layout unchanged.
-- [ ] **Step 3: Guard test**: add the hex-colour rule from Global Constraints; run it and fix any violation by moving the colour into `palette.ts`.
-- [ ] **Step 4: Verify** `npx tsc -b`, `npm test`.
-- [ ] **Step 5: Commit** "Style the Dashboard analysis and history as terminal log lines".
+- [x] **Step 1: HistorySection**: each row is a `ListRow`-like line: glyph (`✓`/`✗`/`◉` from `statusWord` mapping to `STATUS_COLOR`), the kyu tag in its rank colour, the title, the age; keep 52px rows, ellipsis, `statusWord` unchanged (no relabelling). If `ListRow` needs a `lead` prop for the glyph, add it (optional, default none) without changing existing callers.
+- [x] **Step 2: AnalysisSection**: the collapsed row reads `> análise do agente` (the `>` in `MODE_COLOR.rankup`), date and first line ellipsized, the `● novo` dot (cyan) when new; expanded layout unchanged.
+- [x] **Step 3: Guard test**: add the hex-colour rule from Global Constraints; run it and fix any violation by moving the colour into `palette.ts`.
+- [x] **Step 4: Verify** `npx tsc -b`, `npm test`.
+- [x] **Step 5: Commit** "Style the Dashboard analysis and history as terminal log lines".
 
 ### Task 4: Screenshots and acceptance (controller)
 
-- [ ] **Step 1:** At 390x844 take full-page screenshots of `/` in three states (default, mode `warmup` selected, analysis expanded) and review them; check the 48px button bottom is below the dock top by measurement (`primaryBottom < dockTop`), 0 controls under 36px, 0 text under 11px, no overflow, text contrast of the muted keys on `--bg` readable.
-- [ ] **Step 2:** Desktop snapshot of `/` at 1440px identical to the pre-change snapshot.
-- [ ] **Step 3:** Review with a fresh reviewer on the whole diff; fix Critical/Important in one pass.
+- [x] **Step 1:** At 390x844 take full-page screenshots of `/` in three states (default, mode `warmup` selected, analysis expanded) and review them; check the 48px button bottom is below the dock top by measurement (`primaryBottom < dockTop`), 0 controls under 36px, 0 text under 11px, no overflow, text contrast of the muted keys on `--bg` readable.
+- [x] **Step 2:** Desktop snapshot of `/` at 1440px identical to the pre-change snapshot.
+- [x] **Step 3:** Review with a fresh reviewer on the whole diff; fix Critical/Important in one pass.
 
 ## Review Focus
 

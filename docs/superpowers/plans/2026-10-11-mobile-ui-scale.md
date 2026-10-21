@@ -111,7 +111,7 @@ Compare with `diff .playwright-mcp/desktop-<route>-before.json .playwright-mcp/d
 **Interfaces:**
 - Produces: the CSS custom properties listed in Global Constraints, defined in `:root` (desktop) and in the mobile media block. Later tasks reference them only as `var(--name)`.
 
-- [ ] **Step 1: Write the failing guard test**
+- [x] **Step 1: Write the failing guard test**
 
 `platform/frontend/src/lib/uiScale.test.ts`:
 
@@ -164,12 +164,12 @@ describe('mobile ui scale tokens', () => {
 })
 ```
 
-- [ ] **Step 2: Run the test to verify it fails**
+- [x] **Step 2: Run the test to verify it fails**
 
 Run (in `platform/frontend`): `node --experimental-strip-types --test src/lib/uiScale.test.ts`
 Expected: FAIL with `mobile :root block inside @media (max-width: 768px) is missing`.
 
-- [ ] **Step 3: Add the tokens to `index.css`**
+- [x] **Step 3: Add the tokens to `index.css`**
 
 Insert after the closing `}` of the first `:root` block:
 
@@ -207,12 +207,12 @@ Insert after the closing `}` of the first `:root` block:
 
 Fix the spec typo: in `docs/superpowers/specs/2026-10-10-mobile-ui-scale.md` replace `--sp-1..--sp-8` with `--sp-1..--sp-7`.
 
-- [ ] **Step 4: Register the test and run everything**
+- [x] **Step 4: Register the test and run everything**
 
 In `platform/frontend/package.json` append ` src/lib/uiScale.test.ts` to the end of the `test` script. Run `npm test` and `npx tsc -b`.
 Expected: all pass (plus the pre-existing `skillPath` failure on `dev`), `tsc` exit 0. The file is excluded from `tsc` by `"exclude": ["src/**/*.test.ts"]`.
 
-- [ ] **Step 5: Verify in the browser, then commit**
+- [x] **Step 5: Verify in the browser, then commit**
 
 Open any route, then run `browser_evaluate`: `() => ['--fs-base','--ctl-md','--radius-lg'].map(k => getComputedStyle(document.documentElement).getPropertyValue(k).trim())`.
 Expected at 1440 wide: `["13px","32px","8px"]`; at 390 wide: `["14px","44px","12px"]`. No screenshot diff anywhere (nothing references the tokens).
@@ -235,11 +235,11 @@ git commit -m "Add the mobile UI scale tokens and a guard test"
 - Consumes: the tokens from Task 1.
 - Produces: shared classes that already follow the scale, so Tasks 3-9 do not touch them.
 
-- [ ] **Step 1: Baseline**
+- [x] **Step 1: Baseline**
 
 Run the desktop snapshot for `/`, `/exercise`, `/courses`, `/books`, `/store`, `/config` into `desktop-<route>-before.json`, and the mobile probe for the same routes. Record `under44` and `textUnder11` counts.
 
-- [ ] **Step 2: Move the shared classes onto tokens (desktop values are unchanged)**
+- [x] **Step 2: Move the shared classes onto tokens (desktop values are unchanged)**
 
 In `index.css`:
 - `.tag`: `font-size: 10px` -> `font-size: var(--fs-xs)`.
@@ -258,17 +258,17 @@ Then add inside the existing `@media (max-width: 768px) { ... }` block:
   }
 ```
 
-- [ ] **Step 3: Chat FAB gutter and bottom CTAs (open question A)**
+- [x] **Step 3: Chat FAB gutter and bottom CTAs (open question A)**
 
 In `AppLayout.tsx` `ChatBubble`, change the right offset from `24` to `isMobile ? 20 : 24` (both the bubble and the panel). **Confirm open question A with João before changing anything else here.** Recommended default: when `document.body.dataset.courseLesson === '1'` or the route matches `/exercise/:slug` (the "about" page), raise the bubble by `var(--ctl-primary) + var(--sp-4)` so it clears the bottom CTA. If João chooses "hide" or "reserve space", implement that instead and note it in the commit message.
 
-- [ ] **Step 4: Verify**
+- [x] **Step 4: Verify**
 
 Mobile probe on every route: `textUnder11` must be 0 for the dock; `.btn` controls >= 44px. Open the dock: "Dashboard" label must not wrap or ellipsize at 390px (`scrollWidth <= clientWidth` on each `.tab-item span`); if it does, set `.tab-item span { letter-spacing: -0.02em }` in the mobile block and re-measure.
 Desktop snapshot `after` for the six routes: `diff` must print nothing.
 Run `npx tsc -b` and `npm test`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add platform/frontend/src/index.css platform/frontend/src/components/layout/AppLayout.tsx platform/frontend/src/components/layout/MobileNav.tsx
@@ -285,18 +285,18 @@ git commit -m "Move shared classes and the chat button onto the mobile scale"
 **Interfaces:**
 - Consumes: tokens and shared classes from Tasks 1-2; the `isMobile` already in `DashboardPage`.
 
-- [ ] **Step 1: Baseline** — desktop snapshot of `/` (`before`) and the mobile probe (expect 8 controls under 44, 27 texts under 12 from the audit).
+- [x] **Step 1: Baseline** — desktop snapshot of `/` (`before`) and the mobile probe (expect 8 controls under 44, 27 texts under 12 from the audit).
 
-- [ ] **Step 2: Apply the migration rules** to `DashboardPage.tsx`. Known call sites from the audit:
+- [x] **Step 2: Apply the migration rules** to `DashboardPage.tsx`. Known call sites from the audit:
   - mode tabs and chips at 28px (`:203`, `:735`, `:751`, `:766`) -> `height: 'var(--ctl-chip)'`.
   - "Treinar" button 32px / 12px (`:276`) -> `height: isMobile ? 'var(--ctl-primary)' : 32`, `fontSize: isMobile ? 'var(--fs-base)' : 12`.
   - carousel arrows 22x22 (`:823`, `:840`) -> `width`/`height: isMobile ? 'var(--ctl-icon)' : 22`.
   - greeting `h1` 26px (`:713`) -> `isMobile ? 'var(--fs-xl)' : 26`.
   - section labels and meta text at 8-11px -> rules table.
 
-- [ ] **Step 3: Verify** — mobile probe: `under44` lists only chips at 36 (and nothing under 36); `textUnder11` 0; `h1` is `22px`; `overflowX` false. Desktop snapshot `after`: `diff` prints nothing. `npx tsc -b`, `npm test`.
+- [x] **Step 3: Verify** — mobile probe: `under44` lists only chips at 36 (and nothing under 36); `textUnder11` 0; `h1` is `22px`; `overflowX` false. Desktop snapshot `after`: `diff` prints nothing. `npx tsc -b`, `npm test`.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add platform/frontend/src/pages/DashboardPage.tsx
@@ -312,17 +312,17 @@ git commit -m "Apply the mobile scale to the dashboard"
 - Modify: `platform/frontend/src/pages/ExerciseAboutPage.tsx`
 - Modify: `platform/frontend/src/pages/ExercisePage.tsx`
 
-- [ ] **Step 1: Baseline** — desktop snapshots for `/exercise`, `/exercise/<slug>` and `/exercise/<slug>/solve` (use the one existing kata), plus mobile probes.
+- [x] **Step 1: Baseline** — desktop snapshots for `/exercise`, `/exercise/<slug>` and `/exercise/<slug>/solve` (use the one existing kata), plus mobile probes.
 
-- [ ] **Step 2: Apply the migration rules.** Known call sites:
+- [x] **Step 2: Apply the migration rules.** Known call sites:
   - `KataListPage.tsx:636` page `h1` 16px -> `isMobile ? 'var(--fs-xl)' : 16`; kata card `kyu` 8px and 10px meta -> rules table.
   - `ExerciseAboutPage.tsx:135` `h1` 19px -> `isMobile ? 'var(--fs-xl)' : 19`; `:96` "fazer o desafio" 52px / 14px -> `minHeight: isMobile ? 'var(--ctl-primary)' : 52`; section labels 10px -> `'var(--fs-xs)'`.
   - `ExercisePage.tsx:425`, `:504`, `:522` bottom bar side padding 12 -> `isMobile ? 'var(--sp-5)' : 12`; "enviar" 52px / 13px -> `isMobile ? 'var(--ctl-primary)' : 52`.
   - Leave the Monaco options (`fontSize: isMobile ? 16 : 13`) as they are.
 
-- [ ] **Step 3: Verify** — mobile probes on the three routes: `under44` empty, `textUnder11` 0, `h1` 22px; the solver bottom bar side margin is 20 (`getBoundingClientRect().left` of its first child is 20). Desktop snapshots: `diff` prints nothing. `npx tsc -b`, `npm test`.
+- [x] **Step 3: Verify** — mobile probes on the three routes: `under44` empty, `textUnder11` 0, `h1` 22px; the solver bottom bar side margin is 20 (`getBoundingClientRect().left` of its first child is 20). Desktop snapshots: `diff` prints nothing. `npx tsc -b`, `npm test`.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add platform/frontend/src/pages/KataListPage.tsx platform/frontend/src/pages/ExerciseAboutPage.tsx platform/frontend/src/pages/ExercisePage.tsx
@@ -337,17 +337,17 @@ git commit -m "Apply the mobile scale to the kata screens"
 - Modify: `platform/frontend/src/pages/CoursesPage.tsx`
 - Modify: `platform/frontend/src/components/SkillPath.tsx`
 
-- [ ] **Step 1: Baseline** — desktop snapshot of `/courses` with the Python course open and with a lesson open; mobile probes for the list, the open course and the lesson.
+- [x] **Step 1: Baseline** — desktop snapshot of `/courses` with the Python course open and with a lesson open; mobile probes for the list, the open course and the lesson.
 
-- [ ] **Step 2: Apply the migration rules.** Known call sites:
+- [x] **Step 2: Apply the migration rules.** Known call sites:
   - `CoursesPage.tsx:296`, `:406` back links ("← cursos", "← Python") 21px tall -> add `minHeight: isMobile ? 'var(--ctl-md)' : undefined` and `display: 'inline-flex'`, `alignItems: 'center'`.
   - `CoursesPage.tsx:408` course `h1` 32px -> `isMobile ? 'var(--fs-xl)' : 32`.
   - `:331` "continuar" ~50px / 15px -> `minHeight: isMobile ? 'var(--ctl-primary)' : <current>`, `fontSize: isMobile ? 'var(--fs-base)' : 15`.
   - `SkillPath.tsx`: lesson title and description sizes -> rules table with `isMobile`; do not touch the frozen geometry constants in `lib/skillPath.ts`.
 
-- [ ] **Step 3: Verify** — mobile probes: back links 44px, `h1` 22px, `textUnder11` 0, `overflowX` false; the lesson footer button is 48px. Desktop snapshots: `diff` prints nothing. `npx tsc -b`, `npm test`.
+- [x] **Step 3: Verify** — mobile probes: back links 44px, `h1` 22px, `textUnder11` 0, `overflowX` false; the lesson footer button is 48px. Desktop snapshots: `diff` prints nothing. `npx tsc -b`, `npm test`.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add platform/frontend/src/pages/CoursesPage.tsx platform/frontend/src/components/SkillPath.tsx
@@ -367,18 +367,18 @@ git commit -m "Apply the mobile scale to courses and lessons"
 **Interfaces:**
 - Consumes: open question B must be answered by João before Step 3.
 
-- [ ] **Step 1: Baseline** — desktop snapshot of `/books`, mobile probe.
+- [x] **Step 1: Baseline** — desktop snapshot of `/books`, mobile probe.
 
-- [ ] **Step 2: Apply the migration rules.** Known call sites:
+- [x] **Step 2: Apply the migration rules.** Known call sites:
   - `BooksPage.tsx:391` `h1` 40px -> `isMobile ? 'var(--fs-xl)' : 40`.
   - `BooksPage.tsx:414-416` "adicionar livro" 11px / 32px -> `fontSize: isMobile ? 'var(--fs-base)' : 11`, `height: isMobile ? 'var(--ctl-md)' : 32`.
   - Modal and viewer toolbar buttons under 44px -> `var(--ctl-icon)` on mobile.
 
-- [ ] **Step 3: Empty book slot (open question B)** — `BooksPage.tsx:23` keeps `aspectRatio: '2/3'` at full width (350x525 on 390px). Ask João: shrink the slot on mobile (default: `maxWidth: 140` and a two-column grid), or show one "add" tile instead of four. Implement the chosen option on mobile only.
+- [x] **Step 3: Empty book slot (open question B)** — `BooksPage.tsx:23` keeps `aspectRatio: '2/3'` at full width (350x525 on 390px). Ask João: shrink the slot on mobile (default: `maxWidth: 140` and a two-column grid), or show one "add" tile instead of four. Implement the chosen option on mobile only.
 
-- [ ] **Step 4: Verify** — mobile probe: `h1` 22px, add button >= 44px, no empty slot taller than ~200px (or the single add tile), `textUnder11` 0. Desktop snapshot: `diff` prints nothing. `npx tsc -b`, `npm test`.
+- [x] **Step 4: Verify** — mobile probe: `h1` 22px, add button >= 44px, no empty slot taller than ~200px (or the single add tile), `textUnder11` 0. Desktop snapshot: `diff` prints nothing. `npx tsc -b`, `npm test`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add platform/frontend/src/pages/BooksPage.tsx platform/frontend/src/pages/BookReaderPage.tsx platform/frontend/src/components
@@ -393,17 +393,17 @@ git commit -m "Apply the mobile scale to books"
 - Modify: `platform/frontend/src/pages/ConfigPage.tsx`
 - Modify: `platform/frontend/src/index.css` (the `.cfg-ctrl` / `.cfg-row` rule inside the mobile media block)
 
-- [ ] **Step 1: Baseline** — desktop snapshot of `/config`, mobile probe (expect 4 controls under 44, 23 texts under 12).
+- [x] **Step 1: Baseline** — desktop snapshot of `/config`, mobile probe (expect 4 controls under 44, 23 texts under 12).
 
-- [ ] **Step 2: Apply the migration rules.** Known call sites:
+- [x] **Step 2: Apply the migration rules.** Known call sites:
   - `ConfigPage.tsx:670` `h1` 20px -> `isMobile ? 'var(--fs-xl)' : 20`.
   - `ConfigPage.tsx:656` `btnGhost` 11px / `5px 12px` (30px tall) -> `fontSize: isMobile ? 'var(--fs-base)' : 11`, `minHeight: isMobile ? 'var(--ctl-md)' : undefined`; "revogar" and other small buttons the same way.
   - Provider chips: remove the blanket 44px from `.cfg-ctrl button` and instead set `minHeight: isMobile ? 'var(--ctl-chip)' : undefined` with `fontSize: isMobile ? 'var(--fs-base)' : 11` so the text no longer floats in a tall empty box.
   - Keep `.cfg-ctrl input { min-height: 44px }` semantics through `--ctl-md` and `font-size: var(--fs-input)`.
 
-- [ ] **Step 3: Verify** — mobile probe: `under44` lists only chips at 36, inputs 44 / 16px, `h1` 22px, `textUnder11` 0. Desktop snapshot: `diff` prints nothing. `npx tsc -b`, `npm test`.
+- [x] **Step 3: Verify** — mobile probe: `under44` lists only chips at 36, inputs 44 / 16px, `h1` 22px, `textUnder11` 0. Desktop snapshot: `diff` prints nothing. `npx tsc -b`, `npm test`.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add platform/frontend/src/pages/ConfigPage.tsx platform/frontend/src/index.css
@@ -418,19 +418,19 @@ git commit -m "Apply the mobile scale to configuration"
 - Modify: `platform/frontend/src/pages/StorePage.tsx`
 - Modify: `platform/frontend/src/pages/StoreItemPage.tsx`
 
-- [ ] **Step 1: Baseline** — desktop snapshot of `/store` and a store item, mobile probe (expect 10 controls under 44, 25 texts under 12).
+- [x] **Step 1: Baseline** — desktop snapshot of `/store` and a store item, mobile probe (expect 10 controls under 44, 25 texts under 12).
 
-- [ ] **Step 2: Stack the sidebar on mobile (approved layout change).** `StorePage.tsx:123` holds the 220px sidebar next to the grid. On mobile render the filters as a horizontally scrolling row above the grid: container `display: 'flex'`, `overflowX: 'auto'`, `gap: 'var(--sp-2)'`, `paddingBottom: 'var(--sp-2)'`, each category a chip with `height: 'var(--ctl-chip)'`; the grid becomes full width. Desktop markup and sizes stay identical (`isMobile` branch only).
+- [x] **Step 2: Stack the sidebar on mobile (approved layout change).** `StorePage.tsx:123` holds the 220px sidebar next to the grid. On mobile render the filters as a horizontally scrolling row above the grid: container `display: 'flex'`, `overflowX: 'auto'`, `gap: 'var(--sp-2)'`, `paddingBottom: 'var(--sp-2)'`, each category a chip with `height: 'var(--ctl-chip)'`; the grid becomes full width. Desktop markup and sizes stay identical (`isMobile` branch only).
 
-- [ ] **Step 3: Apply the migration rules.** Known call sites:
+- [x] **Step 3: Apply the migration rules.** Known call sites:
   - `StorePage.tsx:236` `h1` 36px -> `isMobile ? 'var(--fs-xl)' : 36`.
   - `StorePage.tsx:170` search input 30px / 12px -> `height: isMobile ? 'var(--ctl-md)' : 30`, `fontSize: isMobile ? 'var(--fs-input)' : 12`.
   - category rows 31px -> `minHeight: isMobile ? 'var(--ctl-row)' : <current>` (when kept as rows) or chips as in Step 2.
   - `StoreItemPage.tsx`: buy button -> `isMobile ? 'var(--ctl-primary)' : <current>`, 27 sub-12px texts via the rules table (add `isMobile` to this component).
 
-- [ ] **Step 4: Verify** — mobile probe on `/store` and an item: `under44` only chips at 36, search input 44 / 16px, `h1` 22px, `overflowX` false (the filter row scrolls inside itself), `textUnder11` 0. Desktop snapshots: `diff` prints nothing. `npx tsc -b`, `npm test`.
+- [x] **Step 4: Verify** — mobile probe on `/store` and an item: `under44` only chips at 36, search input 44 / 16px, `h1` 22px, `overflowX` false (the filter row scrolls inside itself), `textUnder11` 0. Desktop snapshots: `diff` prints nothing. `npx tsc -b`, `npm test`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add platform/frontend/src/pages/StorePage.tsx platform/frontend/src/pages/StoreItemPage.tsx
@@ -445,15 +445,15 @@ git commit -m "Apply the mobile scale to the store and stack its filters"
 - Modify: `platform/frontend/src/pages/LoginPage.tsx`
 - Modify: `platform/frontend/src/pages/CommunityPage.tsx`
 
-- [ ] **Step 1: Baseline** — desktop snapshots and mobile probes of `/login` (log out first) and `/community`.
+- [x] **Step 1: Baseline** — desktop snapshots and mobile probes of `/login` (log out first) and `/community`.
 
-- [ ] **Step 2: Apply the migration rules.** Add `isMobile` to `LoginPage` if missing; the primary button -> `isMobile ? 'var(--ctl-primary)' : <current>`, inputs -> `isMobile ? 'var(--fs-input)' : <current>`.
+- [x] **Step 2: Apply the migration rules.** Add `isMobile` to `LoginPage` if missing; the primary button -> `isMobile ? 'var(--ctl-primary)' : <current>`, inputs -> `isMobile ? 'var(--fs-input)' : <current>`.
 
-- [ ] **Step 3: Verify** — mobile probe: `under44` empty, `textUnder11` 0, `overflowX` false. Desktop snapshots: `diff` prints nothing. `npx tsc -b`, `npm test`.
+- [x] **Step 3: Verify** — mobile probe: `under44` empty, `textUnder11` 0, `overflowX` false. Desktop snapshots: `diff` prints nothing. `npx tsc -b`, `npm test`.
 
-- [ ] **Step 4: Final sweep.** Run the mobile probe on every route (`/`, `/exercise`, an exercise, its `/solve`, `/courses` list/course/lesson, `/books`, `/store`, `/config`, `/login`, `/community`). Acceptance: `textUnder11` is 0 everywhere, `under44` contains only 36px chips and tags, every `h1` is `22px`, `overflowX` is false. `/chats` and `/profile` are excluded.
+- [x] **Step 4: Final sweep.** Run the mobile probe on every route (`/`, `/exercise`, an exercise, its `/solve`, `/courses` list/course/lesson, `/books`, `/store`, `/config`, `/login`, `/community`). Acceptance: `textUnder11` is 0 everywhere, `under44` contains only 36px chips and tags, every `h1` is `22px`, `overflowX` is false. `/chats` and `/profile` are excluded.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add platform/frontend/src/pages/LoginPage.tsx platform/frontend/src/pages/CommunityPage.tsx

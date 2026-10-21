@@ -1,6 +1,6 @@
 # Mobile Dashboard: analysis tab, reading page, macOS captions
 
-**Status:** written, awaiting João's approval. Extends `2026-10-11-mobile-dashboard-profile.md` (revision 3).
+**Status:** implemented and approved by João ("yes, build it"). Extends `2026-10-11-mobile-dashboard-profile.md` (revision 3).
 
 ## The request (João's words)
 
@@ -14,7 +14,7 @@
 4. **macOS captions.** Title bars use the three traffic-light dots (red, yellow, green) on the left, with the file name centred, replacing the `_ □ X` on the right. Decorative, `aria-hidden`.
 5. **"Colours too simple."** After the calm pass the page is nearly monochrome. Proposals below.
 
-## Proposals (undecided)
+## Proposals (superseded by the IDE-look and black-theme revisions below)
 
 - **A. Colour (undecided):** (a) traffic-light dots plus a soft per-window accent on the prompt `$` and tab underline (cyan, green, orange, purple), JSON keys blue again; (b) only the traffic lights added, rest unchanged; (c) restore the previous multi-colour look. Recommended: (a), one accent per window, never more than two colours inside a window.
 - **B. Reading page content (undecided):** latest analysis first, older ones as a list below; highlights and gaps as labelled lists. Style: same terminal window (`analise.md`, prompt `cat analise.md`).
@@ -40,7 +40,7 @@ This replaces proposal A. The windows look like an editor showing real files:
 
 ## Revision: three tabs, no scrolling on the Dashboard (João: "count the lines on analise.md, stopped counting at 2. i was think put together historico.log with analises.md ... i dont wanna scroll in dash")
 
-Status: **proposal, awaiting approval.**
+Status: **implemented and approved.**
 
 1. **Tabs:** the first window gets a third tab, so it reads `status.json | analise.md | historico.log`. The separate `historico.log` window is removed. The Dashboard becomes greeting + the tabbed window + `treinar.sh`, which should fit in 844px with the dock and no scroll.
 2. **`historico.log` tab:** the last 3 exercises as 52px rows (touch target rule), same glyph, kyu tag, title and age as today, inside the same fixed-height panel (9 lines), prompt `tail historico.log`. Empty state "nada por aqui ainda". Footer `Log`.

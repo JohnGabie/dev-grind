@@ -111,7 +111,7 @@ Compare with `diff <before> <after>` (no output means identical). Take every `be
   - `insightSeen.ts`: `isInsightNew(generatedAt: string, openedAt: string | null): boolean`
   - `format.ts`: `timeAgo(iso: string, now?: number): string`, `statusWord(status: string): string`
 
-- [ ] **Step 1: Write the failing tests**
+- [x] **Step 1: Write the failing tests**
 
 `src/mobile/rank.test.ts`:
 
@@ -308,12 +308,12 @@ describe('format', () => {
 })
 ```
 
-- [ ] **Step 2: Run the tests to verify they fail**
+- [x] **Step 2: Run the tests to verify they fail**
 
 Run (in `platform/frontend`): `node --experimental-strip-types --test src/mobile/rank.test.ts src/mobile/heatmap.test.ts src/mobile/badges.test.ts src/mobile/nextAction.test.ts src/mobile/insightSeen.test.ts src/mobile/format.test.ts`
 Expected: every file FAILS with `ERR_MODULE_NOT_FOUND` for its sibling module.
 
-- [ ] **Step 3: Write the modules**
+- [x] **Step 3: Write the modules**
 
 `src/mobile/rank.ts`:
 
@@ -503,13 +503,13 @@ export function statusWord(status: string): string {
 }
 ```
 
-- [ ] **Step 4: Register the tests and run everything**
+- [x] **Step 4: Register the tests and run everything**
 
 In `platform/frontend/package.json`, append to the end of the `test` script (before the closing quote): ` src/mobile/rank.test.ts src/mobile/heatmap.test.ts src/mobile/badges.test.ts src/mobile/nextAction.test.ts src/mobile/insightSeen.test.ts src/mobile/format.test.ts`.
 Run: `npm test` and `npx tsc -b`.
 Expected: all new tests pass (the six files, 20 tests), the existing suite stays green, `tsc` exit 0. Test files are excluded from `tsc` by `"exclude": ["src/**/*.test.ts"]`.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add platform/frontend/package.json platform/frontend/src/mobile
@@ -529,7 +529,7 @@ git commit -m "Add the pure logic for the mobile Dashboard and Profile"
 - Consumes: the Task 1 modules and `lib/layout.ts` (`pagePadding`).
 - Produces: `useSlot<T>(load: () => Promise<T>): Slot<T>` with `Slot<T> = { status: 'loading' | 'ready' | 'error'; data: T | null; retry: () => void }`; `fetchStats`, `fetchExercises`, `fetchResume`, `fetchInsights`, `fetchRecent`; blocks with the props listed in the code below.
 
-- [ ] **Step 1: Write the failing guard test**
+- [x] **Step 1: Write the failing guard test**
 
 `src/mobile/mobile.contract.test.ts`:
 
@@ -586,12 +586,12 @@ describe('src/mobile contract', () => {
 })
 ```
 
-- [ ] **Step 2: Run it to verify it fails**
+- [x] **Step 2: Run it to verify it fails**
 
 Run: `node --experimental-strip-types --test src/mobile/mobile.contract.test.ts`
 Expected: FAIL on "has the building blocks" (`MobilePage.tsx is missing`) and on the ellipsis test.
 
-- [ ] **Step 3: Write the data plumbing**
+- [x] **Step 3: Write the data plumbing**
 
 `src/mobile/types.ts`:
 
@@ -655,7 +655,7 @@ export function useSlot<T>(load: () => Promise<T>): Slot<T> {
 }
 ```
 
-- [ ] **Step 4: Write the blocks**
+- [x] **Step 4: Write the blocks**
 
 `src/mobile/MobilePage.tsx`:
 
@@ -962,12 +962,12 @@ export default function SectionState({ status, empty = false, emptyText = 'nada 
 }
 ```
 
-- [ ] **Step 5: Register the guard test and run**
+- [x] **Step 5: Register the guard test and run**
 
 Append ` src/mobile/mobile.contract.test.ts` to the `test` script in `package.json`. Run `npm test` and `npx tsc -b`.
 Expected: the contract test passes (6 tests), the full suite passes, `tsc` exit 0.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 git add platform/frontend/package.json platform/frontend/src/mobile
@@ -986,11 +986,11 @@ git commit -m "Add the mobile building blocks and their guard test"
 - Consumes: `MobilePage` from Task 2.
 - Produces: `export default function DashboardMobile()` and `ProfileMobile()` (no props), selected by `DashboardPage` / `ProfilePage` under `MOBILE_QUERY`.
 
-- [ ] **Step 1: Take the desktop "before" snapshots**
+- [x] **Step 1: Take the desktop "before" snapshots**
 
 With the dev servers running and logged in via dev mode: desktop snapshots (see "Verification probes") of `/` into `.playwright-mcp/desktop-dashboard-before.json` and `/profile` into `.playwright-mcp/desktop-profile-before.json`.
 
-- [ ] **Step 2: Write the shells**
+- [x] **Step 2: Write the shells**
 
 `src/mobile/dashboard/DashboardMobile.tsx`:
 
@@ -1012,7 +1012,7 @@ export default function ProfileMobile() {
 }
 ```
 
-- [ ] **Step 3: Add the selection wrappers**
+- [x] **Step 3: Add the selection wrappers**
 
 In `src/pages/DashboardPage.tsx`: change `export default function DashboardPage() {` to `function DashboardDesktop() {` and add at the end of the file:
 
@@ -1036,11 +1036,11 @@ export default function ProfilePage() {
 
 Preserve each file's line endings (check with `file`).
 
-- [ ] **Step 4: Verify**
+- [x] **Step 4: Verify**
 
 Run `npx tsc -b` and `npm test`: green. Desktop snapshots `after` for `/` and `/profile`; `diff` against the `before` files must print nothing (re-run in the same hour if only the greeting width differs). Mobile (390x844): `/` and `/profile` each show only the `_` placeholder, no overflow. `git diff --stat src/pages` shows only the rename, the wrapper and one import per file.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 git add platform/frontend/src/mobile platform/frontend/src/pages/DashboardPage.tsx platform/frontend/src/pages/ProfilePage.tsx
@@ -1059,7 +1059,7 @@ git commit -m "Select the mobile Dashboard and Profile under 768px"
 - Consumes: Task 1 modules, Task 2 blocks, `useSlot`, `api.ts` fetchers, `useAuth` (`../../auth/AuthContext`), `useCosmetics` (`../../contexts/CosmeticsContext`), `BackgroundFooter` (`../../components/BackgroundRenderer`).
 - Produces: `useDashboardData(): { stats: Slot<UserStats>; exercises: Slot<Exercise[]>; resume: Slot<Resume | null>; insights: Slot<Insight[]>; recent: Slot<RecentExercise[]> }`.
 
-- [ ] **Step 1: Write the data hook**
+- [x] **Step 1: Write the data hook**
 
 `src/mobile/dashboard/useDashboardData.ts`:
 
@@ -1078,7 +1078,7 @@ export function useDashboardData() {
 }
 ```
 
-- [ ] **Step 2: Write the greeting and the status card**
+- [x] **Step 2: Write the greeting and the status card**
 
 `src/mobile/dashboard/GreetingHeader.tsx` (same words and colours as the desktop header):
 
@@ -1134,7 +1134,7 @@ export default function StatusSection({ stats }: { stats: Slot<UserStats> }) {
 }
 ```
 
-- [ ] **Step 3: Write the next action card**
+- [x] **Step 3: Write the next action card**
 
 `src/mobile/dashboard/NextActionSection.tsx`:
 
@@ -1210,7 +1210,7 @@ export default function NextActionSection({ resume, exercises }: Props) {
 }
 ```
 
-- [ ] **Step 4: Write the analysis row and the history list**
+- [x] **Step 4: Write the analysis row and the history list**
 
 `src/mobile/dashboard/AnalysisSection.tsx`:
 
@@ -1308,7 +1308,7 @@ export default function HistorySection({ recent }: { recent: Slot<RecentExercise
 }
 ```
 
-- [ ] **Step 5: Compose the page**
+- [x] **Step 5: Compose the page**
 
 Replace `src/mobile/dashboard/DashboardMobile.tsx`:
 
@@ -1343,14 +1343,14 @@ export default function DashboardMobile() {
 }
 ```
 
-- [ ] **Step 6: Verify**
+- [x] **Step 6: Verify**
 
 - `npx tsc -b`, `npm test` green (the contract test now scans the new files).
 - Mobile probe on `/` at 390x844: `under36` empty, `textUnder11` 0, `overflowX` false, `primaryBottom` less than `dockTop` (the 48px button is fully above the dock without scrolling).
 - Empty and error: with `browser_run_code_unsafe`, run `async (page) => { await page.route('**/api/agent/insights', r => r.abort()); await page.reload() }`, then confirm the analysis row shows "não foi possível carregar" with "tentar de novo" while the status card, next action and history still render. Remove the route afterwards (`page.unroute`).
 - Desktop snapshot of `/` is still identical to `desktop-dashboard-before.json`.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add platform/frontend/src/mobile
@@ -1369,7 +1369,7 @@ git commit -m "Build the mobile Dashboard from independent sections"
 - Consumes: Task 1 modules, Task 2 blocks, `useCosmetics`, `BackgroundBg` (`../../components/BackgroundRenderer`), `api` (`../../api/client`).
 - Produces: `useProfileData(): { stats: Slot<UserStats> }`.
 
-- [ ] **Step 1: Write the data hook and the identity block**
+- [x] **Step 1: Write the data hook and the identity block**
 
 `src/mobile/profile/useProfileData.ts`:
 
@@ -1476,7 +1476,7 @@ export default function IdentitySection({ stats }: { stats: Slot<UserStats> }) {
 }
 ```
 
-- [ ] **Step 2: Write the heatmap**
+- [x] **Step 2: Write the heatmap**
 
 `src/mobile/profile/HeatmapSection.tsx`:
 
@@ -1545,7 +1545,7 @@ export default function HeatmapSection({ heatmap }: { heatmap: Record<string, He
 }
 ```
 
-- [ ] **Step 3: Write the badges**
+- [x] **Step 3: Write the badges**
 
 `src/mobile/profile/BadgesSection.tsx`:
 
@@ -1601,7 +1601,7 @@ export default function BadgesSection({ stats }: { stats: BadgeStats }) {
 }
 ```
 
-- [ ] **Step 4: Write bio and social rows**
+- [x] **Step 4: Write bio and social rows**
 
 `src/mobile/profile/BioRow.tsx`:
 
@@ -1746,7 +1746,7 @@ export default function SocialRows({ initialLinks }: { initialLinks: Record<stri
 }
 ```
 
-- [ ] **Step 5: Compose the page**
+- [x] **Step 5: Compose the page**
 
 Replace `src/mobile/profile/ProfileMobile.tsx`:
 
@@ -1781,14 +1781,14 @@ export default function ProfileMobile() {
 }
 ```
 
-- [ ] **Step 6: Verify**
+- [x] **Step 6: Verify**
 
 - `npx tsc -b`, `npm test` green.
 - Mobile probe on `/profile`: `under36` empty, `textUnder11` 0, `overflowX` false. Then with `browser_evaluate`: the heatmap grid width is at most 350 and has no horizontal scroll in the 20-week view; tap "ver 365 dias" and confirm the heatmap container scrolls horizontally (its `scrollWidth` exceeds `clientWidth`) while the page does not (`overflowX` false); tap a heatmap cell and confirm the readout text changes; tap a locked badge and confirm "bloqueado" appears.
 - The ring: compare `stroke-dashoffset` of the second circle with `circumference * (1 - rank_progress)` read from `/api/users/me/stats` (via `browser_evaluate` fetch with the stored token).
 - Desktop snapshot of `/profile` identical to `desktop-profile-before.json`.
 
-- [ ] **Step 7: Commit**
+- [x] **Step 7: Commit**
 
 ```bash
 git add platform/frontend/src/mobile
@@ -1806,7 +1806,7 @@ git commit -m "Build the mobile Profile from independent sections"
 **Interfaces:**
 - Produces: routes `friends` and `guild` under the private layout; `FRIENDS_ITEM`, `GUILD_ITEM` in `navItems.tsx`; `MOBILE_SHEET` order: Perfil, Amigos, Guilda, then the existing items, then Configurações.
 
-- [ ] **Step 1: Write the pages**
+- [x] **Step 1: Write the pages**
 
 `src/pages/FriendsPage.tsx`:
 
@@ -1833,7 +1833,7 @@ export default function FriendsPage() {
 <path d="M12 2l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V5z" />
 ```
 
-- [ ] **Step 2: Routes and sheet entries**
+- [x] **Step 2: Routes and sheet entries**
 
 In `src/App.tsx` add `import FriendsPage from './pages/FriendsPage'` and `import GuildPage from './pages/GuildPage'`, and inside the private layout, after the `community` route:
 
@@ -1875,11 +1875,11 @@ export const MOBILE_SHEET = [PROFILE_ITEM, FRIENDS_ITEM, GUILD_ITEM, ...NAV.filt
 
 (`NAV` is unchanged, so the desktop sidebar is unchanged.)
 
-- [ ] **Step 3: Verify**
+- [x] **Step 3: Verify**
 
 `npx tsc -b`, `npm test`. In the browser at 390x844: open "Mais", confirm the sheet lists Perfil, Amigos, Guilda, Chat IA, Loja, Comunidade, Configurações, Sair and fits above the dock; tap Amigos and Guilda: each shows "Em desenvolvimento" and the dock highlights "Mais". At 1440px the desktop sidebar has no Amigos or Guilda entry.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 git add platform/frontend/src/pages/FriendsPage.tsx platform/frontend/src/pages/GuildPage.tsx platform/frontend/src/App.tsx platform/frontend/src/components/layout/navItems.tsx
@@ -1892,19 +1892,19 @@ git commit -m "Add Friends and Guild placeholder pages and Mais entries"
 
 **Files:** none changed unless a check fails.
 
-- [ ] **Step 1: Full checks**
+- [x] **Step 1: Full checks**
 
 `npx tsc -b` and `npm test` in `platform/frontend`: both green.
 
-- [ ] **Step 2: Mobile sweep**
+- [x] **Step 2: Mobile sweep**
 
 Run the mobile probe on `/`, `/profile`, `/friends`, `/guild` at 390x844. Acceptance: `under36` empty, `textUnder11` 0, `overflowX` false on all four; on `/`, `primaryBottom < dockTop`.
 
-- [ ] **Step 3: Desktop sweep**
+- [x] **Step 3: Desktop sweep**
 
 Desktop snapshots of `/` and `/profile` against the Task 3 `before` files: identical. `git diff --stat <branch point>..HEAD -- platform/frontend/src/pages` lists only `DashboardPage.tsx`, `ProfilePage.tsx` (rename + wrapper + import), the two new placeholder pages.
 
-- [ ] **Step 4: Spec acceptance**
+- [x] **Step 4: Spec acceptance**
 
 Walk the six acceptance criteria in the spec and write the result of each (measured value or "not verified") in the final message. Log anything found and not fixed in Linear per the backlog rule.
 

@@ -4,7 +4,7 @@
 |---|---|
 | **Autor** | a preencher |
 | **Data** | 2026-09-29 |
-| **Status** | Draft |
+| **Status** | Approved by João 2026-10-21 as the next piece after the usable Courses home; not built |
 | **Repositório** | `C:\Users\joaog\PycharmProjects\dev-grind` |
 
 ## Overview

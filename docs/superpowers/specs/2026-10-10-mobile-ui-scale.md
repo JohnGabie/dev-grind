@@ -1,7 +1,6 @@
 # Mobile UI scale: type, spacing and control sizes
 
-Status: scale approved by João on 2026-10-11 (type, controls, spacing, radius; Store sidebar stacking is in scope;
-no global touch floor). Written spec awaiting João's review. Still open: questions A, B and C.
+Status: implemented (plan 2026-10-11-mobile-ui-scale, tasks 1-9, merged). Scale approved by João on 2026-10-11 (type, controls, spacing, radius; Store sidebar stacking in scope; no global touch floor). Questions A, B and C decided on 2026-10-21 (see "Decisions and open questions"); A and B are not built yet.
 Scope: viewports `<= 768px` (`MOBILE_QUERY`). Desktop stays pixel-identical.
 
 ## The request
@@ -224,3 +223,9 @@ Still open (decide before the PR that touches them):
 A. FAB (chat button): move it, hide it on pages with a bottom CTA, or reserve space for it? (PR 2)
 B. Empty book slots: shrink them, or show one "add" tile instead of four? (PR 6)
 C. Desktop outliers: `isMobile ? 'var(--x)' : literal` at the call site (proposed), or extra desktop tokens? (rule 3)
+
+## Decisions of 2026-10-21 (João)
+
+- **A. Chat button:** inside a course the bottom menu (Dashboard, Kata, ...) is hidden, and the AI button moves to the top as a small, discreet square that matches the screen design. Other screens: undecided, to be specified when this is built. Not built yet.
+- **B. Empty book slots:** replace the empty slots with one tile that shows the slot count (for example `0/4`) so it is clear how many slots exist. Not built yet.
+- **C. Desktop outliers:** use `isMobile ? 'var(--x)' : literal` at the call site; no extra desktop tokens.
