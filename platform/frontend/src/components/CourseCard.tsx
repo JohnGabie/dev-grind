@@ -18,7 +18,6 @@ export default function CourseCard({ course, onOpen, onAction }: { course: Cours
       <button
         type="button"
         onClick={onOpen}
-        aria-label={course.title}
         style={{ display: 'block', width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: 0, color: 'inherit', cursor: 'pointer', fontFamily: 'inherit' }}
       >
         <span style={{ display: 'block', fontSize: isMobile ? 'var(--fs-lg)' : 18, fontWeight: 700, marginBottom: 6 }}>{course.title}</span>
@@ -32,7 +31,7 @@ export default function CourseCard({ course, onOpen, onAction }: { course: Cours
         aria-valuenow={done}
         style={{ height: 4, borderRadius: 4, background: 'rgba(255,255,255,0.12)', margin: '8px 0' }}
       >
-        <div style={{ height: '100%', width: `${percent}%`, borderRadius: 4, background: STATE_COLOR[state] === 'var(--muted)' ? 'var(--cyan)' : STATE_COLOR[state] }} />
+        <div style={{ height: '100%', width: `${percent}%`, borderRadius: 4, background: state === 'concluído' ? 'var(--green)' : 'var(--cyan)' }} />
       </div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
         <span style={{ fontSize: size }}>
