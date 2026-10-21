@@ -2,8 +2,11 @@ import { useEffect, useRef, useState, type CSSProperties, type RefObject } from 
 import { useNavigate, useParams } from 'react-router-dom'
 import api from '../api/client'
 import CourseNotFound from '../components/CourseNotFound'
-import CourseCard from '../components/CourseCard'
-import { continueTarget, lessonKeyOf, orderCourses } from '../lib/courseProgress'
+import CourseList from '../components/CourseList'
+import CourseToolbar from '../components/CourseToolbar'
+import { useCoursePrefs } from '../hooks/useCoursePrefs'
+import { visibleCourses } from '../lib/courseView'
+import { continueTarget, lessonKeyOf } from '../lib/courseProgress'
 import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
 import SkillPath from '../components/SkillPath'
 import { asCourse, type Course, type FillPart, type Lesson, type Step } from '../lib/courseModel'
@@ -408,7 +411,9 @@ export default function CoursesPage() {
   const [loading, setLoading] = useState(true)
   const [reloadKey, setReloadKey] = useState(0)
   const navigate = useNavigate()
-  const [courseId, lessonKey] = (useParams()['*'] ?? '').split('/').filter(Boolean)
+  const { prefs, setView, setSort } = useCoursePrefs()
+  const [query, setQuery] = useState('')
+  const [courseId,lessonKey] = (useParams()['*'] ?? '').split('/').filter(Boolean)
 
   useEffect(() => {
     api.get('/courses')
@@ -465,17 +470,34 @@ export default function CoursesPage() {
           </div>
         )}
 
-        {!courseId && orderCourses(courses).map(item => (
-          <CourseCard
-            key={item.id}
-            course={item}
-            onOpen={() => navigate(`/courses/${item.id}`)}
-            onAction={() => {
-              const key = continueTarget(item)
-              navigate(key ? `/courses/${item.id}/${key}` : `/courses/${item.id}`)
-            }}
-          />
-        ))}
+        {!courseId && courses.length > 0 && (
+          <CourseToolbar query={query} onQuery={setQuery} sort={prefs.sort} onSort={setSort} view={prefs.view} onView={setView} placeholder="buscar cursos" />
+        )}
+
+        {!courseId && courses.length > 0 && (() => {
+          const shown = visibleCourses(courses, query, prefs.sort)
+          if (shown.length === 0) {
+            return (
+              <div role="status">
+                <p style={{ color: 'var(--muted)', margin: '0 0 8px' }}>Nenhum curso encontrado para “{query.trim()}”</p>
+                <button type="button" onClick={() => setQuery('')} style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', color: 'var(--cyan)', cursor: 'pointer', fontFamily: 'inherit', padding: '0 14px', minHeight: isMobile ? 'var(--ctl-md)' : 32 }}>
+                  limpar busca
+                </button>
+              </div>
+            )
+          }
+          return (
+            <CourseList
+              courses={shown}
+              view={prefs.view}
+              onOpen={item => navigate(`/courses/${item.id}`)}
+              onAction={item => {
+                const key = continueTarget(item)
+                navigate(key ? `/courses/${item.id}/${key}` : `/courses/${item.id}`)
+              }}
+            />
+          )
+        })()}
 
         {course && !lessonKey && (
           <div>
