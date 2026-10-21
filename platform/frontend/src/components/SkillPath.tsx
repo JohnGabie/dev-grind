@@ -8,10 +8,12 @@ import {
   LABEL_GAP,
   LABEL_TITLE_H,
   LABEL_W,
+  LANE_X,
   NODE,
   NODE_RADIUS,
   OPTIONAL_WORD_GAP,
   OPTIONAL_WORD_H,
+  type Lane,
   type NodeState,
   type PathLesson,
 } from '../lib/skillPath'
@@ -19,6 +21,7 @@ import type { Section } from '../lib/courseModel'
 
 const NARROW_LABEL_W = 240
 const TINY_LABEL_W = 200
+const NARROW_LANES: Record<Lane, number> = { left: LANE_X.left, center: LANE_X.left + 78, right: LANE_X.left + 156 }
 const MIN_SCALE = 0.5
 
 function openable(state: NodeState): boolean {
@@ -133,7 +136,7 @@ export default function SkillPath({
   const wide = placeSkillPath(courseId, lessons, completed)
   const narrow = available > 0 && available < wide.width
   const labelW = narrow ? (available < 340 ? TINY_LABEL_W : NARROW_LABEL_W) : LABEL_W
-  const map = narrow ? placeSkillPath(courseId, lessons, completed, labelW) : wide
+  const map = narrow ? placeSkillPath(courseId, lessons, completed, { labelW, laneX: NARROW_LANES }) : wide
   const scale = narrow ? Math.max(MIN_SCALE, Math.min(1, available / map.width)) : 1
   const required = lessons.filter(lesson => !lesson.optional)
   const previousTitle = new Map(required.slice(1).map((lesson, index) => [lesson.key, required[index].title]))
@@ -281,7 +284,7 @@ export default function SkillPath({
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
                   fontFamily: 'var(--font)',
-                  fontSize: 20,
+                  fontSize: narrow ? 24 : 20,
                   lineHeight: `${LABEL_TITLE_H}px`,
                   color: fade(faded ? 'var(--muted)' : 'var(--text)', faded),
                   background: 'var(--bg)',
@@ -299,7 +302,7 @@ export default function SkillPath({
                       maxHeight: LABEL_DESC_H,
                       marginTop: LABEL_DESC_GAP,
                       fontFamily: 'var(--font)',
-                      fontSize: 18,
+                      fontSize: narrow ? 20 : 18,
                       lineHeight: '24px',
                       color: fade('var(--muted)', faded),
                       background: 'var(--bg)',
