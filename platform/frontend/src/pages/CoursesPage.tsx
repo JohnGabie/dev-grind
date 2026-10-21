@@ -438,7 +438,7 @@ export default function CoursesPage() {
   useEffect(() => {
     document.body.dataset.courseLesson = lesson ? '1' : ''
     return () => { delete document.body.dataset.courseLesson }
-  }, [lesson])
+  }, [lesson?.key])
 
   return (
     <div style={{ height: '100%', overflow: lesson ? 'hidden' : 'auto', display: 'flex', flexDirection: 'column' }}>

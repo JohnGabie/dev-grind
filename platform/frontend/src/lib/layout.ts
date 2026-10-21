@@ -53,7 +53,7 @@ export function pagePadding(desktop: string, isMobile: boolean, absorbTopBar = f
   const g = `${MOBILE_GUTTER}px`
   const t = absorbTopBar ? `calc(${MOBILE_TOP_GAP}px + ${MOBILE_TOP_INSET})` : p[0]
   const bottomBase = p.length >= 3 ? p[2] : p[0]
-  const b = reserveDock ? `calc(${bottomBase} + ${MOBILE_NAV_SPACE})` : bottomBase
+  const b = `calc(${bottomBase} + ${reserveDock ? MOBILE_NAV_SPACE : 'env(safe-area-inset-bottom, 0px)'})`
 
   switch (p.length) {
     case 1:

@@ -14,10 +14,9 @@ export default function CourseCard({ course, onOpen, onAction }: { course: Cours
   const percent = total > 0 ? Math.round((done / total) * 100) : 0
   const size = isMobile ? 'var(--fs-base)' : undefined
   return (
-    <div className="card" style={{ width: '100%', maxWidth: 640, padding: '18px 20px', marginBottom: 10 }}>
+    <div className="card" onClick={onOpen} style={{ width: '100%', maxWidth: 640, padding: '18px 20px', marginBottom: 10, cursor: 'pointer' }}>
       <button
         type="button"
-        onClick={onOpen}
         style={{ display: 'block', width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: 0, color: 'inherit', cursor: 'pointer', fontFamily: 'inherit' }}
       >
         <span style={{ display: 'block', fontSize: isMobile ? 'var(--fs-lg)' : 18, fontWeight: 700, marginBottom: 6 }}>{course.title}</span>
@@ -40,7 +39,7 @@ export default function CourseCard({ course, onOpen, onAction }: { course: Cours
         </span>
         <button
           type="button"
-          onClick={onAction}
+          onClick={e => { e.stopPropagation(); onAction() }}
           style={{
             background: 'none', border: '1px solid var(--cyan)', borderRadius: 'var(--radius-lg)', color: 'var(--cyan)', cursor: 'pointer',
             fontFamily: 'inherit', fontSize: size, padding: '0 14px', minHeight: isMobile ? 'var(--ctl-md)' : 32, whiteSpace: 'nowrap',
