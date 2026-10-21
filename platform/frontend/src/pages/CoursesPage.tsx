@@ -2,7 +2,8 @@ import { useEffect, useRef, useState, type CSSProperties, type RefObject } from 
 import { useNavigate, useParams } from 'react-router-dom'
 import api from '../api/client'
 import CourseNotFound from '../components/CourseNotFound'
-import { lessonKeyOf } from '../lib/courseProgress'
+import CourseCard from '../components/CourseCard'
+import { continueTarget, lessonKeyOf, orderCourses } from '../lib/courseProgress'
 import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
 import SkillPath from '../components/SkillPath'
 import { asCourse, type Course, type FillPart, type Lesson, type Step } from '../lib/courseModel'
@@ -458,22 +459,22 @@ export default function CoursesPage() {
         {!course && !loadError && loading && <p style={{ color: 'var(--muted)' }}>Carregando…</p>}
 
         {!courseId && ready && courses.length === 0 && (
-          <p style={{ color: 'var(--muted)' }}>Nenhum curso neste formato ainda.</p>
+          <div>
+            <p style={{ color: 'var(--muted)', margin: 0 }}>Nenhum curso ainda.</p>
+            <p style={{ color: 'var(--muted)', fontSize: isMobile ? 'var(--fs-sm)' : 12 }}>Os cursos são criados pelo assistente de IA.</p>
+          </div>
         )}
 
-        {!courseId && courses.map(item => (
-          <button
+        {!courseId && orderCourses(courses).map(item => (
+          <CourseCard
             key={item.id}
-            className="card"
-            onClick={() => navigate(`/courses/${item.id}`)}
-            style={{ display: 'block', width: '100%', maxWidth: 640, textAlign: 'left', padding: '18px 20px', marginBottom: 10, cursor: 'pointer', background: 'transparent', color: 'inherit' }}
-          >
-            <span style={{ display: 'block', fontSize: isMobile ? 'var(--fs-lg)' : 18, fontWeight: 700, marginBottom: 6 }}>{item.title}</span>
-            {item.description && <span style={{ display: 'block', color: 'var(--muted)', marginBottom: 8, fontSize: isMobile ? 'var(--fs-base)' : undefined }}>{item.description}</span>}
-            <span style={{ color: 'var(--cyan)', fontSize: isMobile ? 'var(--fs-base)' : undefined }}>
-              {item.completed.length} de {item.sections.reduce((n, section) => n + section.lessons.length, 0)} lições
-            </span>
-          </button>
+            course={item}
+            onOpen={() => navigate(`/courses/${item.id}`)}
+            onAction={() => {
+              const key = continueTarget(item)
+              navigate(key ? `/courses/${item.id}/${key}` : `/courses/${item.id}`)
+            }}
+          />
         ))}
 
         {course && !lessonKey && (

@@ -33,6 +33,7 @@ describe('SkillPath source', () => {
     assert.match(page, /<SkillPath/)
     assert.match(page, /lessonKeyOf\(item\)/)
     assert.match(page, /dataset\.courseLesson/)
-    assert.match(page, /de \{item\.sections\.reduce/)
+    const card = readFileSync(join(here, './CourseCard.tsx'), 'utf8')
+    assert.match(card, /de \{total\} lições/)
   })
 })

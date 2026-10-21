@@ -1,0 +1,55 @@
+import type { Course } from '../lib/courseModel'
+import { actionLabel, courseProgress, type CourseState } from '../lib/courseProgress'
+import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
+
+const STATE_COLOR: Record<CourseState, string> = {
+  'não iniciado': 'var(--muted)',
+  'em andamento': 'var(--cyan)',
+  'concluído': 'var(--green)',
+}
+
+export default function CourseCard({ course, onOpen, onAction }: { course: Course; onOpen: () => void; onAction: () => void }) {
+  const isMobile = useMediaQuery(MOBILE_QUERY)
+  const { done, total, state } = courseProgress(course)
+  const percent = total > 0 ? Math.round((done / total) * 100) : 0
+  const size = isMobile ? 'var(--fs-base)' : undefined
+  return (
+    <div className="card" style={{ width: '100%', maxWidth: 640, padding: '18px 20px', marginBottom: 10 }}>
+      <button
+        type="button"
+        onClick={onOpen}
+        aria-label={course.title}
+        style={{ display: 'block', width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: 0, color: 'inherit', cursor: 'pointer', fontFamily: 'inherit' }}
+      >
+        <span style={{ display: 'block', fontSize: isMobile ? 'var(--fs-lg)' : 18, fontWeight: 700, marginBottom: 6 }}>{course.title}</span>
+        {course.description && <span style={{ display: 'block', color: 'var(--muted)', marginBottom: 8, fontSize: size }}>{course.description}</span>}
+      </button>
+      <div
+        role="progressbar"
+        aria-label={`${course.title}: ${done} de ${total} lições`}
+        aria-valuemin={0}
+        aria-valuemax={total}
+        aria-valuenow={done}
+        style={{ height: 4, borderRadius: 4, background: 'rgba(255,255,255,0.12)', margin: '8px 0' }}
+      >
+        <div style={{ height: '100%', width: `${percent}%`, borderRadius: 4, background: STATE_COLOR[state] === 'var(--muted)' ? 'var(--cyan)' : STATE_COLOR[state] }} />
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+        <span style={{ fontSize: size }}>
+          <span style={{ color: 'var(--text)' }}>{done} de {total} lições</span>
+          <span style={{ color: STATE_COLOR[state] }}> · {state}</span>
+        </span>
+        <button
+          type="button"
+          onClick={onAction}
+          style={{
+            background: 'none', border: '1px solid var(--cyan)', borderRadius: 'var(--radius-lg)', color: 'var(--cyan)', cursor: 'pointer',
+            fontFamily: 'inherit', fontSize: size, padding: '0 14px', minHeight: isMobile ? 'var(--ctl-md)' : 32, whiteSpace: 'nowrap',
+          }}
+        >
+          {actionLabel(state)}
+        </button>
+      </div>
+    </div>
+  )
+}
