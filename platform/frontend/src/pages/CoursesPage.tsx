@@ -483,7 +483,7 @@ export default function CoursesPage() {
               <button onClick={() => navigate('/courses')} style={{ background: 'none', border: 'none', color: 'var(--cyan)', cursor: 'pointer', padding: 0, marginBottom: isMobile ? 0 : 10, display: isMobile ? 'inline-flex' : undefined, alignItems: isMobile ? 'center' : undefined, minHeight: isMobile ? 'var(--ctl-md)' : undefined, fontSize: isMobile ? 'var(--fs-base)' : undefined }}>
                 ← cursos
               </button>
-              <h1 style={{ fontSize: isMobile ? 'var(--fs-xl)' : 32, margin: 0 }}>{course.title}</h1>
+              <h1 style={{ fontSize: isMobile ? 'var(--fs-xl)' : 32, margin: 0, paddingRight: isMobile ? 'calc(var(--ctl-md) + var(--sp-2))' : undefined }}>{course.title}</h1>
             </div>
             <SkillPath
               courseId={course.id}

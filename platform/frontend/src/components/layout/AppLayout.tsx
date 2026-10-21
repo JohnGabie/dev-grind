@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
 import Sidebar from './Sidebar'
 import MobileNav from './MobileNav'
@@ -7,6 +7,7 @@ import { ChatPanel } from '../ChatPanel'
 import { CosmeticsProvider } from '../../contexts/CosmeticsContext'
 import { useMediaQuery, MOBILE_QUERY } from '../../hooks/useMediaQuery'
 import { TOPBAR_SPACE, MOBILE_TOP_INSET, MOBILE_NAV_SPACE } from '../../lib/layout'
+import { isInsideCourse } from '../../lib/courseProgress'
 import api from '../../api/client'
 
 // ── TopBar ───────────────────────────────────────────────────────────────────
@@ -158,6 +159,7 @@ function ChatBubble() {
   const location = useLocation()
   const [open, setOpen] = useState(false)
   const isMobile = useMediaQuery(MOBILE_QUERY)
+  const inCourse = isMobile && isInsideCourse(location.pathname)
   const [lessonDock, setLessonDock] = useState(false)
   useEffect(() => {
     const sync = () => setLessonDock(document.body.dataset.courseLesson === '1')
@@ -191,43 +193,70 @@ function ChatBubble() {
   const naDashboardMobile = isMobile && location.pathname === '/'
   if (naTelaDeResolver || naDashboardMobile) return null
 
+  const squareTop = `calc(${MOBILE_TOP_INSET} + 20px)`
+  const panelStyle: CSSProperties = inCourse
+    ? {
+        position: 'fixed', top: `calc(${squareTop} + var(--ctl-md) + 8px)`, right: rightOffset, zIndex: 41,
+        width: 'min(320px, calc(100vw - 48px))', height: 420,
+        maxHeight: `calc(100dvh - ${squareTop} - var(--ctl-md) - 8px - 16px)`,
+        background: 'var(--bg-card)',
+        border: '1px solid var(--border-lit)',
+        borderRadius: 12,
+        boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+        overflow: 'hidden',
+        display: 'flex', flexDirection: 'column',
+      }
+    : {
+        position: 'fixed', bottom: panelBottom, right: rightOffset, zIndex: 41,
+        width: 'min(320px, calc(100vw - 48px))', height: 420,
+        maxHeight: isMobile ? `calc(100dvh - ${panelBottom} - 16px)` : undefined,
+        background: 'var(--bg-card)',
+        border: '1px solid var(--border-lit)',
+        borderRadius: 12,
+        boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
+        overflow: 'hidden',
+        display: 'flex', flexDirection: 'column',
+      }
+  const buttonStyle: CSSProperties = inCourse
+    ? {
+        position: 'fixed', top: squareTop, right: rightOffset, zIndex: 42,
+        width: 'var(--ctl-md)', height: 'var(--ctl-md)', borderRadius: 'var(--radius-md)',
+        background: 'var(--bg-card)',
+        border: `1px solid ${open ? 'var(--cyan)' : 'var(--border)'}`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        cursor: 'pointer', color: 'var(--cyan)',
+        transition: 'background 150ms, border-color 150ms',
+      }
+    : {
+        position: 'fixed', bottom: bubbleBottom, right: rightOffset, zIndex: 42,
+        width: 48, height: 48, borderRadius: '50%',
+        background: open ? 'var(--cyan-faint)' : 'var(--bg-card)',
+        border: `1px solid ${open ? 'var(--cyan)' : 'var(--cyan-glow)'}`,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        cursor: 'pointer', color: 'var(--cyan)',
+        boxShadow: open ? '0 0 16px rgba(34,211,238,0.2)' : '0 2px 8px rgba(0,0,0,0.4)',
+        transition: 'background 150ms, border-color 150ms, box-shadow 150ms',
+      }
+  const iconSize = inCourse ? 16 : 18
+
   return (
     <>
       {open && (
-        <div style={{
-          position: 'fixed', bottom: panelBottom, right: rightOffset, zIndex: 41,
-          width: 'min(320px, calc(100vw - 48px))', height: 420,
-          maxHeight: isMobile ? `calc(100dvh - ${panelBottom} - 16px)` : undefined,
-          background: 'var(--bg-card)',
-          border: '1px solid var(--border-lit)',
-          borderRadius: 12,
-          boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
-          overflow: 'hidden',
-          display: 'flex', flexDirection: 'column',
-        }}>
+        <div style={panelStyle}>
           <ChatPanel context={context} style={{ height: '100%' }} />
         </div>
       )}
       <button
         onClick={() => setOpen(o => !o)}
         title="Chat"
-        style={{
-          position: 'fixed', bottom: bubbleBottom, right: rightOffset, zIndex: 42,
-          width: 48, height: 48, borderRadius: '50%',
-          background: open ? 'var(--cyan-faint)' : 'var(--bg-card)',
-          border: `1px solid ${open ? 'var(--cyan)' : 'var(--cyan-glow)'}`,
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          cursor: 'pointer', color: 'var(--cyan)',
-          boxShadow: open ? '0 0 16px rgba(34,211,238,0.2)' : '0 2px 8px rgba(0,0,0,0.4)',
-          transition: 'background 150ms, border-color 150ms, box-shadow 150ms',
-        }}
+        style={buttonStyle}
       >
         {open ? (
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+          <svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
             <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
           </svg>
         ) : (
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+          <svg width={iconSize} height={iconSize} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
           </svg>
         )}
@@ -247,6 +276,7 @@ export default function AppLayout() {
   const location = useLocation()
   const hideTopBar = location.pathname === '/profile'
   const isMobile = useMediaQuery(MOBILE_QUERY)
+  const inCourse = isMobile && isInsideCourse(location.pathname)
   // A tela de resolver é a única de /exercise com altura fixa; a página
   // "sobre" rola como qualquer outra.
   const isFixedLayout = FIXED_LAYOUT_PATHS.some(p => location.pathname.startsWith(p))
@@ -277,7 +307,7 @@ export default function AppLayout() {
             <Outlet />
           </div>
         </main>
-        {isMobile && <MobileNav />}
+        {isMobile && !inCourse && <MobileNav />}
         <ChatBubble />
       </div>
     </CosmeticsProvider>
