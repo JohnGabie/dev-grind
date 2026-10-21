@@ -1,0 +1,40 @@
+import type { Course } from '../lib/courseModel'
+import { actionLabel, courseProgress } from '../lib/courseProgress'
+import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
+import ProgressBar, { STATE_COLOR } from './ProgressBar'
+
+export default function CourseRow({ course, onOpen, onAction }: { course: Course; onOpen: () => void; onAction: () => void }) {
+  const isMobile = useMediaQuery(MOBILE_QUERY)
+  const { done, total, state } = courseProgress(course)
+  const size = isMobile ? 'var(--fs-base)' : undefined
+  return (
+    <div
+      className="card"
+      onClick={onOpen}
+      style={{ display: 'flex', alignItems: 'center', gap: 12, width: '100%', maxWidth: 640, padding: '10px 14px', marginBottom: 8, cursor: 'pointer', boxSizing: 'border-box' }}
+    >
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <button
+          type="button"
+          style={{ display: 'block', width: '100%', minHeight: isMobile ? 'var(--ctl-md)' : undefined, textAlign: 'left', background: 'none', border: 'none', padding: 0, color: 'inherit', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700, fontSize: isMobile ? 'var(--fs-lg)' : 15, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+        >
+          {course.title}
+        </button>
+        <div style={{ margin: '6px 0' }}>
+          <ProgressBar done={done} total={total} label={`${course.title}: ${done} de ${total} lições`} done100={state === 'concluído'} />
+        </div>
+        <span style={{ fontSize: isMobile ? 'var(--fs-sm)' : 12 }}>
+          <span>{done}/{total}</span>
+          <span style={{ color: STATE_COLOR[state] }}> · {state}</span>
+        </span>
+      </div>
+      <button
+        type="button"
+        onClick={e => { e.stopPropagation(); onAction() }}
+        style={{ background: 'none', border: '1px solid var(--cyan)', borderRadius: 'var(--radius-lg)', color: 'var(--cyan)', cursor: 'pointer', fontFamily: 'inherit', fontSize: size, padding: '0 14px', minHeight: isMobile ? 'var(--ctl-md)' : 32, whiteSpace: 'nowrap' }}
+      >
+        {actionLabel(state)}
+      </button>
+    </div>
+  )
+}
