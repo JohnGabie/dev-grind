@@ -31,7 +31,7 @@ describe('SkillPath source', () => {
     const page = readFileSync(join(here, '../pages/CoursesPage.tsx'), 'utf8')
     assert.equal(page.includes('padStart'), false)
     assert.match(page, /<SkillPath/)
-    assert.match(page, /item\.sectionIndex}-\$\{item\.lessonIndex\}/)
+    assert.match(page, /lessonKeyOf\(item\)/)
     assert.match(page, /dataset\.courseLesson/)
     assert.match(page, /de \{item\.sections\.reduce/)
   })

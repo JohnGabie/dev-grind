@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState, type CSSProperties, type RefObject } from 'react'
+import { useNavigate, useParams } from 'react-router-dom'
 import api from '../api/client'
+import CourseNotFound from '../components/CourseNotFound'
+import { lessonKeyOf } from '../lib/courseProgress'
 import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
 import SkillPath from '../components/SkillPath'
 import { asCourse, type Course, type FillPart, type Lesson, type Step } from '../lib/courseModel'
@@ -403,8 +406,8 @@ export default function CoursesPage() {
   const [loadError, setLoadError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [reloadKey, setReloadKey] = useState(0)
-  const [openId, setOpenId] = useState<string | null>(null)
-  const [lessonKey, setLessonKey] = useState<string | null>(null)
+  const navigate = useNavigate()
+  const [courseId, lessonKey] = (useParams()['*'] ?? '').split('/').filter(Boolean)
 
   useEffect(() => {
     api.get('/courses')
@@ -422,13 +425,14 @@ export default function CoursesPage() {
     setReloadKey(key => key + 1)
   }
 
-  const course = courses.find(item => item.id === openId) ?? null
+  const course = courses.find(item => item.id === courseId) ?? null
   const lesson = course?.sections.flatMap(section => section.lessons.map(item => ({
     section,
     item,
-    key: `${item.sectionIndex}-${item.lessonIndex}`,
+    key: lessonKeyOf(item),
   })))
     .find(entry => entry.key === lessonKey)
+  const ready = !loading && !loadError
 
   useEffect(() => {
     document.body.dataset.courseLesson = lesson ? '1' : ''
@@ -453,15 +457,15 @@ export default function CoursesPage() {
 
         {!course && !loadError && loading && <p style={{ color: 'var(--muted)' }}>Carregando…</p>}
 
-        {!course && !loadError && !loading && courses.length === 0 && (
+        {!courseId && ready && courses.length === 0 && (
           <p style={{ color: 'var(--muted)' }}>Nenhum curso neste formato ainda.</p>
         )}
 
-        {!course && courses.map(item => (
+        {!courseId && courses.map(item => (
           <button
             key={item.id}
             className="card"
-            onClick={() => setOpenId(item.id)}
+            onClick={() => navigate(`/courses/${item.id}`)}
             style={{ display: 'block', width: '100%', maxWidth: 640, textAlign: 'left', padding: '18px 20px', marginBottom: 10, cursor: 'pointer', background: 'transparent', color: 'inherit' }}
           >
             <span style={{ display: 'block', fontSize: isMobile ? 'var(--fs-lg)' : 18, fontWeight: 700, marginBottom: 6 }}>{item.title}</span>
@@ -472,10 +476,10 @@ export default function CoursesPage() {
           </button>
         ))}
 
-        {course && !lesson && (
+        {course && !lessonKey && (
           <div>
             <div style={{ position: 'sticky', top: 0, zIndex: 5, background: 'var(--bg)', padding: '12px 0 10px', marginBottom: 12 }}>
-              <button onClick={() => setOpenId(null)} style={{ background: 'none', border: 'none', color: 'var(--cyan)', cursor: 'pointer', padding: 0, marginBottom: isMobile ? 0 : 10, display: isMobile ? 'inline-flex' : undefined, alignItems: isMobile ? 'center' : undefined, minHeight: isMobile ? 'var(--ctl-md)' : undefined, fontSize: isMobile ? 'var(--fs-base)' : undefined }}>
+              <button onClick={() => navigate('/courses')} style={{ background: 'none', border: 'none', color: 'var(--cyan)', cursor: 'pointer', padding: 0, marginBottom: isMobile ? 0 : 10, display: isMobile ? 'inline-flex' : undefined, alignItems: isMobile ? 'center' : undefined, minHeight: isMobile ? 'var(--ctl-md)' : undefined, fontSize: isMobile ? 'var(--fs-base)' : undefined }}>
                 ← cursos
               </button>
               <h1 style={{ fontSize: isMobile ? 'var(--fs-xl)' : 32, margin: 0 }}>{course.title}</h1>
@@ -485,9 +489,15 @@ export default function CoursesPage() {
               sections={course.sections}
               completed={course.completed}
               partsDone={course.parts}
-              onOpen={setLessonKey}
+              onOpen={key => navigate(`/courses/${course.id}/${key}`)}
             />
           </div>
+        )}
+        {courseId && ready && !course && (
+          <CourseNotFound text="curso não encontrado" to="/courses" linkText="← cursos" />
+        )}
+        {course && lessonKey && ready && !lesson && (
+          <CourseNotFound text="lição não encontrada" to={`/courses/${course.id}`} linkText={`← ${course.title}`} />
         )}
 
       </div>
@@ -498,7 +508,7 @@ export default function CoursesPage() {
           lesson={lesson.item}
           initialIndex={course.completed.includes(lesson.key) ? 0 : (course.parts[lesson.key] ?? 0)}
           reviewing={course.completed.includes(lesson.key)}
-          onBack={() => setLessonKey(null)}
+          onBack={() => navigate(`/courses/${course.id}`)}
           onPart={count => {
             if (course.completed.includes(lesson.key)) return
             const previous = course.parts[lesson.key] ?? 0

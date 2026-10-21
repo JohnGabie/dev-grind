@@ -32,7 +32,7 @@ export default function App() {
             <Route path="exercise/:slug" element={<ExerciseAboutPage />} />
             <Route path="exercise/:slug/solve" element={<ExercisePage />} />
             <Route path="profile" element={<ProfilePage />} />
-            <Route path="courses" element={<CoursesPage />} />
+            <Route path="courses/*" element={<CoursesPage />} />
             <Route path="chats" element={<ChatPage />} />
             <Route path="books" element={<BooksPage />} />
             <Route path="books/:slug" element={<BookReaderPage />} />
