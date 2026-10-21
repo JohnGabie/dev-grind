@@ -199,7 +199,7 @@ function labelBlockHeight(node: { description: string; optional: boolean }): num
   return height
 }
 
-function frame(nodes: PlacedNode[], strokes: PlacedStroke[], sectionTitles: PlacedSectionTitle[]): SkillMap {
+function frame(nodes: PlacedNode[], strokes: PlacedStroke[], sectionTitles: PlacedSectionTitle[], labelW: number): SkillMap {
   let minX = 0
   let maxX = COLUMN_W
   let minY = 0
@@ -207,7 +207,7 @@ function frame(nodes: PlacedNode[], strokes: PlacedStroke[], sectionTitles: Plac
   for (const node of nodes) {
     minX = Math.min(minX, node.x - NODE / 2)
     if (node.parts > 1) minX = Math.min(minX, node.x - NODE / 2 - FRACTION_GAP - FRACTION_W)
-    maxX = Math.max(maxX, node.x + NODE / 2 + LABEL_GAP + LABEL_W)
+    maxX = Math.max(maxX, node.x + NODE / 2 + LABEL_GAP + labelW)
     minY = Math.min(minY, node.y - NODE / 2)
     const labelBottom = node.y - NODE / 2 + labelBlockHeight(node)
     maxY = Math.max(maxY, node.y + NODE / 2, labelBottom)
@@ -223,7 +223,7 @@ function frame(nodes: PlacedNode[], strokes: PlacedStroke[], sectionTitles: Plac
   return { nodes, strokes, sectionTitles, minX, minY, width: maxX - minX, height: maxY - minY }
 }
 
-export function placeSkillPath(courseId: string, lessons: readonly PathLesson[], completed: readonly string[]): SkillMap {
+export function placeSkillPath(courseId: string, lessons: readonly PathLesson[], completed: readonly string[], labelW = LABEL_W): SkillMap {
   const done = new Set(completed)
   const required = lessons.filter(lesson => !lesson.optional)
   const firstSide = courseBranchSide(courseId)
@@ -256,7 +256,7 @@ export function placeSkillPath(courseId: string, lessons: readonly PathLesson[],
       const top = PAD_TOP + index * TITLE_BLOCK + (TITLE_BLOCK - TITLE_LINE) / 2
       sectionTitles.push({ text: sample.sectionTitle, x: LANE_X.center, y: top, place: 'band' })
     })
-    return frame(nodes, strokes, sectionTitles)
+    return frame(nodes, strokes, sectionTitles, labelW)
   }
 
   const lanes = mainLanes(courseId, required.length)
@@ -341,5 +341,5 @@ export function placeSkillPath(courseId: string, lessons: readonly PathLesson[],
     }
   }
 
-  return frame(nodes, strokes, sectionTitles)
+  return frame(nodes, strokes, sectionTitles, labelW)
 }

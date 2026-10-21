@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import {
   placeSkillPath,
   FRACTION_GAP,
@@ -16,6 +16,10 @@ import {
   type PathLesson,
 } from '../lib/skillPath'
 import type { Section } from '../lib/courseModel'
+
+const NARROW_LABEL_W = 240
+const TINY_LABEL_W = 200
+const MIN_SCALE = 0.5
 
 function openable(state: NodeState): boolean {
   return state === 'done' || state === 'current' || state === 'optional-open' || state === 'optional-done'
@@ -115,19 +119,36 @@ export default function SkillPath({
     parts: lesson.steps.length,
     partsDone: partsDone[`${lesson.sectionIndex}-${lesson.lessonIndex}`] ?? 0,
   })))
-  const map = placeSkillPath(courseId, lessons, completed)
+  const frameRef = useRef<HTMLDivElement>(null)
+  const [available, setAvailable] = useState(0)
+  useLayoutEffect(() => {
+    const el = frameRef.current
+    if (!el) return
+    const measure = () => setAvailable(el.clientWidth)
+    measure()
+    const observer = new ResizeObserver(measure)
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+  const wide = placeSkillPath(courseId, lessons, completed)
+  const narrow = available > 0 && available < wide.width
+  const labelW = narrow ? (available < 340 ? TINY_LABEL_W : NARROW_LABEL_W) : LABEL_W
+  const map = narrow ? placeSkillPath(courseId, lessons, completed, labelW) : wide
+  const scale = narrow ? Math.max(MIN_SCALE, Math.min(1, available / map.width)) : 1
   const required = lessons.filter(lesson => !lesson.optional)
   const previousTitle = new Map(required.slice(1).map((lesson, index) => [lesson.key, required[index].title]))
   const targetKey = (map.nodes.find(n => n.state === 'current') ?? map.nodes.find(n => n.state === 'optional-open') ?? map.nodes[0])?.key
   const targetRef = useRef<HTMLSpanElement>(null)
 
   useEffect(() => {
-    targetRef.current?.scrollIntoView({ block: 'center', inline: 'center', behavior: 'auto' })
+    targetRef.current?.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'auto' })
+    if (frameRef.current) frameRef.current.scrollLeft = 0
   }, [courseId])
 
   return (
-    <div style={{ width: 'fit-content', maxWidth: '100%', marginInline: 'auto', overflowX: 'auto' }}>
-      <div style={{ position: 'relative', width: map.width, height: map.height }}>
+    <div ref={frameRef} style={{ width: '100%', overflowX: 'auto' }}>
+      <div style={{ width: map.width * scale, height: map.height * scale, marginInline: 'auto' }}>
+      <div style={{ position: 'relative', width: map.width, height: map.height, transform: scale === 1 ? undefined : `scale(${scale})`, transformOrigin: '0 0' }}>
         <svg
           width={map.width}
           height={map.height}
@@ -184,7 +205,7 @@ export default function SkillPath({
                 position: 'absolute',
                 left: node.x - map.minX - NODE / 2,
                 top: node.y - map.minY - NODE / 2,
-                width: NODE + LABEL_GAP + LABEL_W,
+                width: NODE + LABEL_GAP + labelW,
                 display: 'flex',
                 alignItems: 'flex-start',
                 gap: LABEL_GAP,
@@ -252,7 +273,7 @@ export default function SkillPath({
                   </svg>
                 )}
               </span>
-              <span style={{ display: 'block', width: LABEL_W, minWidth: 0 }}>
+              <span style={{ display: 'block', width: labelW, minWidth: 0 }}>
                 <span style={{
                   display: 'block',
                   height: LABEL_TITLE_H,
@@ -321,6 +342,7 @@ export default function SkillPath({
             </button>
           )
         })}
+      </div>
       </div>
     </div>
   )
