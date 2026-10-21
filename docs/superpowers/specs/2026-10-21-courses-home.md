@@ -1,6 +1,6 @@
 # Courses home: make a course usable
 
-**Status:** written, awaiting João's approval. First of five Courses pieces (see Out of scope).
+**Status:** rewritten 2026-10-21 with Gherkin acceptance scenarios; awaiting João's approval. First of five Courses pieces (see Out of scope).
 
 ## The request (João's words)
 
@@ -36,6 +36,96 @@ Roadmaps (groups of courses), the kata as a lesson step (next piece), ownership,
 
 ## Acceptance
 
-At 390x844 and desktop: list shows progress and state for the two local courses (HTML, Python) plus the empty and error states; `continuar` lands on the first unfinished lesson; reload on a lesson URL reopens that lesson; back from the lesson returns to the map, then to the list; the bottom menu is gone inside a course and the AI square is at the top without covering a control; frontend `npx tsc -b`, `npm run build` and `npm test` green; pure logic (state, progress, continue target, ordering) in a `.ts` module with `node --test` tests.
+Run by hand in the browser at 390x844 and at desktop width. Courses are shown with fixed data (intercept `GET /courses`); "I am logged in" means the dev login. Also green: frontend `npx tsc -b`, `npm run build` and `npm test`, with the pure logic (state, progress, continue target, ordering) in a `.ts` module with `node --test` tests.
 
-Acceptance scenarios: `2026-10-21-courses-home.feature` (runs once `2026-10-21-natural-language-tests.md` is approved and built).
+```gherkin
+Background:
+  Given I am logged in
+
+Scenario: The list shows progress and state for each course
+  Given there are two courses: "HTML" with 5 lessons and 0 completed, "Python" with 4 lessons and 2 completed
+  When I open "/courses"
+  Then "HTML" shows state "não iniciado" and progress "0 de 5"
+  And "Python" shows state "em andamento" and progress "2 de 4"
+
+Scenario: A finished course shows as completed
+  Given there is a course "HTML" with 5 lessons and 5 completed
+  When I open "/courses"
+  Then "HTML" shows state "concluído" and progress "5 de 5"
+  And "HTML" has a "revisar" button
+
+Scenario: Courses in progress come first
+  Given there are courses "HTML" (5 of 5 done), "Git" (0 of 3 done) and "Python" (2 of 4 done)
+  When I open "/courses"
+  Then the order is "Python", "Git", "HTML"
+
+Scenario: Continue opens the first unfinished lesson
+  Given "Python" has 4 lessons and the first 2 are completed
+  When I open "/courses" and press "continuar" on "Python"
+  Then the address is "/courses/<python id>/0-2"
+  And I see the lesson player for the third lesson
+
+Scenario: A course that was never started offers to begin
+  Given "HTML" has 5 lessons and none are completed
+  When I open "/courses"
+  Then "HTML" has a "começar" button
+
+Scenario: Opening a course puts it in the address
+  Given "Python" has 4 lessons and the first 2 are completed
+  When I open "/courses" and press the "Python" card
+  Then the address is "/courses/<python id>"
+  And I see the lesson map of "Python"
+
+Scenario: Reloading a lesson address reopens the same lesson
+  Given "Python" has 4 lessons and the first 2 are completed
+  When I open "/courses/<python id>/0-2" and reload the page
+  Then I see the lesson player for the third lesson
+
+Scenario: Back from a lesson returns to the map, then to the list
+  Given "Python" has 4 lessons and the first 2 are completed
+  When I open "/courses/<python id>/0-2" and go back
+  Then the address is "/courses/<python id>"
+  When I go back
+  Then the address is "/courses"
+
+Scenario: An unknown course is labelled, not blank
+  When I open "/courses/does-not-exist"
+  Then I see "curso não encontrado" and a link back to "/courses"
+
+Scenario: An unknown lesson is labelled, not blank
+  When I open "/courses/<python id>/9-9"
+  Then I see "lição não encontrada" and a link back to "/courses/<python id>"
+
+Scenario: No courses yet
+  Given there are no courses
+  When I open "/courses"
+  Then I see "Nenhum curso ainda."
+  And I see that courses are created by the AI assistant
+  And I do not see a button to create a course
+
+Scenario: The courses request fails
+  Given `GET /courses` fails
+  When I open "/courses"
+  Then I see "Não foi possível carregar os cursos."
+  When `GET /courses` works again and I press "tentar de novo"
+  Then I see the course "Python"
+
+@mobile
+Scenario: Inside a course the bottom menu is hidden and the AI button moves to the top
+  When I open "/courses/<python id>"
+  Then the bottom menu is not visible
+  And the AI button is a small square at the top right
+  And the AI button does not cover another control
+
+@mobile
+Scenario: On the list the bottom menu and the AI button stay as they are
+  When I open "/courses"
+  Then the bottom menu is visible
+  And the AI button is at its usual place above the bottom menu
+
+@desktop
+Scenario: Desktop keeps the sidebar and the chat bubble
+  When I open "/courses/<python id>"
+  Then the sidebar is visible
+  And the AI button is at its usual place at the bottom right
+```

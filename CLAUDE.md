@@ -139,6 +139,10 @@ arch:separation-of-concerns, arch:error-handling, arch:naming
 A feature or behavior change requires a short spec in `docs/superpowers/specs/`: the request
 in João's words, your reading of it, your proposals marked "undecided", out of scope.
 Once the spec is written, STOP and ask for approval. The original request or silence is not approval.
+Every spec ends with an **Acceptance** section written as natural-language tests: `Scenario:` blocks
+in Given/When/Then, in English, inside the spec itself. One scenario per behavior, including the empty,
+error and unknown-address states. There is no test framework for them: when finishing, run each
+scenario by hand in the browser and report which passed. A fixed bug adds a scenario that fails before the fix.
 Spec wrong midway: stop, update it and ask approval for the changed part.
 No spec needed for: typo, formatting, docs, bug with an obvious local cause.
 
@@ -164,7 +168,7 @@ cause and only then fix. Explain the cause to João in one sentence.
    Green, with the exit code checked, before saying it is done. Do not filter output to hide a failure.
 2. A fixed bug gets a test that fails before and passes after. New rule: break the code
    on purpose, watch the named test fail, restore.
-3. Touched a screen: open it in the browser and go through the empty, error and with-data states.
+3. Touched a screen: open it in the browser and go through the empty, error and with-data states, running the spec's Acceptance scenarios.
 4. Say what you ran and what you saw. What was not run is "not verified".
 5. If the decision changes the architecture: record it in the feature's spec.
 
