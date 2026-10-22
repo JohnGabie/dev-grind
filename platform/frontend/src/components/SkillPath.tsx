@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, type CSSProperties, useLayoutEffect, useRef, useState } from 'react'
 import {
   placeSkillPath,
   FRACTION_GAP,
@@ -8,7 +8,6 @@ import {
   LABEL_GAP,
   LABEL_TITLE_H,
   LABEL_W,
-  LANE_X,
   NODE,
   NODE_RADIUS,
   OPTIONAL_WORD_GAP,
@@ -19,9 +18,10 @@ import {
 } from '../lib/skillPath'
 import type { Section } from '../lib/courseModel'
 
-const MIN_LABEL_W = 120
 const READABLE = 'color-mix(in srgb, var(--text) 55%, var(--bg))'
 const NARROW_NODE_SCALE = 0.76
+const NARROW_TEXT_GAP = 6
+const NARROW_SECTION_CHAR = 7.9
 
 function openable(state: NodeState): boolean {
   return state === 'done' || state === 'current' || state === 'optional-open' || state === 'optional-done'
@@ -98,6 +98,22 @@ const RING = ringPath(NODE, NODE_RADIUS, RING_STROKE)
 const RING_PATH = RING.d
 const RING_LENGTH = RING.length
 
+// Chrome drops the line-clamp ellipsis on right-aligned lines, so a clipped text falls back to left alignment.
+function Description({ text, rightAligned, style }: { text: string; rightAligned: boolean; style: CSSProperties }) {
+  const ref = useRef<HTMLSpanElement>(null)
+  const [clipped, setClipped] = useState(false)
+  useLayoutEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const measure = () => setClipped(el.scrollHeight > el.clientHeight + 1)
+    measure()
+    const observer = new ResizeObserver(measure)
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [text])
+  return <span ref={ref} title={text} style={{ ...style, textAlign: rightAligned && !clipped ? 'right' : 'left' }}>{text}</span>
+}
+
 export default function SkillPath({
   courseId,
   sections,
@@ -134,11 +150,21 @@ export default function SkillPath({
   }, [])
   const wide = placeSkillPath(courseId, lessons, completed)
   const narrow = available > 0 && available < wide.width
-  const amp = Math.min(60, Math.max(14, Math.floor((available - LANE_X.left - NODE - FRACTION_GAP - FRACTION_W - LABEL_GAP - MIN_LABEL_W) / 2)))
-  const narrowLanes: Record<Lane, number> = { left: LANE_X.left, center: LANE_X.left + amp, right: LANE_X.left + 2 * amp }
-  const map = narrow ? placeSkillPath(courseId, lessons, completed, { laneX: narrowLanes, labelW: 0 }) : wide
+  const edge = NODE / 2
+  const centerX = Math.min(available - edge - 40, edge + Math.round(available * 0.5))
+  const narrowLanes: Record<Lane, number> = { left: edge, center: centerX, right: available - edge }
+  const map = narrow
+    ? placeSkillPath(courseId, lessons, completed, { laneX: narrowLanes, labelW: 0, fractionBeside: false, branchBelow: true })
+    : wide
   const mapWidth = narrow ? available : map.width
-  const labelWidthFor = (x: number) => narrow ? Math.max(80, available - (x - map.minX) - NODE / 2 - LABEL_GAP) : LABEL_W
+  const originX = narrow ? 0 : map.minX
+  const textLeft = (x: number) => narrow && x > available / 2
+  const labelWidthFor = (node: { x: number; y: number }) => {
+    if (!narrow) return LABEL_W
+    const left = textLeft(node.x)
+    return Math.max(80, left ? node.x - edge - NARROW_TEXT_GAP : available - (node.x + edge + NARROW_TEXT_GAP))
+  }
+  const sectionHalf = (text: string) => (text.length * NARROW_SECTION_CHAR) / 2
   const required = lessons.filter(lesson => !lesson.optional)
   const previousTitle = new Map(required.slice(1).map((lesson, index) => [lesson.key, required[index].title]))
   const targetKey = (map.nodes.find(n => n.state === 'current') ?? map.nodes.find(n => n.state === 'optional-open') ?? map.nodes[0])?.key
@@ -154,7 +180,7 @@ export default function SkillPath({
         <svg
           width={mapWidth}
           height={map.height}
-          viewBox={`${map.minX} ${map.minY} ${mapWidth} ${map.height}`}
+          viewBox={`${originX} ${map.minY} ${mapWidth} ${map.height}`}
           style={{ position: 'absolute', left: 0, top: 0 }}
         >
           {map.strokes.map(stroke => (
@@ -175,7 +201,7 @@ export default function SkillPath({
             key={`${title.place}-${title.x}-${title.y}-${title.text}`}
             style={{
               position: 'absolute',
-              left: title.x - map.minX,
+              left: narrow ? Math.min(Math.max(title.x, sectionHalf(title.text)), available - sectionHalf(title.text)) : title.x - map.minX,
               top: title.y - map.minY,
               transform: 'translateX(-50%)',
               margin: 0,
@@ -196,6 +222,10 @@ export default function SkillPath({
           const locked = !openable(node.state)
           const faded = dimmed(node.state)
           const ratio = node.parts > 1 ? node.partsDone / node.parts : 0
+          const mirrored = textLeft(node.x)
+          const textW = labelWidthFor(node)
+          const boxW = NODE + NARROW_TEXT_GAP + textW
+          const fractionColor = fade(ratio === 0 ? (locked ? 'var(--muted)' : 'var(--cyan)') : 'var(--green)', faded)
           return (
             <button
               key={node.key}
@@ -205,23 +235,24 @@ export default function SkillPath({
               onClick={() => { if (locked) return; onOpen(node.key) }}
               style={{
                 position: 'absolute',
-                left: node.x - map.minX - NODE / 2,
+                left: narrow ? (mirrored ? node.x + NODE / 2 - boxW : node.x - NODE / 2) : node.x - map.minX - NODE / 2,
                 top: node.y - map.minY - NODE / 2,
-                width: NODE + LABEL_GAP + labelWidthFor(node.x),
+                width: narrow ? boxW : NODE + LABEL_GAP + textW,
                 display: 'flex',
+                flexDirection: narrow && mirrored ? 'row-reverse' : 'row',
                 alignItems: 'flex-start',
-                gap: LABEL_GAP,
+                gap: narrow ? NARROW_TEXT_GAP : LABEL_GAP,
                 margin: 0,
                 padding: 0,
                 border: 'none',
                 background: 'transparent',
                 color: 'inherit',
                 fontFamily: 'var(--font)',
-                textAlign: 'left',
+                textAlign: narrow && mirrored ? 'right' : 'left',
                 cursor: locked ? 'default' : 'pointer',
               }}
             >
-              {node.parts > 1 && (
+              {node.parts > 1 && !narrow && (
                 <span style={{
                   position: 'absolute',
                   left: -(FRACTION_W + FRACTION_GAP),
@@ -229,9 +260,9 @@ export default function SkillPath({
                   width: FRACTION_W,
                   textAlign: 'right',
                   fontFamily: 'var(--font)',
-                  fontSize: narrow ? 'var(--fs-base)' : 16,
+                  fontSize: 16,
                   lineHeight: '22px',
-                  color: fade(ratio === 0 ? (locked ? 'var(--muted)' : 'var(--cyan)') : 'var(--green)', faded),
+                  color: fractionColor,
                   background: 'var(--bg)',
                 }}>
                   {node.partsDone}/{node.parts}
@@ -276,24 +307,44 @@ export default function SkillPath({
                   </svg>
                 )}
               </span>
-              <span style={{ display: 'block', width: labelWidthFor(node.x), minWidth: 0 }}>
-                <span style={{
-                  display: 'block',
-                  height: LABEL_TITLE_H,
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  fontFamily: 'var(--font)',
-                  fontSize: narrow ? 'var(--fs-lg)' : 20,
-                  lineHeight: `${LABEL_TITLE_H}px`,
-                  color: fade(faded ? 'var(--muted)' : 'var(--text)', faded),
-                  background: 'var(--bg)',
-                }}>
-                  {node.title}
+              <span style={{ display: 'block', width: textW, minWidth: 0 }}>
+                <span style={narrow ? {
+                  display: 'flex',
+                  alignItems: 'baseline',
+                  justifyContent: mirrored ? 'flex-end' : 'flex-start',
+                  gap: NARROW_TEXT_GAP,
+                } : { display: 'block' }}>
+                  <span style={narrow ? {
+                    minWidth: 0,
+                    overflowWrap: 'anywhere',
+                    fontFamily: 'var(--font)',
+                    fontSize: 'var(--fs-lg)',
+                    lineHeight: '22px',
+                    color: fade(faded ? 'var(--muted)' : 'var(--text)', faded),
+                  } : {
+                    display: 'block',
+                    height: LABEL_TITLE_H,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'nowrap',
+                    fontFamily: 'var(--font)',
+                    fontSize: 20,
+                    lineHeight: `${LABEL_TITLE_H}px`,
+                    color: fade(faded ? 'var(--muted)' : 'var(--text)', faded),
+                    background: 'var(--bg)',
+                  }}>
+                    {node.title}
+                  </span>
+                  {narrow && node.parts > 1 && (
+                    <span style={{ flexShrink: 0, fontFamily: 'var(--font)', fontSize: 'var(--fs-sm)', lineHeight: '22px', color: fractionColor }}>
+                      {node.partsDone}/{node.parts}
+                    </span>
+                  )}
                 </span>
                 {node.description.trim() && (
-                  <span
-                    title={node.description}
+                  <Description
+                    text={node.description}
+                    rightAligned={narrow && mirrored}
                     style={{
                       display: '-webkit-box',
                       WebkitLineClamp: narrow ? 3 : 2,
@@ -304,12 +355,10 @@ export default function SkillPath({
                       fontFamily: 'var(--font)',
                       fontSize: narrow ? 'var(--fs-base)' : 18,
                       lineHeight: narrow ? '20px' : '24px',
-                      color: fade(READABLE, faded),
+                      color: fade(READABLE, faded && !narrow),
                       background: 'var(--bg)',
                     }}
-                  >
-                    {node.description}
-                  </span>
+                  />
                 )}
                 {node.optional && (
                   <span style={{

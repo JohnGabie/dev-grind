@@ -199,14 +199,14 @@ function labelBlockHeight(node: { description: string; optional: boolean }): num
   return height
 }
 
-function frame(nodes: PlacedNode[], strokes: PlacedStroke[], sectionTitles: PlacedSectionTitle[], labelW: number): SkillMap {
+function frame(nodes: PlacedNode[], strokes: PlacedStroke[], sectionTitles: PlacedSectionTitle[], labelW: number, fractionBeside: boolean): SkillMap {
   let minX = 0
   let maxX = COLUMN_W
   let minY = 0
   let maxY = PAD_TOP
   for (const node of nodes) {
     minX = Math.min(minX, node.x - NODE / 2)
-    if (node.parts > 1) minX = Math.min(minX, node.x - NODE / 2 - FRACTION_GAP - FRACTION_W)
+    if (fractionBeside && node.parts > 1) minX = Math.min(minX, node.x - NODE / 2 - FRACTION_GAP - FRACTION_W)
     maxX = Math.max(maxX, node.x + NODE / 2 + LABEL_GAP + labelW)
     minY = Math.min(minY, node.y - NODE / 2)
     const labelBottom = node.y - NODE / 2 + labelBlockHeight(node)
@@ -226,11 +226,14 @@ function frame(nodes: PlacedNode[], strokes: PlacedStroke[], sectionTitles: Plac
 export interface PathOptions {
   labelW?: number
   laneX?: Record<Lane, number>
+  fractionBeside?: boolean
+  branchBelow?: boolean
 }
 
 export function placeSkillPath(courseId: string, lessons: readonly PathLesson[], completed: readonly string[], options: PathOptions = {}): SkillMap {
   const labelW = options.labelW ?? LABEL_W
   const laneX = options.laneX ?? LANE_X
+  const fractionBeside = options.fractionBeside ?? true
   const done = new Set(completed)
   const required = lessons.filter(lesson => !lesson.optional)
   const firstSide = courseBranchSide(courseId)
@@ -263,7 +266,7 @@ export function placeSkillPath(courseId: string, lessons: readonly PathLesson[],
       const top = PAD_TOP + index * TITLE_BLOCK + (TITLE_BLOCK - TITLE_LINE) / 2
       sectionTitles.push({ text: sample.sectionTitle, x: laneX.center, y: top, place: 'band' })
     })
-    return frame(nodes, strokes, sectionTitles, labelW)
+    return frame(nodes, strokes, sectionTitles, labelW, fractionBeside)
   }
 
   const lanes = mainLanes(courseId, required.length)
@@ -274,30 +277,6 @@ export function placeSkillPath(courseId: string, lessons: readonly PathLesson[],
     seen.add(lesson.sectionIndex)
     sectionStarts.push(index)
   })
-  const current = required.find(lesson => !done.has(lesson.key))?.key ?? null
-  const requiredPos = new Map<string, { x: number; y: number }>()
-  required.forEach((lesson, index) => {
-    const x = laneX[lanes[index]]
-    const y = mainNodeY(index, sectionStarts)
-    requiredPos.set(lesson.key, { x, y })
-    const state: NodeState = done.has(lesson.key) ? 'done' : lesson.key === current ? 'current' : 'locked'
-    nodes.push({ key: lesson.key, title: lesson.title, description: lesson.description, optional: false, state, x, y, ...partProgress(lesson, done.has(lesson.key)) })
-  })
-  for (let index = 0; index < required.length - 1; index++) {
-    const from = requiredPos.get(required[index].key)!
-    const to = requiredPos.get(required[index + 1].key)!
-    strokes.push({ d: connector(from.x, from.y, to.x, to.y), width: 8 })
-  }
-
-  const titleBySection = new Map<number, Box>()
-  for (const start of sectionStarts) {
-    const lesson = required[start]
-    const pos = requiredPos.get(lesson.key)!
-    const top = pos.y - NODE / 2 - TITLE_BLOCK + (TITLE_BLOCK - TITLE_LINE) / 2
-    sectionTitles.push({ text: lesson.sectionTitle, x: laneX.center, y: top, place: 'band' })
-    titleBySection.set(lesson.sectionIndex, titleBox(laneX.center, top, lesson.sectionTitle))
-  }
-
   const groups = new Map<string, PathLesson[]>()
   for (const lesson of required) groups.set(lesson.key, [])
   const beforeFirst: PathLesson[] = []
@@ -312,13 +291,52 @@ export function placeSkillPath(courseId: string, lessons: readonly PathLesson[],
   }
   if (beforeFirst.length > 0) groups.get(required[0].key)!.unshift(...beforeFirst)
 
+  const branchBelow = options.branchBelow ?? false
+  const shift = new Map<string, number>()
+  let pushed = 0
+  for (const lesson of required) {
+    shift.set(lesson.key, pushed)
+    if (branchBelow) pushed += groups.get(lesson.key)!.length * V_STEP
+  }
+  const current = required.find(lesson => !done.has(lesson.key))?.key ?? null
+  const requiredPos = new Map<string, { x: number; y: number }>()
+  required.forEach((lesson, index) => {
+    const x = laneX[lanes[index]]
+    const y = mainNodeY(index, sectionStarts) + (shift.get(lesson.key) ?? 0)
+    requiredPos.set(lesson.key, { x, y })
+    const state: NodeState = done.has(lesson.key) ? 'done' : lesson.key === current ? 'current' : 'locked'
+    nodes.push({ key: lesson.key, title: lesson.title, description: lesson.description, optional: false, state, x, y, ...partProgress(lesson, done.has(lesson.key)) })
+  })
+  for (let index = 0; index < required.length - 1; index++) {
+    const parentPos = requiredPos.get(required[index].key)!
+    const below = branchBelow ? groups.get(required[index].key)!.length : 0
+    const from = below > 0 ? { x: parentPos.x, y: parentPos.y + below * V_STEP } : parentPos
+    const to = requiredPos.get(required[index + 1].key)!
+    strokes.push({ d: connector(from.x, from.y, to.x, to.y), width: 8 })
+  }
+
+  const titleBySection = new Map<number, Box>()
+  for (const start of sectionStarts) {
+    const lesson = required[start]
+    const pos = requiredPos.get(lesson.key)!
+    const top = pos.y - NODE / 2 - TITLE_BLOCK + (TITLE_BLOCK - TITLE_LINE) / 2
+    sectionTitles.push({ text: lesson.sectionTitle, x: laneX.center, y: top, place: 'band' })
+    titleBySection.set(lesson.sectionIndex, titleBox(laneX.center, top, lesson.sectionTitle))
+  }
+
   for (const [anchorKey, optionals] of groups) {
     const parent = requiredPos.get(anchorKey)!
     const reached = anchorKey === current || done.has(anchorKey)
     optionals.forEach((lesson, index) => {
-      const spot = branchPlacement(parent.x, parent.y, index, firstSide)
+      const spot = branchBelow
+        ? { x: parent.x, y: parent.y + (index + 1) * V_STEP, side: 1 as const }
+        : branchPlacement(parent.x, parent.y, index, firstSide)
       const state: NodeState = done.has(lesson.key) ? 'optional-done' : reached ? 'optional-open' : 'optional-locked'
       nodes.push({ key: lesson.key, title: lesson.title, description: lesson.description, optional: true, state, x: spot.x, y: spot.y, ...partProgress(lesson, done.has(lesson.key)) })
+      if (branchBelow) {
+        strokes.push({ d: `M ${spot.x} ${spot.y - V_STEP} L ${spot.x} ${spot.y}`, width: 5 })
+        return
+      }
       const x0 = parent.x + spot.side * (NODE / 2)
       const x1 = spot.x - spot.side * (NODE / 2)
       strokes.push({ d: `M ${x0} ${parent.y} L ${x1} ${parent.y}`, width: 5 })
@@ -348,5 +366,5 @@ export function placeSkillPath(courseId: string, lessons: readonly PathLesson[],
     }
   }
 
-  return frame(nodes, strokes, sectionTitles, labelW)
+  return frame(nodes, strokes, sectionTitles, labelW, fractionBeside)
 }
