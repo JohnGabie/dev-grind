@@ -176,6 +176,18 @@ help from AI.
 - **Audio later:** AI-generated audiobook. João reads, but staying in a text is hard for him without audio.
 - **Books as raw material:** build a course from a book; from the page or chapter being read, ask the chat for an
   exercise right there, saved with it.
+- **Private study from a book (João, 2026-10-22).** The learner can ask the AI to create exercises and other material
+  based on their book; it stays on the platform for them and **cannot be published**. The AI uses the book as its
+  base so it does not invent ("delirar"), and what it produces does not reproduce the book's text.
+  - *Why this is the safer path (research, not legal advice):* ideas, methods and systems are not protected (Lei
+    9.610 art. 8), only the text; exercises that teach a book's ideas in new words do not copy it. Keeping them private
+    helps, but Brazil's private-copy exception is narrow (small excerpts, one copy, by the person, no profit — art. 46
+    II), so the weak spots are storing the whole book and sending its pages to an AI provider. In the US, a 2025
+    ruling found training on lawfully acquired books fair use and pirated copies not; tools that reproduce text in
+    their answers are being challenged. Brazil's AI bill (PL 2.338) is still pending.
+  - *What follows:* the learner states they own the book lawfully; book-based material is private and never
+    publishable; generated material quotes at most short passages with the source; MCP returns excerpts, not pages;
+    the lawyer review (section 13) covers it.
 - **History outlives the book:** if the learner deletes a book (to free the slot), the content goes, but the record
   stays — that they read it, how much, and what they did with it.
 
@@ -220,7 +232,7 @@ Community articles; interview preparation.
 - **Earn:** selling a course in the store, or grinding — pages read, courses, katas, exercises, maybe community
   articles. **Retained mastery pays more than activity:** a concept recalled days later (spaced review) is worth more
   than finishing things.
-- **Spend:** community courses, the publishing fee, book slots, later personalization items.
+- **Spend:** community courses, the publishing fee, book slots, later store items (7.3).
 - **Buy with real money**, as a way to sponsor; in the native app this goes through the store's in-app purchase.
 - **Cash-out:** maybe later; design so the door is not closed. Until then coins are platform credit.
 - **A tight economy, on purpose:** easy to earn a few coins, hard to save enough for a course; tuned over time from
@@ -231,13 +243,26 @@ Community articles; interview preparation.
   "learn without paying"; the exact free line is still open.*
 - **Subscription extras:** boosters (XP, level, getting courses), maybe books, maybe prize draws (draws need
   authorization; boosters must not buy measured proficiency — section 10).
-- **Personalization (later, not MVP):** Steam-like profile, guild page and homepage customization, sold in the store,
-  including items made by other learners.
 - **Inflation, an open disagreement.** João: there is no inflation, because coins always come back to users and, at
   worst, the platform ends up with more courses. *Claude's counterpoint:* coins minted from activity (fake reading
   included) are new money, not transfers; when they grow faster than what is spent, the tight economy loosens and the
   platform's own prices (publishing fee, slots) lose their effect. Harmless while there is no cash-out; it becomes
   real money the day cash-out opens. Proposed: watch the coin supply from day one and decide caps before any cash-out.
+
+### 7.3 The store and personalization (after the MVP)
+- **What it sells:**
+  - *visual items* — themes for the platform and the editor, profile background and frame, guild banner, effects:
+    Steam-like personalization that does not change learning;
+  - *content* — community courses and book slots;
+  - *boosters* — they speed up coins or access, never the measured proficiency;
+  - *items made by learners* — learners create and sell visual items, like Steam's creator market.
+- **Rarity without luck.** Rare, seasonal and event items exist, always bought or earned directly — never random
+  boxes (loot boxes are treated as gambling in several countries, and Apple requires showing the odds).
+- **Achievement-only items.** Some items cannot be bought, only earned: mastering a concept, passing the master
+  measure, winning a hackathon. A sign of learning that money does not buy.
+- **Rewards for creators and contributors.** The author earns from each sale. Someone whose contribution (the course
+  "pull request" in 5.1) was accepted earns a small percentage of the course's sales, and that share grows as they
+  keep contributing. *(Claude's reading: whether the platform keeps a fee on sales is still open.)*
 
 ## 8. Platforms
 
