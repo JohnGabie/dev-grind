@@ -45,6 +45,8 @@ is the platform he wants to have. Success is not measured in user count.
 - Beginners, who need a path; and experienced developers (mid-level, senior), who need to find the one part they
   do not know or forgot, prove the rest, and move on.
 - João first: the first learner and the test bench.
+- **Maybe in the future, companies:** teams using DevGrind to reduce comprehension debt, or to onboard developers
+  into a codebase. Recorded as a possibility, not designed.
 
 ## 3. What makes it different
 
@@ -81,7 +83,17 @@ This is the core of the product. The rest is built on it.
   (level, gaps, progress). Raw process data (keystrokes, deletions, tab switches) never leaves. The learner can
   export and delete their own data.
 
-### 4.2 Leveling
+### 4.2 The first session
+A mix of conversation with the AI and cards, not a bare chat:
+1. The learner marks what they are proficient in and what they can do, on cards.
+2. The AI follows up like a test: "show me roughly what this code is doing" — checking what they really know from
+   the first minutes.
+3. A short test, then a first picture of where they are. A deeper test can come later, so the first visit is not a
+   burden.
+4. Setting up the account and this data may take a while, so it can be skipped; the dashboard then reminds them to
+   finish it.
+
+### 4.3 Leveling
 - A **general test from time to time**, suggested by the platform or taken whenever the learner wants, comparing
   where they started with where they are now.
 - A **test before a course or track**, to check it really fits their level.
@@ -91,7 +103,7 @@ This is the core of the product. The rest is built on it.
   time for CSS"; or "go back and fix this first".
 - **Book recommendations** along the path the learner is taking.
 
-### 4.3 The skill map everything is measured against
+### 4.4 The skill map everything is measured against
 Leveling, skips, badges and recommendations need one shared map of skills, and community courses declare which
 skills they teach.
 - **Start from outside knowledge, not our own.** Anchor the map on an external, open source of knowledge, so the
@@ -100,10 +112,12 @@ skills they teach.
   asks for, and adjust the map from that. It will always need adjusting; an agent could keep it current with that data.
 - Which external source to anchor on is still to be researched.
 
-### 4.4 A real learner profile
+### 4.5 A real learner profile
 Built from real data. The platform uses it to encourage; agents use it to build courses specialized for that learner.
+**Optionally public, as a portfolio:** the learner can make their profile public — levels, badges, katas, courses
+they built — to show recruiters.
 
-### 4.5 The master measure: is the learner really understanding?
+### 4.6 The master measure: is the learner really understanding?
 A repeatable check of the end goal, independent of any course: read unfamiliar code and say what it does, without AI.
 It also checks that the learner really understands what they chose to study and read. It is the measure that says
 whether comprehension debt is going down, and the one that keeps "precise" honest and tells coming back to learn
@@ -111,16 +125,16 @@ apart from coming back for nothing.
 *(Claude's reading: technical debt comes up here too — the check can include spotting what is wrong or fragile in a
 piece of code, not only predicting its behavior.)*
 
-### 4.6 Learner data also measures the content
+### 4.7 Learner data also measures the content
 The same data that profiles learners measures each community course and step: how hard it is and how much it
 actually teaches. Course quality comes from evidence, not only from votes.
 
-### 4.7 An algorithm that does not get stuck
+### 4.8 An algorithm that does not get stuck
 The adaptive algorithm must not get "addicted" to its own patterns: no loops that keep serving the same kind of
 exercise, the same concept or the same difficulty, no self-reinforcing bias from its own past choices. It explores,
 re-checks its picture of the learner, and changes course when the data says so.
 **The platform itself being habit-forming is good** — learners coming back because they are learning. *(Claude's
-reading: the master measure (4.5) is what keeps that true; returning that does not move it is a warning sign.)*
+reading: the master measure (4.6) is what keeps that true; returning that does not move it is a warning sign.)*
 
 *(Claude's reading: this can build on known methods — per-concept mastery estimates from classic tutoring systems,
 spaced repetition for when to review, AI for generating content and reading open answers. Evidence in
@@ -189,6 +203,15 @@ Community articles; interview preparation.
 
 ### 7.1 Community
 - Guilds and communities; learners share and collaborate.
+- **Reddit-like discussions everywhere.** As on Codewars, finishing a kata opens a discussion of the solutions with
+  others; the same exists for courses, books and other content.
+- **Subcommunities that emerge.** Subcommunities (like subreddits) per book, course or topic. Anyone can create a
+  specific one, and they also form on their own where people are already talking about something.
+- **Findable on the web.** Discussions can be public and indexed by search engines: someone searching for opinions on
+  a book lands in the DevGrind community. This also helps the platform's ranking.
+- How to do all this well still needs design.
+- **Moderation in layers:** reports from anyone, AI triage, João, the community and community moderators. (The
+  notice-and-takedown regime in section 13 makes reports and takedown mandatory anyway.)
 - **Guilds** are for: study groups; mentoring (more advanced members help beginners); building and improving courses
   together; challenges between guilds — hackathons, guild-vs-guild battles — and other dynamics later. A guild can
   link its own Discord.
@@ -311,7 +334,7 @@ Found by reading the vision against itself and the research. Each needs a decisi
 1. **Comprehension debt comes back through course authoring.** A beginner asks the AI for a React course and cannot
    tell whether it is right, then publishes it and others pay for it. The product would sell the very debt it fights.
    **Decided:** the publishing gate (5.1) — fee in coins, author passes their own course, automatic validator,
-   "in testing" until community review — plus data-based quality (4.6).
+   "in testing" until community review — plus data-based quality (4.7).
 2. **"No catalog" meets the cold start.** At launch there is no community, so the only courses are made by João with
    AI — in practice a catalog. **Decided:** a seed phase (5.1).
 3. **Trusting the learner vs a currency.** No anti-cheat is fine for learning, but fake activity mints coins.
@@ -329,7 +352,7 @@ Found by reading the vision against itself and the research. Each needs a decisi
    learners they are guesswork. **Decided:** start from research priors and external public datasets — also as input
    for the Learning Advisor — and collect process data from the MVP on.
 7. **Boosters, battles, streaks and draws.** ~~vs "not addictive"~~ — **resolved by João:** "not addictive" was about
-   the internal algorithm not getting stuck in loops (4.7), not the platform; a platform people return to in order to
+   the internal algorithm not getting stuck in loops (4.8), not the platform; a platform people return to in order to
    learn is good. Remaining watch point *(Claude)*: a mechanic that brings people back without moving the master
    measure is engagement, not learning.
 8. **"Our own AI".** Training a model is out of reach; realistically it is an agent with our tools, skills and
@@ -342,6 +365,12 @@ Found by reading the vision against itself and the research. Each needs a decisi
 10. **Scope vs one part-time developer.** Web, native app, two languages, several runtimes, a marketplace and an
     adaptive engine. **João's call: flexible** — the MVP (section 11) guides, and he can pull something from outside
     it when he wants.
+11. **A public portfolio vs "trust the learner".** Without anti-cheat, a badge means "self-paced", which is fine for
+    the learner but weak for a recruiter. *Possible answer (Claude):* the public profile marks which results came
+    from checks the platform ran itself (master measure, platform-run katas) and which are self-paced. To decide.
+12. **Public, indexed discussions vs privacy and books.** Indexing brings people in, but posts become public by
+    default. *Possible answer (Claude):* learners choose what is public; a book's discussion never quotes more than
+    short passages.
 
 ## 15. Beliefs this vision rests on (to test, not assume)
 
@@ -349,7 +378,7 @@ The product is built on expectations nobody has tested yet. Each one gets the ch
 
 | # | Belief | Why it might be wrong | Earliest signal |
 |---|---|---|---|
-| B1 | Fine process data makes recommendations better than results alone | It may add noise; the research is promising but early | Compare recommendations with and without process data on the master measure (4.5) |
+| B1 | Fine process data makes recommendations better than results alone | It may add noise; the research is promising but early | Compare recommendations with and without process data on the master measure (4.6) |
 | B2 | Building a course with AI makes the author learn | The AI may do the thinking (section 14, bug 1) | Master measure before and after authoring |
 | B3 | The community will consolidate good courses | Too few people; incentives favor quantity | Reuse and contribution counts per course; share of learners on consolidated courses |
 | B4 | A leveling test lets experienced devs skip safely | The test may not measure what the course teaches | Learners who skipped vs who completed, on later katas |
