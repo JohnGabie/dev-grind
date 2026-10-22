@@ -1,4 +1,4 @@
-import { useEffect, type CSSProperties, useLayoutEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, type CSSProperties, useLayoutEffect, useRef, useState } from 'react'
 import {
   placeSkillPath,
   FRACTION_GAP,
@@ -103,16 +103,13 @@ const RING_PATH = RING.d
 const RING_LENGTH = RING.length
 
 // Chrome drops the line-clamp ellipsis on right-aligned lines, so the narrow layout cuts the text itself.
-function ClampText({ text, lines, lineHeight, style }: { text: string; lines: number; lineHeight: number; style: CSSProperties }) {
+function ClampText({ text, lines, lineHeight, style, onFit }: { text: string; lines: number; lineHeight: number; style: CSSProperties; onFit: () => void }) {
   const ref = useRef<HTMLSpanElement>(null)
   useLayoutEffect(() => {
     const el = ref.current
     if (!el) return
     const limit = lines * lineHeight + 1
-    let width = -1
-    const fit = (force: boolean) => {
-      if (!force && el.clientWidth === width) return
-      width = el.clientWidth
+    const cut = () => {
       el.textContent = text
       if (el.scrollHeight <= limit) return
       const words = text.split(' ')
@@ -126,9 +123,13 @@ function ClampText({ text, lines, lineHeight, style }: { text: string; lines: nu
       }
       el.textContent = words.slice(0, lo).join(' ') + '…'
     }
-    const refit = () => fit(true)
-    fit(true)
-    const observer = new ResizeObserver(() => fit(false))
+    const fit = () => {
+      cut()
+      onFit()
+    }
+    const refit = fit
+    fit()
+    const observer = new ResizeObserver(fit)
     observer.observe(el)
     void document.fonts.ready.then(refit)
     document.fonts.addEventListener('loadingdone', refit)
@@ -136,7 +137,7 @@ function ClampText({ text, lines, lineHeight, style }: { text: string; lines: nu
       observer.disconnect()
       document.fonts.removeEventListener('loadingdone', refit)
     }
-  }, [text, lines, lineHeight])
+  }, [text, lines, lineHeight, onFit])
   return <span ref={ref} title={text} style={{ ...style, display: 'block' }} />
 }
 
@@ -203,23 +204,28 @@ export default function SkillPath({
   const targetKey = (map.nodes.find(n => n.state === 'current') ?? map.nodes.find(n => n.state === 'optional-open') ?? map.nodes[0])?.key
   const targetRef = useRef<HTMLSpanElement>(null)
 
+  const measure = useCallback(() => {
+    const next: Record<string, number> = {}
+    innerRef.current?.querySelectorAll<HTMLButtonElement>(':scope > button').forEach(button => {
+      if (button.dataset.key) next[button.dataset.key] = Math.ceil(button.offsetHeight)
+    })
+    setHeights(prev => {
+      const keys = Object.keys(next)
+      return keys.length === Object.keys(prev).length && keys.every(key => prev[key] === next[key]) ? prev : next
+    })
+  }, [])
+
   useLayoutEffect(() => {
     if (!narrow) return
-    const measure = () => {
-      const next: Record<string, number> = {}
-      innerRef.current?.querySelectorAll<HTMLButtonElement>(':scope > button').forEach(button => {
-        if (button.dataset.key) next[button.dataset.key] = Math.ceil(button.offsetHeight)
-      })
-      setHeights(prev => {
-        const keys = Object.keys(next)
-        return keys.length === Object.keys(prev).length && keys.every(key => prev[key] === next[key]) ? prev : next
-      })
-    }
-    measure()
+    const observer = new ResizeObserver(measure)
+    innerRef.current?.querySelectorAll(':scope > button').forEach(button => observer.observe(button))
     const later = () => { requestAnimationFrame(measure) }
     void document.fonts.ready.then(later)
     document.fonts.addEventListener('loadingdone', later)
-    return () => document.fonts.removeEventListener('loadingdone', later)
+    return () => {
+      observer.disconnect()
+      document.fonts.removeEventListener('loadingdone', later)
+    }
   })
 
   useEffect(() => {
@@ -402,6 +408,7 @@ export default function SkillPath({
                 )}
                 {node.description.trim() && !(narrow && node.optional && textW < MIN_OPTIONAL_DESC_W) && (narrow ? (
                   <ClampText
+                    onFit={measure}
                     text={node.description}
                     lines={3}
                     lineHeight={20}
@@ -462,7 +469,7 @@ export default function SkillPath({
                     background: 'var(--bg)',
                   }
                   return narrow
-                    ? <ClampText text={reason} lines={2} lineHeight={20} style={style} />
+                    ? <ClampText onFit={measure} text={reason} lines={2} lineHeight={20} style={style} />
                     : <span style={{ ...style, display: 'block' }}>{reason}</span>
                 })()}
               </span>

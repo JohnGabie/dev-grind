@@ -306,9 +306,11 @@ function placeStacked(
     requiredNodes.forEach((node, index) => {
       const group = nodes.filter((other, at) => other.optional && anchors[at] === node.key && other.y > node.y)
       const endY = group.length > 0 ? group[group.length - 1].y : node.y
-      if (endY > node.y) strokes.push({ d: `M ${pathNum(node.x)} ${pathNum(node.y)} L ${pathNum(node.x)} ${pathNum(endY)}`, width: 8 })
       const next = requiredNodes[index + 1]
-      if (next) strokes.push({ d: connector(node.x, endY, next.x, next.y), width: 8 })
+      if (next) {
+        if (endY > node.y) strokes.push({ d: `M ${pathNum(node.x)} ${pathNum(node.y)} L ${pathNum(node.x)} ${pathNum(endY)}`, width: 8 })
+        strokes.push({ d: connector(node.x, endY, next.x, next.y), width: 8 })
+      }
       group.forEach((child, at) => {
         if (at === 0) thin(node.x, node.y, child.x, child.y)
         else strokes.push({ d: `M ${pathNum(child.x)} ${pathNum(group[at - 1].y)} L ${pathNum(child.x)} ${pathNum(child.y)}`, width: 5 })
