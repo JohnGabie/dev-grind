@@ -19,7 +19,8 @@ economy rewards learning that lasts and contributions that help others. It ships
 
 **Pillars:** (1) measure precisely and adapt — the heart; (2) learn by doing real work; (3) community-built content
 on a shared, tested format; (4) an economy that rewards retained learning and value to others; (5) ethics: no
-addiction, no manipulation, the learner's data serves the learner.
+manipulation, the learner's data serves the learner. A platform people come back to because they are learning is
+the goal; an adaptive algorithm stuck in loops is the failure.
 
 Sections 13-15 hold the reality check: legal questions, conceptual bugs in this vision, and the beliefs it rests on
 that have not been tested yet.
@@ -105,7 +106,8 @@ Built from real data. The platform uses it to encourage; agents use it to build 
 ### 4.5 The master measure: is the learner really understanding?
 A repeatable check of the end goal, independent of any course: read unfamiliar code and say what it does, without AI.
 It also checks that the learner really understands what they chose to study and read. It is the measure that says
-whether comprehension debt is going down, and the one that keeps "precise" and "not addictive" honest.
+whether comprehension debt is going down, and the one that keeps "precise" honest and tells coming back to learn
+apart from coming back for nothing.
 *(Claude's reading: technical debt comes up here too — the check can include spotting what is wrong or fragile in a
 piece of code, not only predicting its behavior.)*
 
@@ -113,8 +115,12 @@ piece of code, not only predicting its behavior.)*
 The same data that profiles learners measures each community course and step: how hard it is and how much it
 actually teaches. Course quality comes from evidence, not only from votes.
 
-### 4.7 Not addictive
-The algorithm must be genuinely smart about learning, not an engagement trap.
+### 4.7 An algorithm that does not get stuck
+The adaptive algorithm must not get "addicted" to its own patterns: no loops that keep serving the same kind of
+exercise, the same concept or the same difficulty, no self-reinforcing bias from its own past choices. It explores,
+re-checks its picture of the learner, and changes course when the data says so.
+**The platform itself being habit-forming is good** — learners coming back because they are learning. *(Claude's
+reading: the master measure (4.5) is what keeps that true; returning that does not move it is a warning sign.)*
 
 *(Claude's reading: this can build on known methods — per-concept mastery estimates from classic tutoring systems,
 spaced repetition for when to review, AI for generating content and reading open answers. Evidence in
@@ -125,7 +131,16 @@ spaced repetition for when to review, AI for generating content and reading open
 ### 5.1 Courses
 Built by learners with AI (researched, requested, edited), shared or kept private. The platform supplies step types
 and validation. Courses can be based on a book, on a request in the chat, or on the learner's profile.
-- **Publishing costs G-Coins**, so the store is not flooded with useless courses.
+- **Seed phase.** At launch there is no community, so the platform publishes seed courses (made with AI, validated),
+  free, as the base. The community takes over from there.
+- **Publishing gate.** Before a course goes public: the author pays the publishing fee in G-Coins (section 7.2);
+  the author passes their own course's katas and comprehension check (if you do not understand what you publish,
+  you do not publish); an automatic validator checks the format, that tests run and pass, cited sources and no
+  copied book passages; the course enters as "in testing" and becomes public after real use and community review.
+- **Based on or inspired by a book: yes, in its own words.** Ideas, methods and systems are not protected by
+  copyright (Brazil, Lei 9.610 art. 8); the text is. A course can follow a book's ideas and structure, quote short
+  passages with author and source for teaching (art. 46), never copy its text. Selling such a course is a question
+  for the lawyer review (section 13).
 - **Contributions, not forks.** Anyone can propose an improvement to a published course, like a pull request; the
   author reviews and accepts it. *(Claude's reading: contributors get credit; learners midway through a course keep
   their progress when it gets a new version.)*
@@ -158,32 +173,48 @@ Community articles; interview preparation.
 - **Today: bring your own AI.** No budget to provide AI, so the learner connects their account through MCP and
   talks to the platform from the terminal or whatever tool they already use; agents answer and create content.
   There is also an in-app chat that takes the learner's own key.
+- **A quality layer around any AI, ours or the learner's.** Besides MCP, the platform ships **skills** for the
+  learner's agent (or the MCP itself serves them), and the MCP enforces clear, strict rules. With the tests, this
+  gives a decent quality bar — not perfect, good enough. Example: a learner asks for a TypeScript course, but a
+  consolidated TypeScript course already exists — the platform steers them to it and to reaching a level X, instead
+  of generating yet another one.
 - **Future: subscription.** The platform provides its own AI — "written by us" — and everything happens inside it.
   Most of the token cost is passed through to the subscriber, with extra features on top: boosters (XP, level,
   getting courses), maybe books, maybe prize draws.
 - **Future: no AI needed at all.** Today the platform needs the learner's AI, because there are no courses yet. The
   aim is that a learner can pick free courses, learn alone, earn G-Coins and buy courses without any AI, without
-  paying money and without spending coins they did not earn. Whether the platform itself should make some basic,
-  higher-quality courses is open.
+  paying money and without spending coins they did not earn. The seed courses (5.1) are the platform's own.
 
-## 7. Community and economy
+## 7. Community and the internal economy
 
-- **Community:** guilds and communities; learners share and collaborate.
+### 7.1 Community
+- Guilds and communities; learners share and collaborate.
 - **Guilds** are for: study groups; mentoring (more advanced members help beginners); building and improving courses
   together; challenges between guilds — hackathons, guild-vs-guild battles — and other dynamics later. A guild can
   link its own Discord.
-- **G-Coins:** the virtual currency.
-  - **Earn** by selling a course in the store, or by grinding: pages read, courses, katas, exercises, and maybe
-    community articles.
-  - **Retained mastery pays more than activity:** a concept recalled days later (spaced review) is worth more than
-    finishing things. This aligns the grind with the research instead of fighting it.
-  - **Spend** on community courses, book slots and, later, personalization items.
-  - **Cash-out:** maybe later. Not decided; design so the door is not closed (until then coins are platform credit).
-  - **Buy with real money**, as a way to sponsor.
-  - **A tight economy, on purpose.** Easy to earn a few coins, hard to save enough for a course. The balance is tuned
-    over time from the community's behavior and feedback.
+
+### 7.2 The internal economy (everything about G-Coins in one place)
+- **Earn:** selling a course in the store, or grinding — pages read, courses, katas, exercises, maybe community
+  articles. **Retained mastery pays more than activity:** a concept recalled days later (spaced review) is worth more
+  than finishing things.
+- **Spend:** community courses, the publishing fee, book slots, later personalization items.
+- **Buy with real money**, as a way to sponsor; in the native app this goes through the store's in-app purchase.
+- **Cash-out:** maybe later; design so the door is not closed. Until then coins are platform credit.
+- **A tight economy, on purpose:** easy to earn a few coins, hard to save enough for a course; tuned over time from
+  the community's behavior and feedback.
+- **Generosity toward dedicated learners:** the platform can gift courses or give generous rewards to learners who
+  show dedication, so a tight economy never locks out someone who is really learning.
+- **Free:** seed courses and the learning core (leveling, master measure, profile, katas) — *Claude's reading of
+  "learn without paying"; the exact free line is still open.*
+- **Subscription extras:** boosters (XP, level, getting courses), maybe books, maybe prize draws (draws need
+  authorization; boosters must not buy measured proficiency — section 10).
 - **Personalization (later, not MVP):** Steam-like profile, guild page and homepage customization, sold in the store,
   including items made by other learners.
+- **Inflation, an open disagreement.** João: there is no inflation, because coins always come back to users and, at
+  worst, the platform ends up with more courses. *Claude's counterpoint:* coins minted from activity (fake reading
+  included) are new money, not transfers; when they grow faster than what is spent, the tight economy loosens and the
+  platform's own prices (publishing fee, slots) lose their effect. Harmless while there is no cash-out; it becomes
+  real money the day cash-out opens. Proposed: watch the coin supply from day one and decide caps before any cash-out.
 
 ## 8. Platforms
 
@@ -196,7 +227,8 @@ Community articles; interview preparation.
 ## 9. Principles and anti-goals
 
 - Not "all AI": algorithms that are proven for learning sit next to AI.
-- Not addictive, no manipulation; data collected only to serve the learner.
+- No manipulation; data collected only to serve the learner. Habit-forming is welcome when it is learning that brings
+  people back; an adaptive algorithm stuck in loops is not.
 - Not a fixed catalog handed down by a teacher.
 - Not puzzles: tasks reflect real work.
 - Precision over volume: be very good at the heart (adaptation) before adding breadth.
@@ -278,27 +310,38 @@ Found by reading the vision against itself and the research. Each needs a decisi
 
 1. **Comprehension debt comes back through course authoring.** A beginner asks the AI for a React course and cannot
    tell whether it is right, then publishes it and others pay for it. The product would sell the very debt it fights.
-   *Possible answer:* the author must pass their own course's katas and comprehension checks before publishing;
-   grounding in sources; review and data-based quality (4.6).
+   **Decided:** the publishing gate (5.1) — fee in coins, author passes their own course, automatic validator,
+   "in testing" until community review — plus data-based quality (4.6).
 2. **"No catalog" meets the cold start.** At launch there is no community, so the only courses are made by João with
-   AI — in practice a catalog. *Answer:* say so: a seed phase with platform-made courses, then community.
-3. **Trusting the learner vs a currency.** No anti-cheat is fine for learning (a cheater fools only themselves), but
-   coins are a shared currency: fake page reading mints coins and devalues what sellers earn, even without cash-out.
-   *Possible answer:* coins come from retained mastery, which is hard to fake; caps on activity rewards.
+   AI — in practice a catalog. **Decided:** a seed phase (5.1).
+3. **Trusting the learner vs a currency.** No anti-cheat is fine for learning, but fake activity mints coins.
+   **Open disagreement**, recorded in 7.2: João sees no inflation; Claude proposes watching coin supply from day one
+   and deciding caps before any cash-out.
 4. **A tight economy vs "learn without paying".** Publishing fees, paid courses and slow coin earning can lock a
-   newcomer out of content. *Possible answer:* a free core of content and learning, always.
+   newcomer out. **João's answer:** gifts and generous rewards for dedicated learners; all economy questions are
+   grouped in 7.2. The exact free line is still open.
 5. **The learner's own AI can undo the pedagogy.** `docs/learning/AI-BEHAVIOR.md` rules only apply to our chat.
-   Through MCP the learner's AI can simply hand over answers — the harm the research measured. *Possible answer:* MCP
-   tools return hints and checks, never solutions (today the solution already never leaves the server).
+   Through MCP the learner's AI can simply hand over answers — the harm the research measured. **João's answer:** a
+   quality layer around any AI — skills shipped with the MCP, strict MCP rules, tests, steering to consolidated
+   courses (section 6). *Claude's addition:* MCP tools return hints and checks, never solutions (today the solution
+   already never leaves the server).
 6. **Precision needs many learners.** Algorithms tuned on behavioral data need a population; with a handful of
-   learners they are guesswork. *Answer:* start from research priors and public datasets; collect from day one.
-7. **Boosters, battles, streaks and draws vs "not addictive".** Each mechanic is small; together they drift toward an
-   engagement product. *Possible answer:* every mechanic is checked by the Learning Advisor against the evidence.
-8. **"Our own AI".** Training a model is out of reach; realistically it is an agent with our tools and teaching rules
-   on top of a provider's model, with tokens passed through. *To confirm with João.*
+   learners they are guesswork. **Decided:** start from research priors and external public datasets — also as input
+   for the Learning Advisor — and collect process data from the MVP on.
+7. **Boosters, battles, streaks and draws.** ~~vs "not addictive"~~ — **resolved by João:** "not addictive" was about
+   the internal algorithm not getting stuck in loops (4.7), not the platform; a platform people return to in order to
+   learn is good. Remaining watch point *(Claude)*: a mechanic that brings people back without moving the master
+   measure is engagement, not learning.
+8. **"Our own AI".** Training a model is out of reach; realistically it is an agent with our tools, skills and
+   teaching rules on top of a provider's model, with tokens passed through. João framed it as the quality layer
+   (skills + strict MCP rules + tests) rather than a model of our own.
 9. **A paid course may not be ownable** (section 13): if AI wrote most of it, the seller may hold no copyright.
+   **Decided:** a license in the terms of use — a buyer gets a personal license; copying and republishing on the
+   platform is forbidden; what is sold is the curation, tests and human contribution; the platform detects copied
+   courses. A lawyer confirms before the store opens.
 10. **Scope vs one part-time developer.** Web, native app, two languages, several runtimes, a marketplace and an
-    adaptive engine. *Answer:* the MVP (section 11) is the guard; everything else waits for the heart to work.
+    adaptive engine. **João's call: flexible** — the MVP (section 11) guides, and he can pull something from outside
+    it when he wants.
 
 ## 15. Beliefs this vision rests on (to test, not assume)
 
