@@ -19,10 +19,7 @@ import {
 } from '../lib/skillPath'
 import type { Section } from '../lib/courseModel'
 
-const NARROW_LABEL_W = 240
-const TINY_LABEL_W = 200
-const NARROW_LANES: Record<Lane, number> = { left: LANE_X.left, center: LANE_X.left + 78, right: LANE_X.left + 156 }
-const MIN_SCALE = 0.5
+const MIN_LABEL_W = 120
 
 function openable(state: NodeState): boolean {
   return state === 'done' || state === 'current' || state === 'optional-open' || state === 'optional-done'
@@ -135,9 +132,11 @@ export default function SkillPath({
   }, [])
   const wide = placeSkillPath(courseId, lessons, completed)
   const narrow = available > 0 && available < wide.width
-  const labelW = narrow ? (available < 340 ? TINY_LABEL_W : NARROW_LABEL_W) : LABEL_W
-  const map = narrow ? placeSkillPath(courseId, lessons, completed, { labelW, laneX: NARROW_LANES }) : wide
-  const scale = narrow ? Math.max(MIN_SCALE, Math.min(1, available / map.width)) : 1
+  const amp = Math.min(60, Math.max(14, Math.floor((available - LANE_X.left - NODE - FRACTION_GAP - FRACTION_W - LABEL_GAP - MIN_LABEL_W) / 2)))
+  const narrowLanes: Record<Lane, number> = { left: LANE_X.left, center: LANE_X.left + amp, right: LANE_X.left + 2 * amp }
+  const map = narrow ? placeSkillPath(courseId, lessons, completed, { laneX: narrowLanes, labelW: 0 }) : wide
+  const mapWidth = narrow ? available : map.width
+  const labelWidthFor = (x: number) => narrow ? Math.max(80, available - (x - map.minX) - NODE / 2 - LABEL_GAP) : LABEL_W
   const required = lessons.filter(lesson => !lesson.optional)
   const previousTitle = new Map(required.slice(1).map((lesson, index) => [lesson.key, required[index].title]))
   const targetKey = (map.nodes.find(n => n.state === 'current') ?? map.nodes.find(n => n.state === 'optional-open') ?? map.nodes[0])?.key
@@ -145,17 +144,15 @@ export default function SkillPath({
 
   useEffect(() => {
     targetRef.current?.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'auto' })
-    if (frameRef.current) frameRef.current.scrollLeft = 0
   }, [courseId])
 
   return (
-    <div ref={frameRef} style={{ width: '100%', overflowX: 'auto' }}>
-      <div style={{ width: map.width * scale, height: map.height * scale, marginInline: 'auto' }}>
-      <div style={{ position: 'relative', width: map.width, height: map.height, transform: scale === 1 ? undefined : `scale(${scale})`, transformOrigin: '0 0' }}>
+    <div ref={frameRef} style={{ width: '100%', overflowX: narrow ? 'hidden' : 'auto' }}>
+      <div style={{ position: 'relative', width: mapWidth, height: map.height, marginInline: 'auto' }}>
         <svg
-          width={map.width}
+          width={mapWidth}
           height={map.height}
-          viewBox={`${map.minX} ${map.minY} ${map.width} ${map.height}`}
+          viewBox={`${map.minX} ${map.minY} ${mapWidth} ${map.height}`}
           style={{ position: 'absolute', left: 0, top: 0 }}
         >
           {map.strokes.map(stroke => (
@@ -208,7 +205,7 @@ export default function SkillPath({
                 position: 'absolute',
                 left: node.x - map.minX - NODE / 2,
                 top: node.y - map.minY - NODE / 2,
-                width: NODE + LABEL_GAP + labelW,
+                width: NODE + LABEL_GAP + labelWidthFor(node.x),
                 display: 'flex',
                 alignItems: 'flex-start',
                 gap: LABEL_GAP,
@@ -276,7 +273,7 @@ export default function SkillPath({
                   </svg>
                 )}
               </span>
-              <span style={{ display: 'block', width: labelW, minWidth: 0 }}>
+              <span style={{ display: 'block', width: labelWidthFor(node.x), minWidth: 0 }}>
                 <span style={{
                   display: 'block',
                   height: LABEL_TITLE_H,
@@ -284,7 +281,7 @@ export default function SkillPath({
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
                   fontFamily: 'var(--font)',
-                  fontSize: narrow ? 24 : 20,
+                  fontSize: narrow ? 18 : 20,
                   lineHeight: `${LABEL_TITLE_H}px`,
                   color: fade(faded ? 'var(--muted)' : 'var(--text)', faded),
                   background: 'var(--bg)',
@@ -296,14 +293,14 @@ export default function SkillPath({
                     title={node.description}
                     style={{
                       display: '-webkit-box',
-                      WebkitLineClamp: 2,
+                      WebkitLineClamp: narrow ? 3 : 2,
                       WebkitBoxOrient: 'vertical',
                       overflow: 'hidden',
-                      maxHeight: LABEL_DESC_H,
+                      maxHeight: narrow ? 60 : LABEL_DESC_H,
                       marginTop: LABEL_DESC_GAP,
                       fontFamily: 'var(--font)',
-                      fontSize: narrow ? 20 : 18,
-                      lineHeight: '24px',
+                      fontSize: narrow ? 15 : 18,
+                      lineHeight: narrow ? '20px' : '24px',
                       color: fade('var(--muted)', faded),
                       background: 'var(--bg)',
                     }}
@@ -345,7 +342,6 @@ export default function SkillPath({
             </button>
           )
         })}
-      </div>
       </div>
     </div>
   )

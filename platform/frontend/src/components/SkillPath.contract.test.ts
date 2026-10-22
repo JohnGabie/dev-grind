@@ -24,7 +24,7 @@ describe('SkillPath source', () => {
     assert.equal(source.includes('radial-gradient'), false)
     assert.equal(source.includes('backgroundImage'), false)
     assert.match(source, /node\.description/)
-    assert.match(source, /overflowX: 'auto'/)
+    assert.match(source, /overflowX: narrow \? 'hidden' : 'auto'/)
   })
 
   it('removes the numbered lesson list and still raises the chat only for an open lesson', () => {
