@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import type { Course } from './courseModel.ts'
-import { actionLabel, continueTarget, courseProgress, isInsideCourse, lessonKeyOf, orderCourses } from './courseProgress.ts'
+import { actionLabel, continueTarget, courseProgress, isInsideCourse, isInsideLesson, lessonKeyOf, orderCourses } from './courseProgress.ts'
 
 function makeCourse(id: string, lessons: { optional?: boolean; lessonIndex?: number }[], completed: string[], parts: Record<string, number> = {}): Course {
   return {
@@ -92,6 +92,12 @@ describe('actionLabel and helpers', () => {
   })
   it('builds the lesson key from the raw indices', () => {
     assert.equal(lessonKeyOf({ sectionIndex: 1, lessonIndex: 3 }), '1-3')
+  })
+  it('knows when the path is inside a lesson', () => {
+    assert.equal(isInsideLesson('/courses/abc/0-1'), true)
+    assert.equal(isInsideLesson('/courses/abc'), false)
+    assert.equal(isInsideLesson('/courses/abc/'), false)
+    assert.equal(isInsideLesson('/courses'), false)
   })
   it('knows when the path is inside a course', () => {
     assert.equal(isInsideCourse('/courses/abc'), true)

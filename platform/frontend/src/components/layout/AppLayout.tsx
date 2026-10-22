@@ -7,7 +7,7 @@ import { ChatPanel } from '../ChatPanel'
 import { CosmeticsProvider } from '../../contexts/CosmeticsContext'
 import { useMediaQuery, MOBILE_QUERY } from '../../hooks/useMediaQuery'
 import { TOPBAR_SPACE, MOBILE_TOP_INSET, MOBILE_NAV_SPACE } from '../../lib/layout'
-import { isInsideCourse } from '../../lib/courseProgress'
+import { isInsideCourse, isInsideLesson } from '../../lib/courseProgress'
 import api from '../../api/client'
 
 // ── TopBar ───────────────────────────────────────────────────────────────────
@@ -160,6 +160,8 @@ function ChatBubble() {
   const [open, setOpen] = useState(false)
   const isMobile = useMediaQuery(MOBILE_QUERY)
   const inCourse = isMobile && isInsideCourse(location.pathname)
+  const inLesson = isMobile && isInsideLesson(location.pathname)
+  const dockSpace = inCourse ? 'env(safe-area-inset-bottom, 0px)' : MOBILE_NAV_SPACE
   const [lessonDock, setLessonDock] = useState(false)
   useEffect(() => {
     const sync = () => setLessonDock(document.body.dataset.courseLesson === '1')
@@ -183,18 +185,18 @@ function ChatBubble() {
   // Com um CTA fixo no rodape (licao, "sobre" do exercicio) a bolha sobe --ctl-primary + 16.
   const raised = lessonDock || (isMobile && onAbout)
   const bubbleBottom = raised
-    ? (isMobile ? `calc(96px + ${MOBILE_NAV_SPACE})` : 96)
-    : (isMobile ? `calc(24px + ${MOBILE_NAV_SPACE})` : 24)
+    ? (isMobile ? `calc(96px + ${dockSpace})` : 96)
+    : (isMobile ? `calc(24px + ${dockSpace})` : 24)
   const panelBottom = raised
-    ? (isMobile ? `calc(156px + ${MOBILE_NAV_SPACE})` : 156)
-    : (isMobile ? `calc(84px + ${MOBILE_NAV_SPACE})` : 84)
+    ? (isMobile ? `calc(156px + ${dockSpace})` : 156)
+    : (isMobile ? `calc(84px + ${dockSpace})` : 84)
   const rightOffset = isMobile ? 20 : 24
 
   const naDashboardMobile = isMobile && location.pathname === '/'
   if (naTelaDeResolver || naDashboardMobile) return null
 
   const squareTop = `calc(${MOBILE_TOP_INSET} + 20px)`
-  const panelStyle: CSSProperties = inCourse
+  const panelStyle: CSSProperties = inLesson
     ? {
         position: 'fixed', top: `calc(${squareTop} + var(--ctl-md) + 8px)`, right: rightOffset, zIndex: 41,
         width: 'min(320px, calc(100vw - 48px))', height: 420,
@@ -217,7 +219,7 @@ function ChatBubble() {
         overflow: 'hidden',
         display: 'flex', flexDirection: 'column',
       }
-  const buttonStyle: CSSProperties = inCourse
+  const buttonStyle: CSSProperties = inLesson
     ? {
         position: 'fixed', top: squareTop, right: rightOffset, zIndex: 42,
         width: 'var(--ctl-md)', height: 'var(--ctl-md)', borderRadius: 'var(--radius-md)',
@@ -237,7 +239,7 @@ function ChatBubble() {
         boxShadow: open ? '0 0 16px rgba(34,211,238,0.2)' : '0 2px 8px rgba(0,0,0,0.4)',
         transition: 'background 150ms, border-color 150ms, box-shadow 150ms',
       }
-  const iconSize = inCourse ? 16 : 18
+  const iconSize = inLesson ? 16 : 18
 
   return (
     <>

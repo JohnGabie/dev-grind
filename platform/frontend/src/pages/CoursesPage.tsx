@@ -341,7 +341,7 @@ function LessonPlayer({
       <div ref={scrollRef} style={{ flex: 1, minHeight: 0, overflowY: 'auto', display: 'flex', flexDirection: 'column' }}>
         <div style={{ maxWidth: 1080, width: '100%', margin: '0 auto', padding: pagePadding('24px 48px 12px', isMobile, true, false), flex: 1, display: 'flex', flexDirection: 'column' }}>
           <div style={{ maxWidth: 860, width: '100%', margin: '0 auto', flex: 1, display: 'flex', flexDirection: 'column' }}>
-            <div style={{ flexShrink: 0 }}>
+            <div style={{ flexShrink: 0, paddingRight: isMobile ? 'calc(var(--ctl-md) + var(--sp-2))' : undefined }}>
               <button onClick={onBack} style={{ background: 'none', border: 'none', color: 'var(--cyan)', cursor: 'pointer', padding: 0, marginBottom: 14, maxWidth: '100%', paddingRight: isMobile ? 'calc(var(--ctl-md) + var(--sp-2))' : undefined, textAlign: 'left', display: isMobile ? 'inline-flex' : undefined, alignItems: isMobile ? 'center' : undefined, minHeight: isMobile ? 'var(--ctl-md)' : undefined, fontSize: isMobile ? 'var(--fs-base)' : undefined }}>
                 ← {courseTitle}
               </button>

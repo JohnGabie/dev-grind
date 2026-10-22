@@ -46,3 +46,7 @@ export function actionLabel(state: CourseState): 'começar' | 'continuar' | 'rev
 export function isInsideCourse(pathname: string): boolean {
   return /^\/courses\/[^/]/.test(pathname)
 }
+
+export function isInsideLesson(pathname: string): boolean {
+  return /^\/courses\/[^/]+\/[^/]/.test(pathname)
+}
