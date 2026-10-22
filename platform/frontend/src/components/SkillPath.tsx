@@ -22,9 +22,10 @@ const READABLE = 'color-mix(in srgb, var(--text) 55%, var(--bg))'
 const NARROW_NODE_SCALE = 0.76
 const NARROW_TEXT_GAP = 6
 const TRUNK_CLEAR = 8
-const MIN_OPTIONAL_DESC_W = 110
+const MIN_OPTIONAL_DESC_W = 96
 const NARROW_TITLE = 'color-mix(in srgb, var(--text) 75%, var(--bg))'
 const NARROW_SECTION_CHAR = 7.9
+const SECTION_PAD = 6
 
 function openable(state: NodeState): boolean {
   return state === 'done' || state === 'current' || state === 'optional-open' || state === 'optional-done'
@@ -109,8 +110,8 @@ function ClampText({ text, lines, lineHeight, style }: { text: string; lines: nu
     if (!el) return
     const limit = lines * lineHeight + 1
     let width = -1
-    const fit = () => {
-      if (el.clientWidth === width) return
+    const fit = (force: boolean) => {
+      if (!force && el.clientWidth === width) return
       width = el.clientWidth
       el.textContent = text
       if (el.scrollHeight <= limit) return
@@ -125,10 +126,16 @@ function ClampText({ text, lines, lineHeight, style }: { text: string; lines: nu
       }
       el.textContent = words.slice(0, lo).join(' ') + '…'
     }
-    fit()
-    const observer = new ResizeObserver(fit)
+    const refit = () => fit(true)
+    fit(true)
+    const observer = new ResizeObserver(() => fit(false))
     observer.observe(el)
-    return () => observer.disconnect()
+    void document.fonts.ready.then(refit)
+    document.fonts.addEventListener('loadingdone', refit)
+    return () => {
+      observer.disconnect()
+      document.fonts.removeEventListener('loadingdone', refit)
+    }
   }, [text, lines, lineHeight])
   return <span ref={ref} title={text} style={{ ...style, display: 'block' }} />
 }
@@ -158,6 +165,8 @@ export default function SkillPath({
   })))
   const frameRef = useRef<HTMLDivElement>(null)
   const [available, setAvailable] = useState(0)
+  const [heights, setHeights] = useState<Record<string, number>>({})
+  const innerRef = useRef<HTMLDivElement>(null)
   useLayoutEffect(() => {
     const el = frameRef.current
     if (!el) return
@@ -171,32 +180,47 @@ export default function SkillPath({
   const narrow = available > 0 && available < wide.width
   const edge = NODE / 2
   const rightX = available - edge
-  const centerX = Math.min(rightX - 60, edge + Math.round(available * 0.56))
+  const centerX = Math.min(rightX - 40, edge + Math.round(available * 0.56))
   const narrowLanes: Record<Lane, number> = { left: edge, center: centerX, right: rightX }
   const map = narrow
-    ? placeSkillPath(courseId, lessons, completed, { laneX: narrowLanes, labelW: 0, fractionBeside: false, branchBelow: true })
+    ? placeSkillPath(courseId, lessons, completed, { laneX: narrowLanes, labelW: 0, stacked: true, labelHeight: key => heights[key] ?? 0 })
     : wide
   const mapWidth = narrow ? available : map.width
   const originX = narrow ? 0 : map.minX
   const textLeft = (x: number) => narrow && x > available / 2
-  const trunkXFor = (y: number) => {
-    const above = map.nodes.filter(n => !n.optional && n.y < y)
-    return above.length ? above.reduce((a, b) => (b.y > a.y ? b : a)).x : null
-  }
-  const labelWidthFor = (node: { x: number; y: number; optional: boolean }) => {
+  const labelWidthFor = (node: { x: number; trunkX?: number }) => {
     if (!narrow) return LABEL_W
     const left = textLeft(node.x)
-    const trunk = node.optional ? trunkXFor(node.y) : null
+    const trunk = node.trunkX ?? null
     if (trunk !== null && trunk !== node.x) {
       return Math.max(60, left ? node.x - edge - NARROW_TEXT_GAP - (trunk + TRUNK_CLEAR) : trunk - TRUNK_CLEAR - (node.x + edge + NARROW_TEXT_GAP))
     }
     return Math.max(80, left ? node.x - edge - NARROW_TEXT_GAP : available - (node.x + edge + NARROW_TEXT_GAP))
   }
-  const sectionHalf = (text: string) => (text.length * NARROW_SECTION_CHAR) / 2
+  const sectionHalf = (text: string) => (text.length * NARROW_SECTION_CHAR) / 2 + SECTION_PAD
   const required = lessons.filter(lesson => !lesson.optional)
   const previousTitle = new Map(required.slice(1).map((lesson, index) => [lesson.key, required[index].title]))
   const targetKey = (map.nodes.find(n => n.state === 'current') ?? map.nodes.find(n => n.state === 'optional-open') ?? map.nodes[0])?.key
   const targetRef = useRef<HTMLSpanElement>(null)
+
+  useLayoutEffect(() => {
+    if (!narrow) return
+    const measure = () => {
+      const next: Record<string, number> = {}
+      innerRef.current?.querySelectorAll<HTMLButtonElement>(':scope > button').forEach(button => {
+        if (button.dataset.key) next[button.dataset.key] = Math.ceil(button.offsetHeight)
+      })
+      setHeights(prev => {
+        const keys = Object.keys(next)
+        return keys.length === Object.keys(prev).length && keys.every(key => prev[key] === next[key]) ? prev : next
+      })
+    }
+    measure()
+    const later = () => { requestAnimationFrame(measure) }
+    void document.fonts.ready.then(later)
+    document.fonts.addEventListener('loadingdone', later)
+    return () => document.fonts.removeEventListener('loadingdone', later)
+  })
 
   useEffect(() => {
     targetRef.current?.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'auto' })
@@ -204,7 +228,7 @@ export default function SkillPath({
 
   return (
     <div ref={frameRef} style={{ width: '100%', overflowX: narrow ? 'hidden' : 'auto' }}>
-      <div style={{ position: 'relative', width: mapWidth, height: map.height, marginInline: 'auto' }}>
+      <div ref={innerRef} style={{ position: 'relative', width: mapWidth, height: map.height, marginInline: 'auto' }}>
         <svg
           width={mapWidth}
           height={map.height}
@@ -243,6 +267,7 @@ export default function SkillPath({
               color: READABLE,
               whiteSpace: 'nowrap',
               pointerEvents: 'none',
+              ...(narrow ? { background: 'var(--bg)', padding: `0 ${SECTION_PAD}px` } : {}),
             }}
           >
             {title.text}
@@ -253,12 +278,14 @@ export default function SkillPath({
           const faded = dimmed(node.state)
           const ratio = node.parts > 1 ? node.partsDone / node.parts : 0
           const mirrored = textLeft(node.x)
+          const glue = node.title.length - node.title.lastIndexOf(' ') - 1 <= 10
           const textW = labelWidthFor(node)
           const boxW = NODE + NARROW_TEXT_GAP + textW
           const fractionColor = fade(ratio === 0 ? (locked ? 'var(--muted)' : 'var(--cyan)') : 'var(--green)', faded)
           return (
             <button
               key={node.key}
+              data-key={node.key}
               type="button"
               disabled={locked}
               aria-current={node.state === 'current' ? 'step' : undefined}
@@ -347,12 +374,15 @@ export default function SkillPath({
                     lineHeight: '22px',
                     color: faded ? NARROW_TITLE : 'var(--text)',
                   }}>
-                    {node.title}
-                    {node.parts > 1 && (
-                      <span style={{ marginLeft: NARROW_TEXT_GAP, whiteSpace: 'nowrap', fontSize: 'var(--fs-sm)', color: fractionColor }}>
-                        {node.partsDone}/{node.parts}
-                      </span>
-                    )}
+                    {glue ? node.title.slice(0, node.title.lastIndexOf(' ') + 1) : node.title}
+                    <span style={{ whiteSpace: 'nowrap' }}>
+                      {glue ? node.title.slice(node.title.lastIndexOf(' ') + 1) : ''}
+                      {node.parts > 1 && (
+                        <span style={{ marginLeft: NARROW_TEXT_GAP, fontSize: 'var(--fs-sm)', color: fractionColor }}>
+                          {node.partsDone}/{node.parts}
+                        </span>
+                      )}
+                    </span>
                   </span>
                 ) : (
                   <span style={{
