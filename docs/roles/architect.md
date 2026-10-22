@@ -40,6 +40,15 @@ Known risks / gotchas:
 Dependencies (tasks that must be done first):
 ```
 
+## Linear backlog (rules in `CLAUDE.md`)
+- Global `linear` skill, team `DEV`, project `DevGrind`. Never write the API key in a file, command or conversation.
+  If `py -3` fails, use the win-sandbox-lab Python 3.14. Search (`issues --query`) before creating.
+- Issue = title with a concrete outcome + one Area label + one type label (`Bug`, `Feature`, `Improvement`) + priority.
+  Description: what was seen, why it was left for later and, if any, `Spec:` (the feature MD path) and `Branch:`.
+  Specs and plans stay in the repo, not in the issue.
+- Board: Backlog = for later; Todo = only the next one, a single issue. When resumed, move to In Progress; when it
+  lands in `dev`, Done. Solved on the spot what you were about to log: do not log it.
+
 ## Choosing a tier
 - FAST: mechanical and fully specified (copy, renames, seed data, boilerplate, simple tests).
 - MEDIUM: system logic with a clear contract (a route, a page, a hook, an MCP tool).
