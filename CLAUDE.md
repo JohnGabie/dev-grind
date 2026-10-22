@@ -16,28 +16,8 @@ commit messages, Linear issues. Another language elsewhere only when João asks.
 
 ## MISSION
 
-Build a backend learning platform for João — a single user with ADHD who is learning
-Python/FastAPI/SQL/HTTP to understand ZionHub (his production project, vibecoded with AI).
-
-The platform has **two separate tracks**:
-
-### Track 1 — Courses (Duolingo style)
-Structured content based on the books in `study-backend/books/`. Each lesson is a
-chapter with text + attached practical exercises. Linear progression by roadmap phase.
-The learner advances module by module.
-
-### Track 2 — Practice (CodeWars style, adaptive)
-Standalone exercises with real execution in the browser (Pyodide). The differentiator is the
-adaptive engine: the AI analyzes performance per concept and calibrates the next batch.
-
-**Content focus:** BACKEND exercises — HTTP, SQL, FastAPI, architecture,
-Python for backend. Not algorithm katas. Not puzzles. Real backend development problems.
-
-**The CodeWars API** is context only: know what João has already solved there so
-exercises are not repeated, and understand his level. Do not copy CodeWars exercises.
-
-**The end goal:** João understands ZionHub down to the last detail, without depending on AI
-to know what is happening in his own code.
+DevGrind closes **comprehension debt**: the gap between the code AI writes and the code people understand.
+The product vision is `docs/PRODUCT.md`; read it (sections 0, 11, 14 and 15 at least) before any product decision.
 
 ---
 
@@ -65,6 +45,7 @@ devgrind/
 ├── CLAUDE.md               ← this file
 ├── README.md               ← stack, local setup, deploy
 ├── DEVLOG.md               ← evidence journal: verified facts, gotchas (symptom → cause → fix)
+├── docs/PRODUCT.md         ← the product vision (the mission comes from it)
 ├── docs/
 │   ├── superpowers/specs/  ← one MD per feature (spec + Acceptance + plan): YYYY-MM-DD-<feature>.md; GLOSSARY.md
 │   ├── adr/                ← transversal decisions (NNNN-<title>.md); README = format and index
@@ -290,8 +271,10 @@ merging into `dev`/`main`, deploy, and any irreversible action or one that leave
 
 Product:
 - ❌ Pure algorithm exercises (sorting, binary search) — focus is backend
-- ❌ Real-time answer validation by AI — the agent operates in batch
-- ❌ Storing an AI key in the backend — the agent uses /schedule; the chat receives the user's key per request
+- ❌ Real-time adaptation by the daily agent — it runs in batch. (AI evaluating katas and open answers in real time is
+  allowed; where a test can decide, the test decides.)
+- ❌ An AI key stored in the backend before the subscription exists — the agent uses /schedule and the chat receives
+  the user's key per request. Providing the platform's own AI is a future decision that needs an ADR.
 - ❌ Creating a second backend — the Worker is the only implementation of the domain
 - ❌ Copying CodeWars exercises — the CodeWars API is only for profile context
 - ❌ Modifying `study-backend/`, except what the daily agent writes: `student/profile.md` and the "Métricas de
