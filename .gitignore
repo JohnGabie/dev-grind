@@ -71,3 +71,6 @@ patterns to save/
 
 # Playwright MCP output
 .playwright-mcp/
+
+# Context diaries before compaction (local only)
+.journal/
