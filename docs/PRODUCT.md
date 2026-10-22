@@ -1,6 +1,6 @@
 # DevGrind — Product overview
 
-**Status:** draft v1, 2026-10-22, after four rounds of questions. Written from João's own description of the final product he imagines. It is the
+**Status:** draft v1, 2026-10-22, after four rounds of questions plus a legal, conceptual-bug and consolidation pass. Written from João's own description of the final product he imagines. It is the
 source the project mission is extracted from, and it will grow in rounds. Anything marked *(Claude's reading)* is an
 interpretation João has not confirmed yet; everything else is his.
 
@@ -8,6 +8,21 @@ This is the long-term picture, not a plan. Features get their own MDs in `docs/s
 decisions get ADRs. What exists today is in the code.
 
 ---
+
+## 0. The vision in one paragraph
+
+DevGrind closes **comprehension debt** — the gap between the code AI writes and the code people understand. It
+measures precisely what a learner knows, from beginner to senior, and adapts to them with proven learning algorithms
+working next to AI. Its content is not a fixed catalog: courses and real-world katas are built by the community with
+AI, on a shared format the platform validates, and the good ones consolidate like open-source projects. A tight
+economy rewards learning that lasts and contributions that help others. It ships even if João is its only learner.
+
+**Pillars:** (1) measure precisely and adapt — the heart; (2) learn by doing real work; (3) community-built content
+on a shared, tested format; (4) an economy that rewards retained learning and value to others; (5) ethics: no
+addiction, no manipulation, the learner's data serves the learner.
+
+Sections 13-15 hold the reality check: legal questions, conceptual bugs in this vision, and the beliefs it rests on
+that have not been tested yet.
 
 ## 1. Why it exists
 
@@ -224,3 +239,78 @@ Store, G-Coins, guilds, book slots, personalization and the native app come afte
 - **Roadmaps** (groups of courses an agent can assemble): being built in the Courses feature; kept out of the mission.
 - **Current state** of the code: see the feature MDs and `docs/learning/learning.db` (findings from the code read on
   2026-10-21).
+
+---
+
+## 13. Legal questions (research of 2026-10-22 — not legal advice)
+
+Read from public sources, not from a lawyer. Before the store, payments, book audio or prize draws ship, a lawyer
+checks these. English-first means Brazilian and foreign rules both apply.
+
+| Topic | What we found | What it means for DevGrind |
+|---|---|---|
+| Books uploaded by learners | Brazil: copyright was always outside the Marco Civil art. 19 shield; since the 2025 Supreme Court ruling, notice-and-takedown (art. 21) is the general regime for user content. Storing one's own books in a cloud locker is unsettled law. | Terms of use where the learner states they hold the rights; a takedown process that acts on notice; books stay private to their owner, never shared. |
+| AI audiobook of a book | Disputed: one court treated text-to-speech as reproduction needing the rightsholder's consent; the Authors Guild fought Kindle's TTS and Amazon let rightsholders switch it off. | High risk for copyrighted books. Safer: read-aloud on the learner's device, or audio only for public-domain, licensed or the learner's own texts. |
+| Course built from a book, then sold | Turning a work into a course is a derivative work and distributing it is the owner's right; fair use (US) is narrow and Brazilian limitations narrower. | A course may teach a book's ideas in its own words, never copy its text. Selling raises the risk; the publish flow should check for copied passages. |
+| Book pages sent to the learner's AI (MCP) | Same reproduction question: the text leaves the platform to a third-party service. | Decide what book text MCP tools may return (short excerpts vs pages). |
+| Who owns an AI-made course | US Copyright Office (Jan 2025): purely AI-generated material is not copyrightable; only human contributions are. Prompts alone are not enough. | A course mostly written by AI may not be protected: anyone could copy a paid course. Terms of use must define the license between creator, buyer and platform, and human authorship matters. |
+| G-Coins (closed loop) | Brazil's payment rules (Lei 12.865, Banco Central) exclude limited-purpose arrangements used in one ecosystem; cash-out would bring payment-institution rules (KYC, anti-money-laundering). | Coins as platform credit with no cash-out keep us out of payment regulation. Opening cash-out is a regulatory decision, not a feature. |
+| Coins and courses in the native app | Apple and Google require their in-app purchase for digital goods (with their fee); IAP currency must be consumed in the app and cannot buy real-world goods. | Buying coins in the native app goes through IAP. Physical prizes or books bought with coins conflict with store rules. |
+| Prize draws | Brazil: free prize distribution by draw needs prior authorization (Lei 5.768/71, now under the Secretaria de Prêmios e Apostas; Portaria SEAE 7.638/2022). | No draws without authorization; prefer non-random rewards. |
+| Refunds | CDC art. 49 gives 7 days to withdraw from online purchases; sources disagree on whether it covers digital goods. | A clear refund policy for coins and courses; confirm with a lawyer. |
+| Learner data | LGPD (and GDPR for EU learners): a legal basis, transparency and data rights; minors' data has extra rules. Process data (keystrokes, deletions) is personal data. | Explain what is collected and why; export and delete (already planned); decide a minimum age. |
+
+Sources: [EFF on the 2025 ruling](https://www.eff.org/deeplinks/2025/06/major-setback-intermediary-liability-brazil-how-did-we-get-here),
+[GNI on platform liability](https://globalnetworkinitiative.org/from-shield-to-scrutiny-brazils-supreme-court-redefines-platform-liability/),
+[Kindle TTS dispute](https://www.slashgear.com/kindle-2-text-to-speech-angers-authors-guild-1133859),
+[TTS as reproduction](https://en.bizhankook.com/articles/30011.html),
+[Courses and fair use](https://www.authorsalliance.org/2017/02/23/can-fair-uses-be-made-of-copyrighted-works-for-online-courses/),
+[US Copyright Office report](https://www.skadden.com/insights/publications/2025/02/copyright-office-publishes-report),
+[BCB payment arrangements](https://www.bcb.gov.br/pre/surel/reladmbc/2013/relatorio-de-atividades/sistemas-de-pagamentos/novos-arranjos-de-pagamentos.html),
+[App Store IAP for digital goods](https://conductatlas.com/platform/apple/apple-app-store-review-guidelines/mandatory-in-app-purchase-for-digital-goods),
+[Lei 5.768/71](https://www.planalto.gov.br/ccivil_03/leis/l5768compilado.htm),
+[CDC withdrawal and digital goods](https://meusitejuridico.editorajuspodivm.com.br/2026/07/21/o-direito-de-arrependimento-previsto-no-cdc-tambem-se-aplica-aos-bens-digitais/),
+[LGPD in education](https://www.privacytools.com.br/en/como-a-lgpd-se-aplica-as-instituicoes-de-ensino/).
+
+## 14. Conceptual bugs in this vision (things that may not hold)
+
+Found by reading the vision against itself and the research. Each needs a decision or a design answer.
+
+1. **Comprehension debt comes back through course authoring.** A beginner asks the AI for a React course and cannot
+   tell whether it is right, then publishes it and others pay for it. The product would sell the very debt it fights.
+   *Possible answer:* the author must pass their own course's katas and comprehension checks before publishing;
+   grounding in sources; review and data-based quality (4.6).
+2. **"No catalog" meets the cold start.** At launch there is no community, so the only courses are made by João with
+   AI — in practice a catalog. *Answer:* say so: a seed phase with platform-made courses, then community.
+3. **Trusting the learner vs a currency.** No anti-cheat is fine for learning (a cheater fools only themselves), but
+   coins are a shared currency: fake page reading mints coins and devalues what sellers earn, even without cash-out.
+   *Possible answer:* coins come from retained mastery, which is hard to fake; caps on activity rewards.
+4. **A tight economy vs "learn without paying".** Publishing fees, paid courses and slow coin earning can lock a
+   newcomer out of content. *Possible answer:* a free core of content and learning, always.
+5. **The learner's own AI can undo the pedagogy.** `docs/learning/AI-BEHAVIOR.md` rules only apply to our chat.
+   Through MCP the learner's AI can simply hand over answers — the harm the research measured. *Possible answer:* MCP
+   tools return hints and checks, never solutions (today the solution already never leaves the server).
+6. **Precision needs many learners.** Algorithms tuned on behavioral data need a population; with a handful of
+   learners they are guesswork. *Answer:* start from research priors and public datasets; collect from day one.
+7. **Boosters, battles, streaks and draws vs "not addictive".** Each mechanic is small; together they drift toward an
+   engagement product. *Possible answer:* every mechanic is checked by the Learning Advisor against the evidence.
+8. **"Our own AI".** Training a model is out of reach; realistically it is an agent with our tools and teaching rules
+   on top of a provider's model, with tokens passed through. *To confirm with João.*
+9. **A paid course may not be ownable** (section 13): if AI wrote most of it, the seller may hold no copyright.
+10. **Scope vs one part-time developer.** Web, native app, two languages, several runtimes, a marketplace and an
+    adaptive engine. *Answer:* the MVP (section 11) is the guard; everything else waits for the heart to work.
+
+## 15. Beliefs this vision rests on (to test, not assume)
+
+The product is built on expectations nobody has tested yet. Each one gets the cheapest test that could prove it wrong.
+
+| # | Belief | Why it might be wrong | Earliest signal |
+|---|---|---|---|
+| B1 | Fine process data makes recommendations better than results alone | It may add noise; the research is promising but early | Compare recommendations with and without process data on the master measure (4.5) |
+| B2 | Building a course with AI makes the author learn | The AI may do the thinking (section 14, bug 1) | Master measure before and after authoring |
+| B3 | The community will consolidate good courses | Too few people; incentives favor quantity | Reuse and contribution counts per course; share of learners on consolidated courses |
+| B4 | A leveling test lets experienced devs skip safely | The test may not measure what the course teaches | Learners who skipped vs who completed, on later katas |
+| B5 | A tight coin economy motivates without hurting learning | Rewards can lower intrinsic motivation | Master measure and voluntary practice of coin-earners vs other learners |
+| B6 | Bring-your-own-AI is acceptable to early learners | Friction; many have no AI account | How many first-time visitors connect an AI and come back |
+| B7 | A master comprehension measure can be built across stacks | Good "read and predict" items are hard to make | A first item set for Python, checked against the code-comprehension research |
+| B8 | João as first learner is a valid first test | One learner biases everything (Learning Advisor rule) | Treat his data as one labeled case; seek the first 5 other learners early |
