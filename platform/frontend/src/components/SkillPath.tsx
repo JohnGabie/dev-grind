@@ -20,6 +20,8 @@ import {
 import type { Section } from '../lib/courseModel'
 
 const MIN_LABEL_W = 120
+const READABLE = 'color-mix(in srgb, var(--text) 55%, var(--bg))'
+const NARROW_NODE_SCALE = 0.76
 
 function openable(state: NodeState): boolean {
   return state === 'done' || state === 'current' || state === 'optional-open' || state === 'optional-done'
@@ -162,7 +164,7 @@ export default function SkillPath({
               fill="none"
               stroke="var(--muted)"
               strokeOpacity={0.45}
-              strokeWidth={stroke.width}
+              strokeWidth={narrow ? stroke.width * NARROW_NODE_SCALE : stroke.width}
               strokeLinecap="round"
               strokeLinejoin="round"
             />
@@ -178,11 +180,11 @@ export default function SkillPath({
               transform: 'translateX(-50%)',
               margin: 0,
               fontFamily: 'var(--font)',
-              fontSize: 18,
+              fontSize: narrow ? 'var(--fs-sm)' : 18,
               lineHeight: '24px',
               letterSpacing: '0.06em',
               textTransform: 'uppercase',
-              color: 'var(--muted)',
+              color: READABLE,
               whiteSpace: 'nowrap',
               pointerEvents: 'none',
             }}
@@ -227,7 +229,7 @@ export default function SkillPath({
                   width: FRACTION_W,
                   textAlign: 'right',
                   fontFamily: 'var(--font)',
-                  fontSize: 16,
+                  fontSize: narrow ? 'var(--fs-base)' : 16,
                   lineHeight: '22px',
                   color: fade(ratio === 0 ? (locked ? 'var(--muted)' : 'var(--cyan)') : 'var(--green)', faded),
                   background: 'var(--bg)',
@@ -246,6 +248,7 @@ export default function SkillPath({
                 background: 'var(--bg-card)',
                 border: node.parts > 1 ? 'none' : `3px solid ${fade(borderColor(node.state), faded)}`,
                 boxShadow: node.state === 'current' ? '0 0 0 6px var(--cyan-glow)' : 'none',
+                transform: narrow ? `scale(${NARROW_NODE_SCALE})` : undefined,
               }}>
                 {node.parts > 1 && (
                   <svg width={NODE} height={NODE} viewBox={`0 0 ${NODE} ${NODE}`} style={{ position: 'absolute', inset: 0 }} aria-hidden="true">
@@ -281,7 +284,7 @@ export default function SkillPath({
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
                   fontFamily: 'var(--font)',
-                  fontSize: narrow ? 18 : 20,
+                  fontSize: narrow ? 'var(--fs-lg)' : 20,
                   lineHeight: `${LABEL_TITLE_H}px`,
                   color: fade(faded ? 'var(--muted)' : 'var(--text)', faded),
                   background: 'var(--bg)',
@@ -299,9 +302,9 @@ export default function SkillPath({
                       maxHeight: narrow ? 60 : LABEL_DESC_H,
                       marginTop: LABEL_DESC_GAP,
                       fontFamily: 'var(--font)',
-                      fontSize: narrow ? 15 : 18,
+                      fontSize: narrow ? 'var(--fs-base)' : 18,
                       lineHeight: narrow ? '20px' : '24px',
-                      color: fade('var(--muted)', faded),
+                      color: fade(READABLE, faded),
                       background: 'var(--bg)',
                     }}
                   >
@@ -313,11 +316,11 @@ export default function SkillPath({
                     display: 'block',
                     marginTop: OPTIONAL_WORD_GAP,
                     fontFamily: 'var(--font)',
-                    fontSize: 14,
+                    fontSize: narrow ? 'var(--fs-sm)' : 14,
                     lineHeight: `${OPTIONAL_WORD_H}px`,
                     letterSpacing: '0.06em',
                     textTransform: 'uppercase',
-                    color: fade('var(--muted)', faded),
+                    color: fade(READABLE, faded),
                     background: 'var(--bg)',
                   }}>
                     opcional
@@ -328,9 +331,9 @@ export default function SkillPath({
                     display: 'block',
                     marginTop: OPTIONAL_WORD_GAP,
                     fontFamily: 'var(--font)',
-                    fontSize: 14,
+                    fontSize: narrow ? 'var(--fs-sm)' : 14,
                     lineHeight: '20px',
-                    color: 'var(--muted)',
+                    color: READABLE,
                     background: 'var(--bg)',
                   }}>
                     {previousTitle.get(node.key)
