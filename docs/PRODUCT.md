@@ -1,6 +1,6 @@
 # DevGrind — Product overview
 
-**Status:** draft v1, 2026-10-22, after three rounds of questions. Written from João's own description of the final product he imagines. It is the
+**Status:** draft v1, 2026-10-22, after four rounds of questions. Written from João's own description of the final product he imagines. It is the
 source the project mission is extracted from, and it will grow in rounds. Anything marked *(Claude's reading)* is an
 interpretation João has not confirmed yet; everything else is his.
 
@@ -143,7 +143,9 @@ Community articles; interview preparation.
 - **Today: bring your own AI.** No budget to provide AI, so the learner connects their account through MCP and
   talks to the platform from the terminal or whatever tool they already use; agents answer and create content.
   There is also an in-app chat that takes the learner's own key.
-- **Future: subscription.** The platform provides the AI and everything happens inside it.
+- **Future: subscription.** The platform provides its own AI — "written by us" — and everything happens inside it.
+  Most of the token cost is passed through to the subscriber, with extra features on top: boosters (XP, level,
+  getting courses), maybe books, maybe prize draws.
 - **Future: no AI needed at all.** Today the platform needs the learner's AI, because there are no courses yet. The
   aim is that a learner can pick free courses, learn alone, earn G-Coins and buy courses without any AI, without
   paying money and without spending coins they did not earn. Whether the platform itself should make some basic,
@@ -152,6 +154,9 @@ Community articles; interview preparation.
 ## 7. Community and economy
 
 - **Community:** guilds and communities; learners share and collaborate.
+- **Guilds** are for: study groups; mentoring (more advanced members help beginners); building and improving courses
+  together; challenges between guilds — hackathons, guild-vs-guild battles — and other dynamics later. A guild can
+  link its own Discord.
 - **G-Coins:** the virtual currency.
   - **Earn** by selling a course in the store, or by grinding: pages read, courses, katas, exercises, and maybe
     community articles.
@@ -167,6 +172,8 @@ Community articles; interview preparation.
 
 ## 8. Platforms
 
+- **Languages:** English first; Portuguese second (João's and his friends' native language); then others, brought in
+  as marketing and the regions learners come from show demand. A bilingual platform from early on.
 - **Web first.**
 - **A real native mobile app — not a PWA or a browser port — after the MVP**, focused on what a phone does well:
   reading and listening to books, reviews, short lessons, quizzes, progress. Heavy katas stay on the web.
@@ -191,6 +198,11 @@ Community articles; interview preparation.
 - **Rewards vs motivation** *(Claude's reading, from the evidence base)*: coins paid per completed activity tend to
   lower intrinsic motivation; rewarding value to others (a course people use) fits the research better. The grind
   idea needs this care.
+- **Boosters vs leveling** *(Claude's reading)*: XP or level boosters sold in the subscription could make level mean
+  "paid" instead of "knows". A possible line: boosters speed up coins or access, never the measured proficiency.
+- **Prize draws** may need legal checks (in Brazil, commercial prize promotions are regulated).
+- **Open-source platform code:** João leans to open source but the product is commercial; undecided.
+- **What is free forever** once a subscription exists: undecided.
 - Other parts that João feels have not found their place yet.
 - **The learner's own project as study material** (each learner's "ZionHub": tours, katas and questions taken from
   their own code). João: an excellent idea, the most direct attack on comprehension debt, but **later** — it is
