@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, type KeyboardEvent, type ReactNode } from 'react'
+import { useEffect, useId, useRef, type ReactNode } from 'react'
 
 interface Props {
   title: string
@@ -20,35 +20,56 @@ export default function ConfirmDialog({ title, body, confirmLabel = 'apagar', ca
   const dialogRef = useRef<HTMLDivElement>(null)
   const cancelRef = useRef<HTMLButtonElement>(null)
 
+  const live = useRef({ busy, onCancel })
+  useEffect(() => { live.current = { busy, onCancel } })
+
   useEffect(() => {
     const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null
     cancelRef.current?.focus()
-    return () => { opener?.focus() }
+
+    const onKeyDown = (event: globalThis.KeyboardEvent) => {
+      const dialog = dialogRef.current
+      if (!dialog) return
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        if (!live.current.busy) live.current.onCancel()
+        return
+      }
+      if (event.key !== 'Tab') return
+      const items = Array.from(dialog.querySelectorAll<HTMLElement>(FOCUSABLE))
+      if (items.length === 0) {
+        event.preventDefault()
+        dialog.focus()
+        return
+      }
+      const first = items[0]
+      const last = items[items.length - 1]
+      const active = document.activeElement
+      if (!dialog.contains(active) || active === dialog) {
+        event.preventDefault()
+        ;(event.shiftKey ? last : first).focus()
+      } else if (event.shiftKey && active === first) {
+        event.preventDefault()
+        last.focus()
+      } else if (!event.shiftKey && active === last) {
+        event.preventDefault()
+        first.focus()
+      }
+    }
+
+    document.addEventListener('keydown', onKeyDown)
+    return () => {
+      document.removeEventListener('keydown', onKeyDown)
+      opener?.focus()
+    }
   }, [])
 
-  const onKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
-    if (event.key === 'Escape') {
-      event.stopPropagation()
-      if (!busy) onCancel()
-      return
-    }
-    if (event.key !== 'Tab') return
-    const items = Array.from(dialogRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE) ?? [])
-    if (items.length === 0) return
-    const first = items[0]
-    const last = items[items.length - 1]
-    const active = document.activeElement
-    if (!dialogRef.current?.contains(active)) {
-      event.preventDefault()
-      first.focus()
-    } else if (event.shiftKey && active === first) {
-      event.preventDefault()
-      last.focus()
-    } else if (!event.shiftKey && active === last) {
-      event.preventDefault()
-      first.focus()
-    }
-  }
+  useEffect(() => {
+    if (busy) return
+    const dialog = dialogRef.current
+    if (dialog && !dialog.contains(document.activeElement)) (cancelRef.current ?? dialog).focus()
+    else if (document.activeElement === dialog) cancelRef.current?.focus()
+  }, [busy])
 
   const button = {
     boxSizing: 'border-box' as const,
@@ -64,16 +85,16 @@ export default function ConfirmDialog({ title, body, confirmLabel = 'apagar', ca
   return (
     <div
       onClick={event => { if (event.target === event.currentTarget && !busy) onCancel() }}
-      onKeyDown={onKeyDown}
       style={{ position: 'fixed', inset: 0, zIndex: 100, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16, background: 'rgba(0,0,0,0.7)' }}
     >
       <div
         ref={dialogRef}
         role="alertdialog"
         aria-modal="true"
+        tabIndex={-1}
         aria-labelledby={titleId}
         aria-describedby={error ? errorId : undefined}
-        style={{ boxSizing: 'border-box', width: '100%', maxWidth: 420, maxHeight: '100%', overflowY: 'auto', padding: 20, background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', color: 'var(--text)' }}
+        style={{ outline: 'none', boxSizing: 'border-box', width: '100%', maxWidth: 420, maxHeight: '100%', overflowY: 'auto', padding: 20, background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', color: 'var(--text)' }}
       >
         <h2 id={titleId} style={{ margin: '0 0 var(--sp-2, 8px)', fontSize: 'var(--fs-lg)', overflowWrap: 'anywhere' }}>{title}</h2>
         <div style={{ color: 'var(--muted)', fontSize: 'var(--fs-base)', marginBottom: 12 }}>{body}</div>

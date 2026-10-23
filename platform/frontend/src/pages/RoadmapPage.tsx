@@ -11,7 +11,7 @@ import { useCourseData } from '../hooks/useCourseData'
 import { useCoursePrefs } from '../hooks/useCoursePrefs'
 import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
 import { STATE_COLOR } from '../lib/courseDisplay'
-import { continueTarget } from '../lib/courseProgress'
+import { actionLabel, continueTarget } from '../lib/courseProgress'
 import { matchesQuery, visibleEntries } from '../lib/courseView'
 import { courseEntry } from '../lib/listEntry'
 import { pagePadding } from '../lib/layout'
@@ -20,13 +20,7 @@ import { roadmapCourses, roadmapProgress, roadmapTarget } from '../lib/roadmapMo
 
 const ROADMAPS_TAB = '/courses?tab=roadmaps'
 
-function errorText(error: unknown): string {
-  if (isAxiosError(error)) {
-    const detail = (error.response?.data as { detail?: unknown } | undefined)?.detail
-    if (typeof detail === 'string' && detail) return detail
-  }
-  return 'Não foi possível apagar o roadmap.'
-}
+const DELETE_FAILED = 'Não foi possível apagar o roadmap. Tente de novo.'
 
 export default function RoadmapPage() {
   const isMobile = useMediaQuery(MOBILE_QUERY)
@@ -70,7 +64,7 @@ export default function RoadmapPage() {
   const { courses: count, done, total, state } = roadmapProgress(roadmap, byId)
   const members = roadmapCourses(roadmap, byId)
   const target = roadmapTarget(roadmap, byId)
-  const action = state === 'concluído' ? 'revisar' : state === 'em andamento' ? 'continuar' : 'começar'
+  const action = actionLabel(state)
   const entries = members.map((course, index) => courseEntry(course, index + 1))
   const shown = prefs.sort === 'default'
     ? entries.filter(entry => matchesQuery(entry, query))
@@ -92,9 +86,11 @@ export default function RoadmapPage() {
     try {
       await api.delete(`/roadmaps/${roadmap.id}`, { params: deleteRoadmapParams(alsoCourses) })
     } catch (err) {
-      setDeleteError(errorText(err))
-      setBusy(false)
-      return
+      if (!(isAxiosError(err) && err.response?.status === 404)) {
+        setDeleteError(DELETE_FAILED)
+        setBusy(false)
+        return
+      }
     }
     reload()
     navigate(ROADMAPS_TAB)
