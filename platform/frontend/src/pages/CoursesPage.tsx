@@ -8,6 +8,7 @@ import { useCoursePrefs } from '../hooks/useCoursePrefs'
 import { visibleCourses } from '../lib/courseView'
 import { continueTarget, lessonKeyOf } from '../lib/courseProgress'
 import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
+import PageHeader from '../components/PageHeader'
 import SkillPath from '../components/SkillPath'
 import { asCourse, type Course, type FillPart, type Lesson, type Step } from '../lib/courseModel'
 import { pagePadding } from '../lib/layout'
@@ -452,6 +453,10 @@ export default function CoursesPage() {
         maxWidth: 1080, width: '100%', margin: '0 auto',
         padding: pagePadding('40px 48px 72px', isMobile, true, !courseId),
       }}>
+        {!courseId && (
+          <PageHeader eyebrow="// trilhas de estudo" title="cursos" description="Seus cursos, feitos pela IA com base nos seus livros e nas suas lacunas. Abra um e siga lição por lição." />
+        )}
+
         {loadError && (
           <div>
             <p style={{ color: 'var(--muted)' }}>{loadError}</p>

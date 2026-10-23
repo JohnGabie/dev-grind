@@ -4,6 +4,7 @@ import api from '../api/client'
 import { useAuth } from '../auth/AuthContext'
 import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
 import { pagePadding } from '../lib/layout'
+import PageHeader from '../components/PageHeader'
 
 interface Exercise {
   id: string; title: string; slug: string
@@ -637,10 +638,9 @@ export default function KataListPage() {
   ) : null
 })()}
 
-<div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 18 }}>
-  <h1 style={{ fontSize: isMobile ? 'var(--fs-xl)' : 16, fontWeight: 800, margin: 0, letterSpacing: '-0.02em' }}>
-    kata library
-  </h1>
+<PageHeader eyebrow="// prática de código" title="katas" description="Desafios de backend com testes que rodam no navegador. Resolva e ganhe honra." />
+
+<div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'flex-end', marginBottom: 18 }}>
   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
     {hasFilters && (
       <button onClick={resetAll}
