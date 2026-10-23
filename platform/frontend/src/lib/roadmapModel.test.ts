@@ -112,6 +112,10 @@ describe('roadmapEntry', () => {
     assert.equal(entry.action, 'começar')
     assert.equal(entry.created_at, '2026-10-02 10:00:00')
   })
+  it('has no action when the roadmap is empty', () => {
+    assert.equal(roadmapEntry(roadmap([]), mapOf()).action, null)
+    assert.equal(roadmapEntry(roadmap(['gone']), mapOf()).action, null)
+  })
   it('uses the plural and continuar when in progress', () => {
     const entry = roadmapEntry(roadmap(['a', 'b', 'c']), mapOf(course('a', 1, 3), course('b', 0, 2), course('c', 0, 2)))
     assert.equal(entry.detail, '3 cursos')

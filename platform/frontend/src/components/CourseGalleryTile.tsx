@@ -45,13 +45,15 @@ export default function CourseGalleryTile({ entry, onOpen, onAction }: { entry: 
           <span>{detail ? detail + ' · ' : ''}{done} de {total} lições</span>
           <span style={{ color: STATE_COLOR[state] }}> · {state}</span>
         </span>
-        <button
-          type="button"
-          onClick={e => { e.stopPropagation(); onAction() }}
-          style={{ background: 'none', border: '1px solid var(--cyan)', borderRadius: 'var(--radius-lg)', color: 'var(--cyan)', cursor: 'pointer', fontFamily: 'inherit', fontSize: size, padding: '0 14px', minHeight: isMobile ? 'var(--ctl-md)' : 32, whiteSpace: 'nowrap' }}
-        >
-          {entry.action}
-        </button>
+        {entry.action && (
+          <button
+            type="button"
+            onClick={e => { e.stopPropagation(); onAction() }}
+            style={{ background: 'none', border: '1px solid var(--cyan)', borderRadius: 'var(--radius-lg)', color: 'var(--cyan)', cursor: 'pointer', fontFamily: 'inherit', fontSize: size, padding: '0 14px', minHeight: isMobile ? 'var(--ctl-md)' : 32, whiteSpace: 'nowrap' }}
+          >
+            {entry.action}
+          </button>
+        )}
       </div>
     </div>
   )

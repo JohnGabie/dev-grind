@@ -60,7 +60,7 @@ export function roadmapEntry(roadmap: Roadmap, byId: Map<string, Course>): ListE
     done,
     total,
     state,
-    action: actionLabel(state),
+    action: courses === 0 ? null : actionLabel(state),
     detail: courses === 1 ? '1 curso' : `${courses} cursos`,
   }
 }

@@ -10,6 +10,7 @@ interface Props {
   view: ViewKey
   onView: (view: ViewKey) => void
   placeholder: string
+  hideSort?: boolean
 }
 
 const ICONS: Record<ViewKey, ReactNode> = {
@@ -42,7 +43,7 @@ const ICONS: Record<ViewKey, ReactNode> = {
   ),
 }
 
-export default function CourseToolbar({ query, onQuery, sort, onSort, view, onView, placeholder }: Props) {
+export default function CourseToolbar({ query, onQuery, sort, onSort, view, onView, placeholder, hideSort }: Props) {
   const isMobile = useMediaQuery(MOBILE_QUERY)
   const inputRef = useRef<HTMLInputElement>(null)
   const height = isMobile ? 'var(--ctl-md)' : 36
@@ -86,14 +87,14 @@ export default function CourseToolbar({ query, onQuery, sort, onSort, view, onVi
         )}
       </div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
-        <select
+        {!hideSort && <select
           aria-label="ordenar"
           value={sort}
           onChange={event => onSort(event.target.value as SortKey)}
           style={{ ...field, background: 'var(--bg-card)', colorScheme: 'dark', flex: '1 1 160px', padding: '0 8px' }}
         >
           {SORTS.map(item => <option key={item.key} value={item.key} style={{ background: 'var(--bg-card)', color: 'var(--text)' }}>{item.label}</option>)}
-        </select>
+        </select>}
         <div role="group" aria-label="visualização" style={{ display: 'flex', gap: 4, flexShrink: 0 }}>
           {VIEWS.map(key => {
             const on = key === view

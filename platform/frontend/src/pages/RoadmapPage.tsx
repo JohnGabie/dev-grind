@@ -12,7 +12,7 @@ import { useCoursePrefs } from '../hooks/useCoursePrefs'
 import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
 import { STATE_COLOR } from '../lib/courseDisplay'
 import { actionLabel, continueTarget } from '../lib/courseProgress'
-import { matchesQuery, visibleEntries } from '../lib/courseView'
+import { matchesQuery } from '../lib/courseView'
 import { courseEntry } from '../lib/listEntry'
 import { pagePadding } from '../lib/layout'
 import { deleteCoursesNotice, deleteRoadmapParams } from '../lib/roadmapDelete'
@@ -66,9 +66,7 @@ export default function RoadmapPage() {
   const target = roadmapTarget(roadmap, byId)
   const action = actionLabel(state)
   const entries = members.map((course, index) => courseEntry(course, index + 1))
-  const shown = prefs.sort === 'default'
-    ? entries.filter(entry => matchesQuery(entry, query))
-    : visibleEntries(entries, query, prefs.sort)
+  const shown = entries.filter(entry => matchesQuery(entry, query))
 
   const openCourse = (courseId: string, lessonKey: string | null) =>
     navigate(lessonKey ? `/courses/${courseId}/${lessonKey}` : `/courses/${courseId}`)
@@ -120,7 +118,7 @@ export default function RoadmapPage() {
         <p style={{ color: 'var(--muted)', fontSize: base, margin: '16px 0 0' }}>Roadmap vazio. A IA adiciona cursos aqui.</p>
       ) : (
         <>
-          <CourseToolbar query={query} onQuery={setQuery} sort={prefs.sort} onSort={setSort} view={prefs.view} onView={setView} placeholder="buscar cursos" />
+          <CourseToolbar query={query} onQuery={setQuery} sort={prefs.sort} onSort={setSort} hideSort view={prefs.view} onView={setView} placeholder="buscar cursos" />
           {shown.length === 0 ? (
             <div role="status">
               <p style={{ color: 'var(--muted)', fontSize: base, margin: '0 0 8px' }}>Nenhum curso encontrado para “{query.trim()}”</p>

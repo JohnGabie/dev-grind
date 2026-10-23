@@ -10,7 +10,7 @@ export interface ListEntry {
   done: number
   total: number
   state: CourseState
-  action: 'começar' | 'continuar' | 'revisar'
+  action: 'começar' | 'continuar' | 'revisar' | null
   detail?: string
   position?: number
 }
