@@ -1,3 +1,4 @@
+import PositionNumber from './PositionNumber'
 import type { ListEntry } from '../lib/listEntry'
 import { STATE_COLOR } from '../lib/courseDisplay'
 import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
@@ -13,7 +14,7 @@ export default function CourseCard({ entry, onOpen, onAction }: { entry: ListEnt
         type="button"
         style={{ display: 'block', width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: 0, color: 'inherit', cursor: 'pointer', fontFamily: 'inherit' }}
       >
-        <span style={{ display: 'block', fontSize: isMobile ? 'var(--fs-lg)' : 18, fontWeight: 700, marginBottom: 6 }}>{entry.position != null && <span style={{ color: 'var(--muted)', fontWeight: 400 }}>{entry.position}. </span>}{entry.title}</span>
+        <span style={{ display: 'block', fontSize: isMobile ? 'var(--fs-lg)' : 18, fontWeight: 700, marginBottom: 6 }}><PositionNumber position={entry.position} />{entry.title}</span>
         {entry.description && <span style={{ display: 'block', color: 'var(--muted)', marginBottom: 8, fontSize: size }}>{entry.description}</span>}
       </button>
       <div

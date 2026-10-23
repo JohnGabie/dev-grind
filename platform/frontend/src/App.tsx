@@ -9,6 +9,7 @@ import ExerciseAboutPage from './pages/ExerciseAboutPage'
 import KataListPage from './pages/KataListPage'
 import ProfilePage from './pages/ProfilePage'
 import CoursesPage from './pages/CoursesPage'
+import RoadmapPage from './pages/RoadmapPage'
 import ChatPage from './pages/ChatPage'
 import BooksPage from './pages/BooksPage'
 import BookReaderPage from './pages/BookReaderPage'
@@ -33,6 +34,7 @@ export default function App() {
             <Route path="exercise/:slug/solve" element={<ExercisePage />} />
             <Route path="profile" element={<ProfilePage />} />
             <Route path="courses/*" element={<CoursesPage />} />
+            <Route path="roadmaps/:roadmapId" element={<RoadmapPage />} />
             <Route path="chats" element={<ChatPage />} />
             <Route path="books" element={<BooksPage />} />
             <Route path="books/:slug" element={<BookReaderPage />} />

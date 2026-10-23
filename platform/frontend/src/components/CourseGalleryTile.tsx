@@ -1,3 +1,4 @@
+import PositionNumber from './PositionNumber'
 import type { ListEntry } from '../lib/listEntry'
 import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
 import { STATE_COLOR, percentOf } from '../lib/courseDisplay'
@@ -33,7 +34,7 @@ export default function CourseGalleryTile({ entry, onOpen, onAction }: { entry: 
           type="button"
           style={{ flex: 1, minWidth: 0, minHeight: isMobile ? 'var(--ctl-md)' : undefined, textAlign: 'left', background: 'none', border: 'none', padding: 0, color: 'inherit', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700, fontSize: isMobile ? 'var(--fs-lg)' : 18, overflowWrap: 'anywhere' }}
         >
-          {entry.position != null && <span style={{ color: 'var(--muted)', fontWeight: 400 }}>{entry.position}. </span>}{entry.title}
+          <PositionNumber position={entry.position} />{entry.title}
         </button>
       </div>
       {entry.description && (
