@@ -32,6 +32,7 @@ export function json(body: unknown): RequestInit {
 
 /** Child tables first — users is referenced by most of the schema. */
 const TABLES_IN_FK_ORDER = [
+  'roadmap_courses', 'roadmaps',
   'agent_insights', 'user_inventory', 'user_profiles', 'book_prefs', 'course_lesson_progress', 'courses',
   'personal_tokens', 'daily_progress', 'submissions', 'test_cases', 'exercises',
   'books', 'store_items', 'users',
@@ -85,4 +86,10 @@ export async function mcp(token: string, method: string, params: unknown = {}) {
 export async function callTool(token: string, name: string, args: unknown = {}) {
   const { body } = await mcp(token, 'tools/call', { name, arguments: args })
   return JSON.parse(body.result.content[0].text)
+}
+
+export async function seedCourse(id: string, userId = USER_ID, title = `Course ${id}`) {
+  const modules = JSON.stringify([{ title: 'S', lessons: [{ title: 'L', steps: [{ type: 'text', body: 'x' }] }] }])
+  await env.DB.prepare('INSERT INTO courses (id, user_id, title, modules) VALUES (?, ?, ?, ?)')
+    .bind(id, userId, title, modules).run()
 }

@@ -4,6 +4,7 @@ import {
   integer,
   uniqueIndex,
   index,
+  primaryKey,
 } from 'drizzle-orm/sqlite-core'
 import { sql } from 'drizzle-orm'
 
@@ -133,6 +134,26 @@ export const courseLessonProgress = sqliteTable('course_lesson_progress', {
   completed_at: text('completed_at').notNull().default(sql`(CURRENT_TIMESTAMP)`),
 }, (t) => [
   uniqueIndex('uq_course_lesson_user').on(t.user_id, t.course_id, t.lesson_key),
+])
+
+// ─── roadmaps ─────────────────────────────────────────────────────────────────
+export const roadmaps = sqliteTable('roadmaps', {
+  id:          text('id').primaryKey(),
+  user_id:     text('user_id').notNull().references(() => users.id),
+  title:       text('title').notNull(),
+  description: text('description'),
+  created_at:  text('created_at').notNull().default(sql`(CURRENT_TIMESTAMP)`),
+}, (t) => [
+  index('idx_roadmaps_user').on(t.user_id),
+])
+
+export const roadmapCourses = sqliteTable('roadmap_courses', {
+  roadmap_id: text('roadmap_id').notNull().references(() => roadmaps.id),
+  course_id:  text('course_id').notNull().references(() => courses.id),
+  position:   integer('position').notNull(),
+}, (t) => [
+  primaryKey({ columns: [t.roadmap_id, t.course_id] }),
+  index('idx_roadmap_courses_course').on(t.course_id),
 ])
 
 // ─── user_profiles ────────────────────────────────────────────────────────────
