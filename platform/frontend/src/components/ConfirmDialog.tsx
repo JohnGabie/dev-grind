@@ -6,6 +6,7 @@ interface Props {
   confirmLabel?: string
   cancelLabel?: string
   checkbox?: { label: string; checked: boolean; onChange: (checked: boolean) => void }
+  confirmDisabled?: boolean
   busy?: boolean
   error?: string | null
   onConfirm: () => void
@@ -14,7 +15,7 @@ interface Props {
 
 const FOCUSABLE = 'button:not([disabled]), input:not([disabled])'
 
-export default function ConfirmDialog({ title, body, confirmLabel = 'apagar', cancelLabel = 'cancelar', checkbox, busy = false, error, onConfirm, onCancel }: Props) {
+export default function ConfirmDialog({ title, body, confirmLabel = 'apagar', cancelLabel = 'cancelar', checkbox, confirmDisabled = false, busy = false, error, onConfirm, onCancel }: Props) {
   const titleId = useId()
   const errorId = useId()
   const bodyId = useId()
@@ -120,7 +121,7 @@ export default function ConfirmDialog({ title, body, confirmLabel = 'apagar', ca
           <button ref={cancelRef} type="button" onClick={onCancel} disabled={busy} style={{ ...button, color: 'var(--text)', border: '1px solid var(--border)', opacity: busy ? 0.5 : 1 }}>
             {cancelLabel}
           </button>
-          <button type="button" onClick={onConfirm} disabled={busy} style={{ ...button, color: 'var(--red)', border: '1px solid var(--red)', opacity: busy ? 0.5 : 1, cursor: busy ? 'not-allowed' : 'pointer' }}>
+          <button type="button" onClick={onConfirm} disabled={busy || confirmDisabled} style={{ ...button, color: 'var(--red)', border: '1px solid var(--red)', opacity: busy || confirmDisabled ? 0.5 : 1, cursor: busy || confirmDisabled ? 'not-allowed' : 'pointer' }}>
             {confirmLabel}
           </button>
         </div>

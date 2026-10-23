@@ -1,8 +1,5 @@
 import { useState, type ReactNode } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import { isAxiosError } from 'axios'
-import api from '../api/client'
-import ConfirmDialog from '../components/ConfirmDialog'
 import CourseList from '../components/CourseList'
 import CourseNotFound from '../components/CourseNotFound'
 import CourseToolbar from '../components/CourseToolbar'
@@ -15,12 +12,9 @@ import { actionLabel, continueTarget } from '../lib/courseProgress'
 import { matchesQuery } from '../lib/courseView'
 import { courseEntry } from '../lib/listEntry'
 import { pagePadding } from '../lib/layout'
-import { deleteCoursesNotice, deleteRoadmapParams } from '../lib/roadmapDelete'
 import { roadmapCourses, roadmapProgress, roadmapTarget } from '../lib/roadmapModel'
 
 const ROADMAPS_TAB = '/courses?tab=roadmaps'
-
-const DELETE_FAILED = 'Não foi possível apagar o roadmap. Tente de novo.'
 
 export default function RoadmapPage() {
   const isMobile = useMediaQuery(MOBILE_QUERY)
@@ -29,10 +23,6 @@ export default function RoadmapPage() {
   const { roadmaps, byId, loading, error, roadmapsError, reload } = useCourseData()
   const { prefs, setView } = useCoursePrefs()
   const [query, setQuery] = useState('')
-  const [confirming, setConfirming] = useState(false)
-  const [alsoCourses, setAlsoCourses] = useState(false)
-  const [busy, setBusy] = useState(false)
-  const [deleteError, setDeleteError] = useState<string | null>(null)
 
   const roadmap = roadmaps.find(item => item.id === roadmapId) ?? null
   const loadError = error ?? roadmapsError
@@ -74,24 +64,6 @@ export default function RoadmapPage() {
   const onMainAction = () => {
     if (target) return openCourse(target.courseId, target.lessonKey)
     if (members.length > 0) openCourse(members[0].id, null)
-  }
-
-  const closeDialog = () => { setConfirming(false); setAlsoCourses(false); setDeleteError(null) }
-
-  const confirmDelete = async () => {
-    setBusy(true)
-    setDeleteError(null)
-    try {
-      await api.delete(`/roadmaps/${roadmap.id}`, { params: deleteRoadmapParams(alsoCourses) })
-    } catch (err) {
-      if (!(isAxiosError(err) && err.response?.status === 404)) {
-        setDeleteError(DELETE_FAILED)
-        setBusy(false)
-        return
-      }
-    }
-    reload()
-    navigate(ROADMAPS_TAB)
   }
 
   const ghost = { background: 'none', borderRadius: 'var(--radius-lg)', cursor: 'pointer', fontFamily: 'inherit', fontSize: base, padding: '0 14px', minHeight: 'var(--ctl-md)', boxSizing: 'border-box' as const }
@@ -136,31 +108,6 @@ export default function RoadmapPage() {
             />
           )}
         </>
-      )}
-
-      <div style={{ marginTop: 48 }}>
-        <button type="button" onClick={() => setConfirming(true)} style={{ ...ghost, border: '1px solid var(--border)', color: 'var(--muted)' }}>
-          apagar roadmap
-        </button>
-      </div>
-
-      {confirming && (
-        <ConfirmDialog
-          title={`apagar “${roadmap.title}”?`}
-          body={
-            <>
-              <p style={{ margin: 0 }}>O roadmap será apagado. Os cursos continuam, a menos que você marque a opção abaixo.</p>
-              {alsoCourses && deleteCoursesNotice(members.length) && (
-                <p style={{ margin: '8px 0 0', color: 'var(--red)' }}>{deleteCoursesNotice(members.length)}</p>
-              )}
-            </>
-          }
-          checkbox={{ label: 'apagar os cursos também', checked: alsoCourses, onChange: setAlsoCourses }}
-          busy={busy}
-          error={deleteError}
-          onConfirm={confirmDelete}
-          onCancel={closeDialog}
-        />
       )}
     </>,
   )

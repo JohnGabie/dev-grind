@@ -126,6 +126,7 @@ export default function ActionsMenu({ items }: Props) {
             right: 0,
             zIndex: 20,
             boxSizing: 'border-box',
+            width: 'max-content',
             minWidth: 200,
             maxWidth: 'calc(100vw - 32px)',
             padding: 4,
@@ -164,8 +165,8 @@ export default function ActionsMenu({ items }: Props) {
                 opacity: item.disabled ? 0.6 : 1,
               }}
             >
-              <span>{item.label}</span>
-              {item.hint && <span style={{ fontSize: 'var(--fs-sm)', color: 'var(--muted)' }}>{item.hint}</span>}
+              <span style={{ whiteSpace: 'nowrap' }}>{item.label}</span>
+              {item.hint && <span style={{ fontSize: 'var(--fs-sm)', color: 'var(--muted)', whiteSpace: 'nowrap' }}>{item.hint}</span>}
             </button>
           ))}
         </div>
