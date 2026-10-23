@@ -545,9 +545,12 @@ export default function CoursesPage() {
     trashRef.current?.focus()
   }, [deleteMode])
 
-  useEffect(() => {
+  const viewKey = `${tab}|${courseId ?? ''}`
+  const [seenViewKey, setSeenViewKey] = useState(viewKey)
+  if (seenViewKey !== viewKey) {
+    setSeenViewKey(viewKey)
     exitDeleteMode()
-  }, [tab, courseId])
+  }
 
   useEffect(() => {
     if (!inDeleteMode || confirming) return
