@@ -67,7 +67,7 @@ export default function CourseTabs({ tab, onTab, actions }: Props) {
           )
         })}
       </div>
-      {actions}
+      {actions && <div style={{ display: 'flex', alignItems: 'center', marginLeft: 'auto' }}>{actions}</div>}
     </div>
   )
 }

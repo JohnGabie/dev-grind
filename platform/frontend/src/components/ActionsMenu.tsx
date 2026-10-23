@@ -83,7 +83,7 @@ export default function ActionsMenu({ items }: Props) {
   return (
     <div
       ref={rootRef}
-      style={{ position: 'relative', display: 'flex', alignItems: 'center', minHeight: isMobile ? 'var(--ctl-md)' : 36, marginBottom: -1, marginLeft: 'auto' }}
+      style={{ position: 'relative', display: 'flex', alignItems: 'center', minHeight: isMobile ? 'var(--ctl-md)' : 36, marginBottom: -1 }}
     >
       <button
         ref={buttonRef}

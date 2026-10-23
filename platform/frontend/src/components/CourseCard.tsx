@@ -1,18 +1,24 @@
 import PositionNumber from './PositionNumber'
+import SelectionMark from './SelectionMark'
+import { selectableProps, selectModeInert, type SelectProps } from '../lib/selectable'
 import type { ListEntry } from '../lib/listEntry'
 import { STATE_COLOR } from '../lib/courseDisplay'
 import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
 
-export default function CourseCard({ entry, onOpen, onAction }: { entry: ListEntry; onOpen: () => void; onAction: () => void }) {
+export default function CourseCard({ entry, onOpen, onAction, selectMode = false, selected = false, onToggle }: { entry: ListEntry; onOpen: () => void; onAction: () => void } & SelectProps) {
   const isMobile = useMediaQuery(MOBILE_QUERY)
   const { done, total, state, detail } = entry
   const percent = total > 0 ? Math.round((done / total) * 100) : 0
   const size = isMobile ? 'var(--fs-base)' : undefined
+  const pick = selectableProps({ title: entry.title, selectMode, selected, onToggle, onOpen })
+  const inert = selectMode ? selectModeInert : undefined
   return (
-    <div className="card" onClick={onOpen} style={{ width: '100%', boxSizing: 'border-box', padding: '18px 20px', cursor: 'pointer' }}>
+    <div className="card" {...pick.props} style={{ width: '100%', boxSizing: 'border-box', padding: '18px 20px', cursor: 'pointer', ...pick.style }}>
+      {selectMode && <SelectionMark selected={selected} />}
       <button
         type="button"
-        style={{ display: 'block', width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: 0, color: 'inherit', cursor: 'pointer', fontFamily: 'inherit' }}
+        tabIndex={selectMode ? -1 : undefined}
+        style={{ ...inert, display: 'block', width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: 0, color: 'inherit', cursor: 'pointer', fontFamily: 'inherit' }}
       >
         <span style={{ display: 'block', fontSize: isMobile ? 'var(--fs-lg)' : 18, fontWeight: 700, marginBottom: 6 }}><PositionNumber position={entry.position} />{entry.title}</span>
         {entry.description && <span style={{ display: 'block', color: 'var(--muted)', marginBottom: 8, fontSize: size }}>{entry.description}</span>}
@@ -35,8 +41,11 @@ export default function CourseCard({ entry, onOpen, onAction }: { entry: ListEnt
         {entry.action && (
           <button
             type="button"
+            disabled={selectMode}
+            aria-hidden={selectMode || undefined}
             onClick={e => { e.stopPropagation(); onAction() }}
             style={{
+              ...inert,
               background: 'none', border: '1px solid var(--cyan)', borderRadius: 'var(--radius-lg)', color: 'var(--cyan)', cursor: 'pointer',
               fontFamily: 'inherit', fontSize: size, padding: '0 14px', minHeight: isMobile ? 'var(--ctl-md)' : 32, whiteSpace: 'nowrap',
             }}

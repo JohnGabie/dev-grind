@@ -2,7 +2,8 @@ import { useEffect, useRef, useState, type CSSProperties, type RefObject } from 
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import api from '../api/client'
 import ActionsMenu from '../components/ActionsMenu'
-import DeleteManyDialog from '../components/DeleteManyDialog'
+import ConfirmDialog from '../components/ConfirmDialog'
+import DeleteModeBar from '../components/DeleteModeBar'
 import CourseNotFound from '../components/CourseNotFound'
 import CourseList from '../components/CourseList'
 import CourseToolbar from '../components/CourseToolbar'
@@ -10,8 +11,8 @@ import CourseTabs from '../components/CourseTabs'
 import { useCourseData } from '../hooks/useCourseData'
 import { tabFromParam, type CourseTab } from '../lib/courseTab'
 import { bulkDelete } from '../lib/bulkDelete'
-import { deleteRoadmapParams } from '../lib/roadmapDelete'
-import { courseProgress } from '../lib/courseProgress'
+import { deleteCoursesNotice, deleteRoadmapParams } from '../lib/roadmapDelete'
+import { retainFailed, toggleSelection } from '../lib/selection'
 import { roadmapEntry, roadmapTarget } from '../lib/roadmapModel'
 import { useCoursePrefs } from '../hooks/useCoursePrefs'
 import { visibleEntries } from '../lib/courseView'
@@ -421,12 +422,34 @@ export default function CoursesPage() {
   const navigate = useNavigate()
   const { prefs, setView, setSort } = useCoursePrefs()
   const [query, setQuery] = useState('')
-  const [deleting, setDeleting] = useState<CourseTab | null>(null)
+  const [deleteMode, setDeleteMode] = useState<CourseTab | null>(null)
+  const [selected, setSelected] = useState<ReadonlySet<string>>(new Set())
+  const [confirming, setConfirming] = useState(false)
+  const [alsoCourses, setAlsoCourses] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
   const [searchParams, setSearchParams] = useSearchParams()
   const tab = tabFromParam(searchParams.get('tab'))
   const [courseId,lessonKey] = (useParams()['*'] ?? '').split('/').filter(Boolean)
 
+  const inDeleteMode = deleteMode === tab && !courseId
+
+  const enterDeleteMode = () => {
+    setDeleteMode(tab)
+    setSelected(new Set())
+    setAlsoCourses(false)
+    setDeleteError(null)
+  }
+
+  const exitDeleteMode = () => {
+    setDeleteMode(null)
+    setSelected(new Set())
+    setConfirming(false)
+    setDeleteError(null)
+  }
+
   const selectTab = (next: CourseTab) => {
+    exitDeleteMode()
     setSearchParams(next === 'roadmaps' ? { tab: 'roadmaps' } : {}, { replace: true })
   }
 
@@ -444,12 +467,12 @@ export default function CoursesPage() {
     ? [
       { key: 'create', label: 'criar roadmap', ...soon },
       { key: 'edit', label: 'editar roadmaps', ...soon },
-      { key: 'delete', label: 'apagar roadmaps', disabled: roadmaps.length === 0, onSelect: () => setDeleting('roadmaps') },
+      { key: 'delete', label: 'apagar roadmaps', disabled: roadmaps.length === 0, onSelect: enterDeleteMode },
     ]
     : [
       { key: 'create', label: 'criar curso', ...soon },
       { key: 'edit', label: 'editar cursos', ...soon },
-      { key: 'delete', label: 'apagar cursos', disabled: courses.length === 0, onSelect: () => setDeleting('cursos') },
+      { key: 'delete', label: 'apagar cursos', disabled: courses.length === 0, onSelect: enterDeleteMode },
     ]
 
   const deleteCourses = async (ids: string[]) => {
@@ -467,10 +490,55 @@ export default function CoursesPage() {
     return result
   }
 
-  const closeDeleteDialog = (deletedAny: boolean) => {
-    setDeleting(null)
-    if (deletedAny) reload()
+  const roadmapTab = tab === 'roadmaps'
+  const allEntries = roadmapTab ? roadmaps.map(item => roadmapEntry(item, byId)) : courses.map(item => courseEntry(item))
+  const shown = visibleEntries(allEntries, query, prefs.sort)
+  const chosen = shown.filter(entry => selected.has(entry.id))
+  const chosenIds = chosen.map(entry => entry.id)
+  const coursesOfChosen = new Set(roadmaps.filter(item => chosenIds.includes(item.id)).flatMap(item => item.course_ids).filter(id => byId.has(id))).size
+
+  const barOnOwnRow = inDeleteMode && isMobile
+  const deleteBar = (fill: boolean) => (
+    <DeleteModeBar
+      active={inDeleteMode}
+      count={chosen.length}
+      empty={allEntries.length === 0}
+      busy={busy}
+      fill={fill}
+      onEnter={enterDeleteMode}
+      onExit={exitDeleteMode}
+      onDelete={() => setConfirming(true)}
+    />
+  )
+
+  const confirmDelete = async () => {
+    setBusy(true)
+    setDeleteError(null)
+    const result = roadmapTab ? await deleteRoadmaps(chosenIds, alsoCourses) : await deleteCourses(chosenIds)
+    setBusy(false)
+    if (result.deleted.length > 0) reload()
+    if (result.failed.length === 0) {
+      exitDeleteMode()
+      return
+    }
+    setSelected(current => retainFailed(current, result.failed))
+    setDeleteError(`Não foi possível apagar: ${chosen.filter(entry => result.failed.includes(entry.id)).map(entry => entry.title).join(', ')}`)
   }
+
+  const cancelConfirm = () => {
+    setConfirming(false)
+    setDeleteError(null)
+  }
+
+  useEffect(() => {
+    if (!inDeleteMode || confirming) return
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'Escape' || (event.target as Element | null)?.closest?.('[role="menu"]')) return
+      exitDeleteMode()
+    }
+    document.addEventListener('keydown', onKeyDown)
+    return () => document.removeEventListener('keydown', onKeyDown)
+  }, [inDeleteMode, confirming])
 
   useEffect(() => {
     document.body.dataset.courseLesson = lesson ? '1' : ''
@@ -490,7 +558,21 @@ export default function CoursesPage() {
             : <PageHeader minLines={3} minLinesDesktop={2} eyebrow="// trilhas de estudo" title="cursos" description="Seus cursos, feitos pela IA com base nos seus livros e nas suas lacunas. Abra um e siga lição por lição." />
         )}
 
-        {!courseId && <CourseTabs tab={tab} onTab={selectTab} actions={<ActionsMenu items={menuItems} />} />}
+        {!courseId && (
+          <CourseTabs
+            tab={tab}
+            onTab={selectTab}
+            actions={
+              <>
+                {!barOnOwnRow && deleteBar(false)}
+                <ActionsMenu items={menuItems} />
+              </>
+            }
+          />
+        )}
+        {!courseId && barOnOwnRow && (
+          <div style={{ display: 'flex', gap: 'var(--sp-2)', marginTop: -4, marginBottom: 16 }}>{deleteBar(true)}</div>
+        )}
 
         {loadError && (
           <div>
@@ -530,10 +612,7 @@ export default function CoursesPage() {
         )}
 
         {((tab === 'cursos' && courses.length > 0) || (tab === 'roadmaps' && ready && roadmaps.length > 0)) && (() => {
-          const roadmapTab = tab === 'roadmaps'
           const noun = roadmapTab ? 'roadmap' : 'curso'
-          const all = roadmapTab ? roadmaps.map(item => roadmapEntry(item, byId)) : courses.map(item => courseEntry(item))
-          const shown = visibleEntries(all, query, prefs.sort)
           if (shown.length === 0) {
             return (
               <div role="status">
@@ -548,6 +627,9 @@ export default function CoursesPage() {
             <CourseList
               entries={shown}
               view={prefs.view}
+              selectMode={inDeleteMode}
+              selected={selected}
+              onToggle={entry => setSelected(current => toggleSelection(current, entry.id))}
               onOpen={entry => navigate(roadmapTab ? `/roadmaps/${entry.id}` : `/courses/${entry.id}`)}
               onAction={entry => {
                 if (roadmapTab) {
@@ -566,29 +648,23 @@ export default function CoursesPage() {
           </div>
         )}
 
-        {!courseId && deleting === 'cursos' && (
-          <DeleteManyDialog
-            title="apagar cursos"
-            unit={{ one: 'curso', many: 'cursos' }}
-            items={courses.map(item => {
-              const { done, total } = courseProgress(item)
-              return { id: item.id, title: item.title, detail: `${done} de ${total} lições` }
-            })}
-            onDelete={deleteCourses}
-            onClose={closeDeleteDialog}
-          />
-        )}
-        {!courseId && deleting === 'roadmaps' && (
-          <DeleteManyDialog
-            title="apagar roadmaps"
-            unit={{ one: 'roadmap', many: 'roadmaps' }}
-            items={roadmaps.map(item => ({ id: item.id, title: item.title, detail: item.course_ids.length === 1 ? '1 curso' : `${item.course_ids.length} cursos` }))}
-            alsoCourses={{
-              label: 'apagar os cursos também',
-              countFor: ids => new Set(roadmaps.filter(item => ids.includes(item.id)).flatMap(item => item.course_ids).filter(id => byId.has(id))).size,
-            }}
-            onDelete={deleteRoadmaps}
-            onClose={closeDeleteDialog}
+        {inDeleteMode && confirming && (
+          <ConfirmDialog
+            title={`Apagar ${chosen.length} ${roadmapTab ? (chosen.length === 1 ? 'roadmap' : 'roadmaps') : (chosen.length === 1 ? 'curso' : 'cursos')}?`}
+            body={
+              <>
+                <ul style={{ margin: 0, paddingLeft: 20, color: 'var(--text)', overflowWrap: 'anywhere' }}>
+                  {chosen.map(entry => <li key={entry.id}>{entry.title}</li>)}
+                </ul>
+                <p style={{ margin: '8px 0 0' }}>O progresso será perdido. Não dá para desfazer.</p>
+                {roadmapTab && alsoCourses && <p style={{ margin: '8px 0 0', color: 'var(--red)' }}>{deleteCoursesNotice(coursesOfChosen)}</p>}
+              </>
+            }
+            checkbox={roadmapTab ? { label: 'apagar os cursos também', checked: alsoCourses, onChange: setAlsoCourses } : undefined}
+            busy={busy}
+            error={deleteError}
+            onConfirm={confirmDelete}
+            onCancel={cancelConfirm}
           />
         )}
 
