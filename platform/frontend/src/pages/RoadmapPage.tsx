@@ -75,22 +75,26 @@ export default function RoadmapPage() {
       </Link>
       <h1 style={{ fontSize: isMobile ? 'var(--fs-xl)' : 32, margin: '4px 0 8px', overflowWrap: 'anywhere' }}>{roadmap.title}</h1>
       {roadmap.description && <p style={{ color: 'var(--muted)', fontSize: base, margin: '0 0 12px', overflowWrap: 'anywhere' }}>{roadmap.description}</p>}
-      <p style={{ fontSize: base, margin: '0 0 8px' }}>
-        {count === 1 ? '1 curso' : `${count} cursos`} · {done} de {total} lições
-        <span style={{ color: STATE_COLOR[state] }}> · {state}</span>
-      </p>
-      <ProgressBar done={done} total={total} label={`${roadmap.title}: ${done} de ${total} lições`} done100={state === 'concluído'} />
-      {members.length > 0 && (
-        <button type="button" onClick={onMainAction} style={{ ...ghost, border: '1px solid var(--cyan)', color: 'var(--cyan)', margin: '16px 0 24px' }}>
-          {action}
-        </button>
-      )}
+      {members.length > 0 && <CourseToolbar query={query} onQuery={setQuery} view={prefs.view} onView={setView} placeholder="buscar cursos" />}
+      <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', padding: 'var(--sp-4)', margin: '0 0 var(--sp-6)' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--sp-3)', flexWrap: 'wrap', marginBottom: 'var(--sp-3)' }}>
+          <p style={{ fontSize: base, margin: 0 }}>
+            {count === 1 ? '1 curso' : `${count} cursos`} · {done} de {total} lições
+            <span style={{ color: STATE_COLOR[state] }}> · {state}</span>
+          </p>
+          {members.length > 0 && (
+            <button type="button" onClick={onMainAction} style={{ ...ghost, border: '1px solid var(--cyan)', color: 'var(--cyan)' }}>
+              {action}
+            </button>
+          )}
+        </div>
+        <ProgressBar done={done} total={total} label={`${roadmap.title}: ${done} de ${total} lições`} done100={state === 'concluído'} />
+      </div>
 
       {members.length === 0 ? (
         <p style={{ color: 'var(--muted)', fontSize: base, margin: '16px 0 0' }}>Roadmap vazio. A IA adiciona cursos aqui.</p>
       ) : (
         <>
-          <CourseToolbar query={query} onQuery={setQuery} view={prefs.view} onView={setView} placeholder="buscar cursos" />
           {shown.length === 0 ? (
             <div role="status">
               <p style={{ color: 'var(--muted)', fontSize: base, margin: '0 0 8px' }}>Nenhum curso encontrado para “{query.trim()}”</p>
