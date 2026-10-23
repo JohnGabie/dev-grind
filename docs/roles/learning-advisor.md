@@ -109,3 +109,10 @@ Browser evidence: screenshots, steps
 Weak-evidence notes:
 Needs João to decide:
 ```
+
+## Writing exceptions
+The WRITING rule in CLAUDE.md applies, with these changes:
+- An evidence statement (claim, strength, conditions, source) can have 40 words, so the claim stays with its conditions.
+- Use the past tense for what a study found.
+- Quotes and research terms keep the wording of the source. Give the GLOSSARY term next to them one time.
+- Proposed learner-facing copy is out of scope. It follows the feature MD and `docs/learning/AI-BEHAVIOR.md`.
