@@ -7,6 +7,7 @@ import usersRoutes from './routes/users'
 import progressRoutes from './routes/progress'
 import storeRoutes from './routes/store'
 import coursesRoutes from './routes/courses'
+import roadmapsRoutes from './routes/roadmaps'
 import profileRoutes from './routes/profile'
 import booksRoutes from './routes/books'
 import tokensRoutes from './routes/tokens'
@@ -34,6 +35,7 @@ app.route('/users', usersRoutes)
 app.route('/progress', progressRoutes)
 app.route('/store', storeRoutes)
 app.route('/courses', coursesRoutes)
+app.route('/roadmaps', roadmapsRoutes)
 app.route('/profile', profileRoutes)
 app.route('/books', booksRoutes)
 app.route('/chat', chatRoutes)

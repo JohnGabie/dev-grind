@@ -4,6 +4,7 @@ import { getDb } from '../db'
 import { courseLessonProgress, courses } from '../db/schema'
 import { requireAuth } from '../middleware/auth'
 import { recordAttempt } from '../lib/progress'
+import { deleteCourse, failed } from '../lib/roadmaps'
 import type { AppEnv } from '../types'
 
 const router = new Hono<AppEnv>()
@@ -156,6 +157,12 @@ router.post('/:id/lessons/:lessonKey/complete', requireAuth, async (c) => {
   }
   await recordAttempt(db, userId, true)
   return c.json({ completed: true, already: false })
+})
+
+router.delete('/:id', requireAuth, async (c) => {
+  const result = await deleteCourse(getDb(c.env), c.get('userId'), c.req.param('id') ?? '')
+  if (failed(result)) return c.json({ detail: result.error }, 404)
+  return c.json(result)
 })
 
 export default router
