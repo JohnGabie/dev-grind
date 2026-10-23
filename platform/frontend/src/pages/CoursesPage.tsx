@@ -555,7 +555,7 @@ export default function CoursesPage() {
   useEffect(() => {
     if (!inDeleteMode || confirming) return
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== 'Escape' || (event.target as Element | null)?.closest?.('[role="menu"]')) return
+      if (event.key !== 'Escape') return
       focusActionsAfterExit.current = true
       exitDeleteMode()
     }
@@ -585,11 +585,7 @@ export default function CoursesPage() {
           <CourseTabs
             tab={tab}
             onTab={selectTab}
-            actions={
-              <>
-                {inDeleteMode ? (barOnOwnRow ? null : deleteBar) : <ActionsMenu items={menuItems} buttonRef={actionsRef} />}
-              </>
-            }
+            actions={inDeleteMode ? (barOnOwnRow ? null : deleteBar) : <ActionsMenu items={menuItems} buttonRef={actionsRef} />}
           />
         )}
         {!courseId && barOnOwnRow && (

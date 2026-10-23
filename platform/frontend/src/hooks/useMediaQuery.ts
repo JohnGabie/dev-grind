@@ -16,5 +16,5 @@ export function useMediaQuery(query: string) {
 
 export const MOBILE_QUERY = '(max-width: 768px)'
 
-// Below this width the tabs, `sair do modo` and `apagar N` do not fit in one row (pair needs about 450 px).
-export const NARROW_QUERY = '(max-width: 459px)'
+// Below this width the tabs, `sair do modo` and `apagar N` do not fit in one row (the pair needs about 470 px with two digits).
+export const NARROW_QUERY = '(max-width: 479px)'
