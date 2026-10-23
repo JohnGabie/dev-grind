@@ -72,7 +72,7 @@ devgrind/
 │   ├── roles/              ← architect, executor, reviewer, qa, learning-advisor, version-control, models (tiers)
 │   └── learning/           ← Learning Advisor: EVIDENCE.md, TOOLS.md, AI-BEHAVIOR.md, learning.db (its memory)
 ├── scripts/
-│   ├── dev/                ← journal-skeleton.sh (context diary)
+│   ├── dev/                ← journal-skeleton.sh (context diary), mermaid-link.mjs (stdin → mermaid.live link)
 │   └── learning/           ← learning.mjs (CLI for learning.db), store.mjs + store.test.mjs
 ├── .claude/                ← settings.json, hooks/ (context diary), agents/ (learning-advisor)
 ├── .journal/               ← context diaries (git-ignored)
