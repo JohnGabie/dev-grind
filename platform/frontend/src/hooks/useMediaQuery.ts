@@ -15,3 +15,6 @@ export function useMediaQuery(query: string) {
 }
 
 export const MOBILE_QUERY = '(max-width: 768px)'
+
+// Below this width the tabs, `apagar N` and the close icon do not fit in one row (measured 361-370 px).
+export const NARROW_QUERY = '(max-width: 374px)'

@@ -18,7 +18,7 @@ import { useCoursePrefs } from '../hooks/useCoursePrefs'
 import { visibleEntries } from '../lib/courseView'
 import { courseEntry } from '../lib/listEntry'
 import { continueTarget, lessonKeyOf } from '../lib/courseProgress'
-import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
+import { useMediaQuery, MOBILE_QUERY, NARROW_QUERY } from '../hooks/useMediaQuery'
 import PageHeader from '../components/PageHeader'
 import SkillPath from '../components/SkillPath'
 import { type FillPart, type Lesson, type Step } from '../lib/courseModel'
@@ -418,6 +418,7 @@ function LessonPlayer({
 
 export default function CoursesPage() {
   const isMobile = useMediaQuery(MOBILE_QUERY)
+  const narrow = useMediaQuery(NARROW_QUERY)
   const { courses, setCourses, roadmaps, byId, loading, error: loadError, roadmapsError, reload } = useCourseData()
   const navigate = useNavigate()
   const { prefs, setView, setSort } = useCoursePrefs()
@@ -504,6 +505,20 @@ export default function CoursesPage() {
   const chosenIds = chosen.map(entry => entry.id)
   const coursesOfChosen = new Set(roadmaps.filter(item => chosenIds.includes(item.id)).flatMap(item => item.course_ids).filter(id => byId.has(id))).size
 
+  const barOnOwnRow = inDeleteMode && narrow
+  const deleteBar = (
+    <DeleteModeBar
+      active={inDeleteMode}
+      count={chosen.length}
+      empty={allEntries.length === 0}
+      busy={busy}
+      trashRef={trashRef}
+      onEnter={enterDeleteMode}
+      onExit={exitDeleteMode}
+      onDelete={() => setConfirming(true)}
+    />
+  )
+
   const confirmDelete = async () => {
     setBusy(true)
     setDeleteError(null)
@@ -568,20 +583,14 @@ export default function CoursesPage() {
             onTab={selectTab}
             actions={
               <>
-                <DeleteModeBar
-                  active={inDeleteMode}
-                  count={chosen.length}
-                  empty={allEntries.length === 0}
-                  busy={busy}
-                  trashRef={trashRef}
-                  onEnter={enterDeleteMode}
-                  onExit={exitDeleteMode}
-                  onDelete={() => setConfirming(true)}
-                />
+                {!barOnOwnRow && deleteBar}
                 {!(inDeleteMode && isMobile) && <ActionsMenu items={menuItems} />}
               </>
             }
           />
+        )}
+        {!courseId && barOnOwnRow && (
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 'calc(var(--sp-1) * -1)', marginBottom: 'var(--sp-4)' }}>{deleteBar}</div>
         )}
 
         {loadError && (

@@ -24,6 +24,7 @@ export default function DeleteModeBar({ active, count, empty, busy = false, tras
     whiteSpace: 'nowrap' as const,
     background: 'none',
     marginRight: 'var(--sp-1)',
+    marginBottom: isMobile ? -1 : undefined,
   }
 
   if (!active) {
