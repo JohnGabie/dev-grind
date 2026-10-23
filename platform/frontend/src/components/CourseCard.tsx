@@ -1,6 +1,6 @@
 import PositionNumber from './PositionNumber'
 import SelectionMark from './SelectionMark'
-import { selectableProps, selectModeInert, type SelectProps } from '../lib/selectable'
+import { selectableProps, selectModeAction, selectModeInert, type SelectProps } from '../lib/selectable'
 import type { ListEntry } from '../lib/listEntry'
 import { STATE_COLOR } from '../lib/courseDisplay'
 import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
@@ -45,9 +45,8 @@ export default function CourseCard({ entry, onOpen, onAction, selectMode = false
             aria-hidden={selectMode || undefined}
             onClick={e => { e.stopPropagation(); onAction() }}
             style={{
-              ...inert,
               background: 'none', border: '1px solid var(--cyan)', borderRadius: 'var(--radius-lg)', color: 'var(--cyan)', cursor: 'pointer',
-              fontFamily: 'inherit', fontSize: size, padding: '0 14px', minHeight: isMobile ? 'var(--ctl-md)' : 32, whiteSpace: 'nowrap',
+              fontFamily: 'inherit', fontSize: size, padding: '0 14px', minHeight: isMobile ? 'var(--ctl-md)' : 32, whiteSpace: 'nowrap', ...(selectMode ? selectModeAction : undefined),
             }}
           >
             {entry.action}

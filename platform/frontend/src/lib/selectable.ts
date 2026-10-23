@@ -23,6 +23,8 @@ export function selectableProps({ title, selectMode, selected, onToggle, onOpen 
 
 export const selectModeInert: CSSProperties = { pointerEvents: 'none' }
 
+export const selectModeAction: CSSProperties = { pointerEvents: 'none', opacity: 0.4, cursor: 'default' }
+
 export interface SelectProps {
   selectMode?: boolean
   selected?: boolean

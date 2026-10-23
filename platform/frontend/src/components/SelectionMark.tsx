@@ -3,7 +3,7 @@ export default function SelectionMark({ selected }: { selected: boolean }) {
     <span
       aria-hidden="true"
       style={{
-        position: 'absolute', top: -8, left: -8, zIndex: 1, boxSizing: 'border-box', width: 24, height: 24, borderRadius: '50%',
+        position: 'absolute', top: 'calc(var(--sp-2) * -1)', left: 'calc(var(--sp-2) * -1)', zIndex: 1, boxSizing: 'border-box', width: 'var(--sp-6)', height: 'var(--sp-6)', borderRadius: '50%',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         background: selected ? 'var(--red)' : 'var(--bg)',
         border: `2px solid ${selected ? 'var(--red)' : 'var(--muted)'}`,
