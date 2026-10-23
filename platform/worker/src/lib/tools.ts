@@ -787,7 +787,7 @@ export const TOOLS: ToolDef[] = [
       type: 'object',
       properties: {
         roadmap_id: { type: 'string' },
-        delete_courses: { type: 'boolean', description: 'Default false. true deletes the courses for good.' },
+        delete_courses: { type: 'boolean', default: false, description: 'Default false. true deletes the courses for good.' },
       },
       required: ['roadmap_id'],
     },

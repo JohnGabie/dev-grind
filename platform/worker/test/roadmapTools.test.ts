@@ -88,6 +88,29 @@ describe('roadmap MCP tools', () => {
     expect(await callTool(token, 'list_courses')).toHaveLength(2)
   })
 
+  it('delete_roadmap ignores a delete_courses that is not boolean true', async () => {
+    for (const value of ['true', 1]) {
+      const r = await callTool(token, 'create_roadmap', { title: 'R', course_ids: ['A', 'B'] })
+      const res = await callTool(token, 'delete_roadmap', { roadmap_id: r.id, delete_courses: value })
+      expect(res).toEqual({ deleted_roadmap: r.id, deleted_courses: 0 })
+      expect(await callTool(token, 'list_courses')).toHaveLength(4)
+    }
+  })
+
+  it('add_courses_to_roadmap rejects a bad position or bad course_ids', async () => {
+    const r = await callTool(token, 'create_roadmap', { title: 'R', course_ids: ['A', 'B'] })
+    for (const position of [-1, '1']) {
+      const res = await callTool(token, 'add_courses_to_roadmap', { roadmap_id: r.id, course_ids: ['C'], position })
+      expect(res.error).toMatch(/position/)
+    }
+    for (const course_ids of [null, 'A']) {
+      const res = await callTool(token, 'add_courses_to_roadmap', { roadmap_id: r.id, course_ids })
+      expect(res.error).toMatch(/course_ids/)
+    }
+    const same = await callTool(token, 'list_roadmaps')
+    expect(same[0].course_ids).toEqual(['A', 'B'])
+  })
+
   it('another user\'s roadmap is not found', async () => {
     await seedUser('other')
     const otherToken = await personalToken('other')
