@@ -1,3 +1,4 @@
+import type { RefObject } from 'react'
 import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
 
 interface Props {
@@ -5,13 +6,13 @@ interface Props {
   count: number
   empty: boolean
   busy?: boolean
-  fill?: boolean
+  trashRef?: RefObject<HTMLButtonElement | null>
   onEnter: () => void
   onExit: () => void
   onDelete: () => void
 }
 
-export default function DeleteModeBar({ active, count, empty, busy = false, fill = false, onEnter, onExit, onDelete }: Props) {
+export default function DeleteModeBar({ active, count, empty, busy = false, trashRef, onEnter, onExit, onDelete }: Props) {
   const isMobile = useMediaQuery(MOBILE_QUERY)
   const height = 'var(--ctl-md)'
   const base = {
@@ -22,13 +23,13 @@ export default function DeleteModeBar({ active, count, empty, busy = false, fill
     borderRadius: 'var(--radius-lg)',
     whiteSpace: 'nowrap' as const,
     background: 'none',
-    flex: fill ? 1 : undefined,
-    marginRight: fill ? undefined : 'var(--sp-1)',
+    marginRight: 'var(--sp-1)',
   }
 
   if (!active) {
     return (
       <button
+        ref={trashRef}
         type="button"
         aria-label="modo apagar"
         disabled={empty}
@@ -57,9 +58,14 @@ export default function DeleteModeBar({ active, count, empty, busy = false, fill
         type="button"
         disabled={busy}
         onClick={onExit}
-        style={{ ...base, padding: '0 var(--sp-3)', border: '1px solid var(--border)', color: 'var(--text)', cursor: busy ? 'not-allowed' : 'pointer', opacity: busy ? 0.5 : 1 }}
+        aria-label={isMobile ? 'sair do modo' : undefined}
+        style={{ ...base, ...(isMobile ? { width: height, marginRight: 0, padding: 0, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' } : { padding: '0 var(--sp-3)' }), border: '1px solid var(--border)', color: 'var(--text)', cursor: busy ? 'not-allowed' : 'pointer', opacity: busy ? 0.5 : 1 }}
       >
-        sair do modo
+        {isMobile ? (
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+            <path d="M6 6l12 12M18 6L6 18" />
+          </svg>
+        ) : 'sair do modo'}
       </button>
     </>
   )

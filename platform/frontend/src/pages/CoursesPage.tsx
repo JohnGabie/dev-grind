@@ -12,7 +12,7 @@ import { useCourseData } from '../hooks/useCourseData'
 import { tabFromParam, type CourseTab } from '../lib/courseTab'
 import { bulkDelete } from '../lib/bulkDelete'
 import { deleteCoursesNotice, deleteRoadmapParams } from '../lib/roadmapDelete'
-import { retainFailed, toggleSelection } from '../lib/selection'
+import { retainFailed, selectionAfterQuery, toggleSelection } from '../lib/selection'
 import { roadmapEntry, roadmapTarget } from '../lib/roadmapModel'
 import { useCoursePrefs } from '../hooks/useCoursePrefs'
 import { visibleEntries } from '../lib/courseView'
@@ -431,6 +431,8 @@ export default function CoursesPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const tab = tabFromParam(searchParams.get('tab'))
   const [courseId,lessonKey] = (useParams()['*'] ?? '').split('/').filter(Boolean)
+  const trashRef = useRef<HTMLButtonElement>(null)
+  const focusTrashAfterExit = useRef(false)
 
   const inDeleteMode = deleteMode === tab && !courseId
 
@@ -446,6 +448,11 @@ export default function CoursesPage() {
     setSelected(new Set())
     setConfirming(false)
     setDeleteError(null)
+  }
+
+  const changeQuery = (next: string) => {
+    setSelected(current => selectionAfterQuery(current, query, next))
+    setQuery(next)
   }
 
   const selectTab = (next: CourseTab) => {
@@ -497,20 +504,6 @@ export default function CoursesPage() {
   const chosenIds = chosen.map(entry => entry.id)
   const coursesOfChosen = new Set(roadmaps.filter(item => chosenIds.includes(item.id)).flatMap(item => item.course_ids).filter(id => byId.has(id))).size
 
-  const barOnOwnRow = inDeleteMode && isMobile
-  const deleteBar = (fill: boolean) => (
-    <DeleteModeBar
-      active={inDeleteMode}
-      count={chosen.length}
-      empty={allEntries.length === 0}
-      busy={busy}
-      fill={fill}
-      onEnter={enterDeleteMode}
-      onExit={exitDeleteMode}
-      onDelete={() => setConfirming(true)}
-    />
-  )
-
   const confirmDelete = async () => {
     setBusy(true)
     setDeleteError(null)
@@ -518,6 +511,7 @@ export default function CoursesPage() {
     setBusy(false)
     if (result.deleted.length > 0) reload()
     if (result.failed.length === 0) {
+      focusTrashAfterExit.current = true
       exitDeleteMode()
       return
     }
@@ -529,6 +523,16 @@ export default function CoursesPage() {
     setConfirming(false)
     setDeleteError(null)
   }
+
+  useEffect(() => {
+    if (!focusTrashAfterExit.current || deleteMode !== null) return
+    focusTrashAfterExit.current = false
+    trashRef.current?.focus()
+  }, [deleteMode])
+
+  useEffect(() => {
+    exitDeleteMode()
+  }, [tab, courseId])
 
   useEffect(() => {
     if (!inDeleteMode || confirming) return
@@ -564,14 +568,20 @@ export default function CoursesPage() {
             onTab={selectTab}
             actions={
               <>
-                {!barOnOwnRow && deleteBar(false)}
-                <ActionsMenu items={menuItems} />
+                <DeleteModeBar
+                  active={inDeleteMode}
+                  count={chosen.length}
+                  empty={allEntries.length === 0}
+                  busy={busy}
+                  trashRef={trashRef}
+                  onEnter={enterDeleteMode}
+                  onExit={exitDeleteMode}
+                  onDelete={() => setConfirming(true)}
+                />
+                {!(inDeleteMode && isMobile) && <ActionsMenu items={menuItems} />}
               </>
             }
           />
-        )}
-        {!courseId && barOnOwnRow && (
-          <div style={{ display: 'flex', gap: 'var(--sp-2)', marginTop: -4, marginBottom: 16 }}>{deleteBar(true)}</div>
         )}
 
         {loadError && (
@@ -608,7 +618,7 @@ export default function CoursesPage() {
         )}
 
         {((tab === 'cursos' && courses.length > 0) || (tab === 'roadmaps' && ready && roadmaps.length > 0)) && (
-          <CourseToolbar query={query} onQuery={setQuery} sort={prefs.sort} onSort={setSort} view={prefs.view} onView={setView} placeholder={tab === 'roadmaps' ? 'buscar roadmaps' : 'buscar cursos'} />
+          <CourseToolbar query={query} onQuery={changeQuery} sort={prefs.sort} onSort={setSort} view={prefs.view} onView={setView} placeholder={tab === 'roadmaps' ? 'buscar roadmaps' : 'buscar cursos'} />
         )}
 
         {((tab === 'cursos' && courses.length > 0) || (tab === 'roadmaps' && ready && roadmaps.length > 0)) && (() => {
@@ -617,7 +627,7 @@ export default function CoursesPage() {
             return (
               <div role="status">
                 <p style={{ color: 'var(--muted)', margin: '0 0 8px' }}>Nenhum {noun} encontrado para “{query.trim()}”</p>
-                <button type="button" onClick={() => setQuery('')} style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', color: 'var(--cyan)', cursor: 'pointer', fontFamily: 'inherit', padding: '0 14px', minHeight: isMobile ? 'var(--ctl-md)' : 32 }}>
+                <button type="button" onClick={() => changeQuery('')} style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', color: 'var(--cyan)', cursor: 'pointer', fontFamily: 'inherit', padding: '0 14px', minHeight: isMobile ? 'var(--ctl-md)' : 32 }}>
                   limpar busca
                 </button>
               </div>

@@ -8,3 +8,7 @@ export function toggleSelection(selected: ReadonlySet<string>, id: string): Set<
 export function retainFailed(selected: ReadonlySet<string>, failed: string[]): Set<string> {
   return new Set(failed.filter(id => selected.has(id)))
 }
+
+export function selectionAfterQuery(selected: ReadonlySet<string>, before: string, after: string): ReadonlySet<string> {
+  return before === after ? selected : new Set()
+}
