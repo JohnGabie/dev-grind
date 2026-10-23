@@ -1,9 +1,13 @@
 import { useEffect, useRef, useState, type CSSProperties, type RefObject } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import api from '../api/client'
 import CourseNotFound from '../components/CourseNotFound'
 import CourseList from '../components/CourseList'
 import CourseToolbar from '../components/CourseToolbar'
+import CourseTabs from '../components/CourseTabs'
+import { useCourseData } from '../hooks/useCourseData'
+import { tabFromParam, type CourseTab } from '../lib/courseTab'
+import { roadmapEntry, roadmapTarget } from '../lib/roadmapModel'
 import { useCoursePrefs } from '../hooks/useCoursePrefs'
 import { visibleEntries } from '../lib/courseView'
 import { courseEntry } from '../lib/listEntry'
@@ -11,7 +15,7 @@ import { continueTarget, lessonKeyOf } from '../lib/courseProgress'
 import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
 import PageHeader from '../components/PageHeader'
 import SkillPath from '../components/SkillPath'
-import { asCourse, type Course, type FillPart, type Lesson, type Step } from '../lib/courseModel'
+import { type FillPart, type Lesson, type Step } from '../lib/courseModel'
 import { pagePadding } from '../lib/layout'
 
 function flat(value: string) {
@@ -408,29 +412,16 @@ function LessonPlayer({
 
 export default function CoursesPage() {
   const isMobile = useMediaQuery(MOBILE_QUERY)
-  const [courses, setCourses] = useState<Course[]>([])
-  const [loadError, setLoadError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [reloadKey, setReloadKey] = useState(0)
+  const { courses, setCourses, roadmaps, byId, loading, error: loadError, roadmapsError, reload } = useCourseData()
   const navigate = useNavigate()
   const { prefs, setView, setSort } = useCoursePrefs()
   const [query, setQuery] = useState('')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const tab = tabFromParam(searchParams.get('tab'))
   const [courseId,lessonKey] = (useParams()['*'] ?? '').split('/').filter(Boolean)
 
-  useEffect(() => {
-    api.get('/courses')
-      .then(r => {
-        const rows = Array.isArray(r.data) ? r.data as Record<string, unknown>[] : []
-        setCourses(rows.map(asCourse).filter((course): course is Course => course !== null))
-      })
-      .catch(() => setLoadError('Não foi possível carregar os cursos.'))
-      .finally(() => setLoading(false))
-  }, [reloadKey])
-
-  const reload = () => {
-    setLoadError(null)
-    setLoading(true)
-    setReloadKey(key => key + 1)
+  const selectTab = (next: CourseTab) => {
+    setSearchParams(next === 'roadmaps' ? { tab: 'roadmaps' } : {}, { replace: true })
   }
 
   const course = courses.find(item => item.id === courseId) ?? null
@@ -469,24 +460,41 @@ export default function CoursesPage() {
 
         {!course && !loadError && loading && <p style={{ color: 'var(--muted)' }}>Carregando…</p>}
 
-        {!courseId && ready && courses.length === 0 && (
+        {!courseId && <CourseTabs tab={tab} onTab={selectTab} />}
+
+        {!courseId && tab === 'cursos' && ready && courses.length === 0 && (
           <div>
             <p style={{ color: 'var(--muted)', margin: 0 }}>Nenhum curso ainda.</p>
             <p style={{ color: 'var(--muted)', fontSize: isMobile ? 'var(--fs-sm)' : 12 }}>Os cursos são criados pelo assistente de IA.</p>
           </div>
         )}
 
-        {!courseId && courses.length > 0 && (
-          <CourseToolbar query={query} onQuery={setQuery} sort={prefs.sort} onSort={setSort} view={prefs.view} onView={setView} placeholder="buscar cursos" />
+        {!courseId && tab === 'roadmaps' && !loadError && roadmapsError && (
+          <div>
+            <p style={{ color: 'var(--muted)' }}>{roadmapsError}</p>
+            <button onClick={reload} style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--cyan)', cursor: 'pointer', padding: '8px 14px', minHeight: isMobile ? 44 : undefined }}>
+              tentar de novo
+            </button>
+          </div>
         )}
 
-        {!courseId && courses.length > 0 && (() => {
-          const byId = new Map(courses.map(item => [item.id, item]))
-          const shown = visibleEntries(courses.map(item => courseEntry(item)), query, prefs.sort)
+        {!courseId && tab === 'roadmaps' && ready && !roadmapsError && roadmaps.length === 0 && (
+          <p style={{ color: 'var(--muted)', margin: 0 }}>Nenhum roadmap ainda. A IA cria roadmaps para agrupar seus cursos.</p>
+        )}
+
+        {!courseId && ((tab === 'cursos' && courses.length > 0) || (tab === 'roadmaps' && ready && roadmaps.length > 0)) && (
+          <CourseToolbar query={query} onQuery={setQuery} sort={prefs.sort} onSort={setSort} view={prefs.view} onView={setView} placeholder={tab === 'roadmaps' ? 'buscar roadmaps' : 'buscar cursos'} />
+        )}
+
+        {!courseId && ((tab === 'cursos' && courses.length > 0) || (tab === 'roadmaps' && ready && roadmaps.length > 0)) && (() => {
+          const roadmapTab = tab === 'roadmaps'
+          const noun = roadmapTab ? 'roadmap' : 'curso'
+          const all = roadmapTab ? roadmaps.map(item => roadmapEntry(item, byId)) : courses.map(item => courseEntry(item))
+          const shown = visibleEntries(all, query, prefs.sort)
           if (shown.length === 0) {
             return (
               <div role="status">
-                <p style={{ color: 'var(--muted)', margin: '0 0 8px' }}>Nenhum curso encontrado para “{query.trim()}”</p>
+                <p style={{ color: 'var(--muted)', margin: '0 0 8px' }}>Nenhum {noun} encontrado para “{query.trim()}”</p>
                 <button type="button" onClick={() => setQuery('')} style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', color: 'var(--cyan)', cursor: 'pointer', fontFamily: 'inherit', padding: '0 14px', minHeight: isMobile ? 'var(--ctl-md)' : 32 }}>
                   limpar busca
                 </button>
@@ -497,8 +505,14 @@ export default function CoursesPage() {
             <CourseList
               entries={shown}
               view={prefs.view}
-              onOpen={entry => navigate(`/courses/${entry.id}`)}
+              onOpen={entry => navigate(roadmapTab ? `/roadmaps/${entry.id}` : `/courses/${entry.id}`)}
               onAction={entry => {
+                if (roadmapTab) {
+                  const roadmap = roadmaps.find(item => item.id === entry.id)
+                  const target = roadmap ? roadmapTarget(roadmap, byId) : null
+                  if (!target) return navigate(`/roadmaps/${entry.id}`)
+                  return navigate(target.lessonKey ? `/courses/${target.courseId}/${target.lessonKey}` : `/courses/${target.courseId}`)
+                }
                 const target = byId.get(entry.id)
                 const key = target ? continueTarget(target) : null
                 navigate(key ? `/courses/${entry.id}/${key}` : `/courses/${entry.id}`)
