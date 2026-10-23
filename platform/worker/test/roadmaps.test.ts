@@ -175,6 +175,32 @@ describe('roadmaps library', () => {
     expect(await order(r.id)).toEqual(['A'])
   })
 
+  it('deleting a roadmap of 100 courses with deleteCourses stays under the D1 parameter limit', async () => {
+    const ids = Array.from({ length: 100 }, (_, i) => `m${i}`)
+    for (const id of ids) await seedCourse(id)
+    const big = await make('Big', ids)
+    const other = await make('Other', ['A', 'm0', 'B', 'm99'])
+    const result = await deleteRoadmap(db(), USER_ID, big.id, true)
+    expect(result).toEqual({ deleted_roadmap: big.id, deleted_courses: 100 })
+    expect(await courseExists('m0')).toBe(false)
+    expect(await courseExists('m99')).toBe(false)
+    expect(await order(other.id)).toEqual(['A', 'B'])
+    expect(await positions(other.id)).toEqual([0, 1])
+  })
+
+  it('lists roadmaps created in the same second newest first', async () => {
+    const first = await make('First')
+    const second = await make('Second')
+    const third = await make('Third')
+    expect((await listRoadmaps(db(), USER_ID)).map(r => r.id)).toEqual([third.id, second.id, first.id])
+  })
+
+  it('treats course_ids null like a missing value', async () => {
+    const result = await createRoadmap(db(), USER_ID, { title: 'R', course_ids: null })
+    expect(failed(result)).toBe(false)
+    expect(failed(result) ? [] : result.course_ids).toEqual([])
+  })
+
   it('lists course summaries with lesson counts, newest first', async () => {
     const list = await listCourseSummaries(db(), USER_ID)
     expect(list).toHaveLength(4)

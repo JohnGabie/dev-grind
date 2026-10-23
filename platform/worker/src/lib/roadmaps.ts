@@ -1,4 +1,4 @@
-import { and, asc, desc, eq, inArray, ne } from 'drizzle-orm'
+import { and, asc, desc, eq, inArray, ne, sql } from 'drizzle-orm'
 import type { getDb } from '../db'
 import { courseLessonProgress, courses, roadmapCourses, roadmaps } from '../db/schema'
 
@@ -97,7 +97,7 @@ async function readRoadmap(db: Db, userId: string, id: string): Promise<RoadmapO
 }
 
 export async function listRoadmaps(db: Db, userId: string): Promise<RoadmapOut[]> {
-  const rows = await db.select().from(roadmaps).where(eq(roadmaps.user_id, userId)).orderBy(desc(roadmaps.created_at))
+  const rows = await db.select().from(roadmaps).where(eq(roadmaps.user_id, userId)).orderBy(desc(roadmaps.created_at), desc(sql`rowid`))
   const links = await db.select({ roadmap_id: roadmapCourses.roadmap_id, course_id: roadmapCourses.course_id })
     .from(roadmapCourses)
     .innerJoin(roadmaps, eq(roadmaps.id, roadmapCourses.roadmap_id))
@@ -116,7 +116,7 @@ export async function createRoadmap(db: Db, userId: string, input: Json): Promis
   if (typeof title !== 'string') return title
   const description = cleanDescription(input.description)
   if (description !== null && typeof description !== 'string') return description
-  const ids = cleanIds(input.course_ids)
+  const ids = cleanIds(input.course_ids ?? undefined)
   if (failed(ids)) return ids
   if (ids.length > MAX_MEMBERS) return { error: `a roadmap holds at most ${MAX_MEMBERS} courses` }
   const unknown = await unknownCourses(db, userId, ids)
