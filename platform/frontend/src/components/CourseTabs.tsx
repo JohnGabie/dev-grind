@@ -1,10 +1,11 @@
-import { useRef, type KeyboardEvent } from 'react'
+import { useRef, type KeyboardEvent, type ReactNode } from 'react'
 import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
 import type { CourseTab } from '../lib/courseTab'
 
 interface Props {
   tab: CourseTab
   onTab: (tab: CourseTab) => void
+  actions?: ReactNode
 }
 
 const TABS: { key: CourseTab; label: string }[] = [
@@ -12,7 +13,7 @@ const TABS: { key: CourseTab; label: string }[] = [
   { key: 'roadmaps', label: 'Roadmaps' },
 ]
 
-export default function CourseTabs({ tab, onTab }: Props) {
+export default function CourseTabs({ tab, onTab, actions }: Props) {
   const isMobile = useMediaQuery(MOBILE_QUERY)
   const refs = useRef<Record<CourseTab, HTMLButtonElement | null>>({ cursos: null, roadmaps: null })
 
@@ -30,40 +31,43 @@ export default function CourseTabs({ tab, onTab }: Props) {
   }
 
   return (
-    <div role="tablist" aria-label="cursos e roadmaps" style={{ display: 'flex', gap: 4, marginBottom: 16, borderBottom: '1px solid var(--border)' }}>
-      {TABS.map((item, index) => {
-        const on = item.key === tab
-        return (
-          <button
-            key={item.key}
-            ref={element => { refs.current[item.key] = element }}
-            type="button"
-            role="tab"
-            id={`tab-${item.key}`}
-            aria-controls={`panel-${item.key}`}
-            aria-selected={on}
-            tabIndex={on ? 0 : -1}
-            onClick={() => onTab(item.key)}
-            onKeyDown={event => move(event, index)}
-            style={{
-              boxSizing: 'border-box',
-              minHeight: isMobile ? 'var(--ctl-md)' : 36,
-              padding: '0 16px',
-              marginBottom: -1,
-              background: 'none',
-              border: 'none',
-              borderBottom: on ? '2px solid var(--cyan)' : '2px solid transparent',
-              color: on ? 'var(--text)' : 'var(--muted)',
-              fontFamily: 'inherit',
-              fontSize: isMobile ? 'var(--fs-base)' : 14,
-              fontWeight: on ? 700 : 400,
-              cursor: 'pointer',
-            }}
-          >
-            {item.label}
-          </button>
-        )
-      })}
+    <div style={{ display: 'flex', gap: 4, marginBottom: 16, borderBottom: '1px solid var(--border)' }}>
+      <div role="tablist" aria-label="cursos e roadmaps" style={{ display: 'flex', gap: 4 }}>
+        {TABS.map((item, index) => {
+          const on = item.key === tab
+          return (
+            <button
+              key={item.key}
+              ref={element => { refs.current[item.key] = element }}
+              type="button"
+              role="tab"
+              id={`tab-${item.key}`}
+              aria-controls={`panel-${item.key}`}
+              aria-selected={on}
+              tabIndex={on ? 0 : -1}
+              onClick={() => onTab(item.key)}
+              onKeyDown={event => move(event, index)}
+              style={{
+                boxSizing: 'border-box',
+                minHeight: isMobile ? 'var(--ctl-md)' : 36,
+                padding: '0 16px',
+                marginBottom: -1,
+                background: 'none',
+                border: 'none',
+                borderBottom: on ? '2px solid var(--cyan)' : '2px solid transparent',
+                color: on ? 'var(--text)' : 'var(--muted)',
+                fontFamily: 'inherit',
+                fontSize: isMobile ? 'var(--fs-base)' : 14,
+                fontWeight: on ? 700 : 400,
+                cursor: 'pointer',
+              }}
+            >
+              {item.label}
+            </button>
+          )
+        })}
+      </div>
+      {actions}
     </div>
   )
 }
