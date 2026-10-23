@@ -27,7 +27,7 @@ export default function RoadmapPage() {
   const navigate = useNavigate()
   const { roadmapId } = useParams()
   const { roadmaps, byId, loading, error, roadmapsError, reload } = useCourseData()
-  const { prefs, setView, setSort } = useCoursePrefs()
+  const { prefs, setView } = useCoursePrefs()
   const [query, setQuery] = useState('')
   const [confirming, setConfirming] = useState(false)
   const [alsoCourses, setAlsoCourses] = useState(false)
@@ -118,7 +118,7 @@ export default function RoadmapPage() {
         <p style={{ color: 'var(--muted)', fontSize: base, margin: '16px 0 0' }}>Roadmap vazio. A IA adiciona cursos aqui.</p>
       ) : (
         <>
-          <CourseToolbar query={query} onQuery={setQuery} sort={prefs.sort} onSort={setSort} hideSort view={prefs.view} onView={setView} placeholder="buscar cursos" />
+          <CourseToolbar query={query} onQuery={setQuery} view={prefs.view} onView={setView} placeholder="buscar cursos" />
           {shown.length === 0 ? (
             <div role="status">
               <p style={{ color: 'var(--muted)', fontSize: base, margin: '0 0 8px' }}>Nenhum curso encontrado para “{query.trim()}”</p>

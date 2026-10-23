@@ -17,6 +17,7 @@ const FOCUSABLE = 'button:not([disabled]), input:not([disabled])'
 export default function ConfirmDialog({ title, body, confirmLabel = 'apagar', cancelLabel = 'cancelar', checkbox, busy = false, error, onConfirm, onCancel }: Props) {
   const titleId = useId()
   const errorId = useId()
+  const bodyId = useId()
   const dialogRef = useRef<HTMLDivElement>(null)
   const cancelRef = useRef<HTMLButtonElement>(null)
 
@@ -93,11 +94,11 @@ export default function ConfirmDialog({ title, body, confirmLabel = 'apagar', ca
         aria-modal="true"
         tabIndex={-1}
         aria-labelledby={titleId}
-        aria-describedby={error ? errorId : undefined}
+        aria-describedby={error ? `${bodyId} ${errorId}` : bodyId}
         style={{ outline: 'none', boxSizing: 'border-box', width: '100%', maxWidth: 420, maxHeight: '100%', overflowY: 'auto', padding: 20, background: 'var(--bg-card)', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', color: 'var(--text)' }}
       >
         <h2 id={titleId} style={{ margin: '0 0 var(--sp-2, 8px)', fontSize: 'var(--fs-lg)', overflowWrap: 'anywhere' }}>{title}</h2>
-        <div style={{ color: 'var(--muted)', fontSize: 'var(--fs-base)', marginBottom: 12 }}>{body}</div>
+        <div id={bodyId} style={{ color: 'var(--muted)', fontSize: 'var(--fs-base)', marginBottom: 12 }}>{body}</div>
         {checkbox && (
           <label style={{ display: 'flex', alignItems: 'center', gap: 10, minHeight: 'var(--ctl-md)', fontSize: 'var(--fs-base)', cursor: 'pointer' }}>
             <input

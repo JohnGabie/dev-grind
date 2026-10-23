@@ -5,12 +5,11 @@ import { SORTS, VIEWS, type SortKey, type ViewKey } from '../lib/courseView'
 interface Props {
   query: string
   onQuery: (query: string) => void
-  sort: SortKey
-  onSort: (sort: SortKey) => void
+  sort?: SortKey
+  onSort?: (sort: SortKey) => void
   view: ViewKey
   onView: (view: ViewKey) => void
   placeholder: string
-  hideSort?: boolean
 }
 
 const ICONS: Record<ViewKey, ReactNode> = {
@@ -43,7 +42,7 @@ const ICONS: Record<ViewKey, ReactNode> = {
   ),
 }
 
-export default function CourseToolbar({ query, onQuery, sort, onSort, view, onView, placeholder, hideSort }: Props) {
+export default function CourseToolbar({ query, onQuery, sort, onSort, view, onView, placeholder }: Props) {
   const isMobile = useMediaQuery(MOBILE_QUERY)
   const inputRef = useRef<HTMLInputElement>(null)
   const height = isMobile ? 'var(--ctl-md)' : 36
@@ -87,7 +86,7 @@ export default function CourseToolbar({ query, onQuery, sort, onSort, view, onVi
         )}
       </div>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, alignItems: 'center' }}>
-        {!hideSort && <select
+        {sort && onSort && <select
           aria-label="ordenar"
           value={sort}
           onChange={event => onSort(event.target.value as SortKey)}
