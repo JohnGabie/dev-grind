@@ -446,8 +446,12 @@ export default function CoursesPage() {
         padding: pagePadding('40px 48px 72px', isMobile, true, !courseId),
       }}>
         {!courseId && (
-          <PageHeader eyebrow="// trilhas de estudo" title="cursos" description="Seus cursos, feitos pela IA com base nos seus livros e nas suas lacunas. Abra um e siga lição por lição." />
+          tab === 'roadmaps'
+            ? <PageHeader eyebrow="// trilhas de estudo" title="roadmaps" description="Roadmaps agrupam seus cursos em uma trilha. A IA monta e organiza." />
+            : <PageHeader eyebrow="// trilhas de estudo" title="cursos" description="Seus cursos, feitos pela IA com base nos seus livros e nas suas lacunas. Abra um e siga lição por lição." />
         )}
+
+        {!courseId && <CourseTabs tab={tab} onTab={selectTab} />}
 
         {loadError && (
           <div>
@@ -460,33 +464,33 @@ export default function CoursesPage() {
 
         {!course && !loadError && loading && <p style={{ color: 'var(--muted)' }}>Carregando…</p>}
 
-        {!courseId && <CourseTabs tab={tab} onTab={selectTab} />}
-
-        {!courseId && tab === 'cursos' && ready && courses.length === 0 && (
+        {!courseId && (
+          <div role="tabpanel" id={`panel-${tab}`} aria-labelledby={`tab-${tab}`}>
+        {tab === 'cursos' && ready && courses.length === 0 && (
           <div>
             <p style={{ color: 'var(--muted)', margin: 0 }}>Nenhum curso ainda.</p>
             <p style={{ color: 'var(--muted)', fontSize: isMobile ? 'var(--fs-sm)' : 12 }}>Os cursos são criados pelo assistente de IA.</p>
           </div>
         )}
 
-        {!courseId && tab === 'roadmaps' && !loadError && roadmapsError && (
+        {tab === 'roadmaps' && !loadError && roadmapsError && (
           <div>
             <p style={{ color: 'var(--muted)' }}>{roadmapsError}</p>
-            <button onClick={reload} style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 8, color: 'var(--cyan)', cursor: 'pointer', padding: '8px 14px', minHeight: isMobile ? 44 : undefined }}>
+            <button onClick={reload} style={{ background: 'none', border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)', color: 'var(--cyan)', cursor: 'pointer', fontFamily: 'inherit', padding: '0 14px', minHeight: isMobile ? 'var(--ctl-md)' : 32 }}>
               tentar de novo
             </button>
           </div>
         )}
 
-        {!courseId && tab === 'roadmaps' && ready && !roadmapsError && roadmaps.length === 0 && (
+        {tab === 'roadmaps' && ready && !roadmapsError && roadmaps.length === 0 && (
           <p style={{ color: 'var(--muted)', margin: 0 }}>Nenhum roadmap ainda. A IA cria roadmaps para agrupar seus cursos.</p>
         )}
 
-        {!courseId && ((tab === 'cursos' && courses.length > 0) || (tab === 'roadmaps' && ready && roadmaps.length > 0)) && (
+        {((tab === 'cursos' && courses.length > 0) || (tab === 'roadmaps' && ready && roadmaps.length > 0)) && (
           <CourseToolbar query={query} onQuery={setQuery} sort={prefs.sort} onSort={setSort} view={prefs.view} onView={setView} placeholder={tab === 'roadmaps' ? 'buscar roadmaps' : 'buscar cursos'} />
         )}
 
-        {!courseId && ((tab === 'cursos' && courses.length > 0) || (tab === 'roadmaps' && ready && roadmaps.length > 0)) && (() => {
+        {((tab === 'cursos' && courses.length > 0) || (tab === 'roadmaps' && ready && roadmaps.length > 0)) && (() => {
           const roadmapTab = tab === 'roadmaps'
           const noun = roadmapTab ? 'roadmap' : 'curso'
           const all = roadmapTab ? roadmaps.map(item => roadmapEntry(item, byId)) : courses.map(item => courseEntry(item))
@@ -520,6 +524,8 @@ export default function CoursesPage() {
             />
           )
         })()}
+          </div>
+        )}
 
         {course && !lessonKey && (
           <div>

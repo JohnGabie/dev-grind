@@ -40,6 +40,7 @@ export default function CourseTabs({ tab, onTab }: Props) {
             type="button"
             role="tab"
             id={`tab-${item.key}`}
+            aria-controls={`panel-${item.key}`}
             aria-selected={on}
             tabIndex={on ? 0 : -1}
             onClick={() => onTab(item.key)}
