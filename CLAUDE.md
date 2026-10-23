@@ -14,6 +14,26 @@ commit messages, Linear issues. Another language elsewhere only when João asks.
 
 ---
 
+## WRITING (ASD-STE100)
+
+Applies to replies to João, subagent briefs and the docs you write (specs, ADRs, roles, DEVLOG).
+Portuguese text follows the same rules. There is no controlled dictionary in either language.
+Out of scope: code, and the prompts of the product's AI.
+
+1. Write one idea in each sentence. An instruction has 20 words or fewer. A description has 25 words or fewer.
+2. Use the active voice. Write instructions in the imperative.
+3. Use the present tense when possible.
+4. Name the exact thing each time. Write "the delete-course dialog", not "the dialog". Write "the `deleting`
+   state of the delete-course dialog", not "the state". Use the name from the code or `GLOSSARY.md`.
+5. Use one term for one thing. Do not change the name of a thing in the same text.
+6. Repeat the subject. Do not use "it", "this" or "that" if the reader can be unsure what it refers to.
+7. Put steps in a numbered list, one action in each step. Write the condition before the action: "If X fails, do Y".
+8. Use exact verbs: "reset", "remove", "return 404". Do not use vague verbs: "handle", "deal with", "adjust".
+9. Give a paragraph one topic and 6 sentences or fewer. For a bug, use the parts Cause, Result and Fix.
+10. Write only what the reader needs. Do not repeat the request. Do not add filler or a second summary.
+
+---
+
 ## MISSION
 
 DevGrind closes **comprehension debt**: the gap between the code AI writes and the code people understand.
