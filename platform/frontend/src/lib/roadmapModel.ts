@@ -36,7 +36,7 @@ export function roadmapProgress(roadmap: Roadmap, byId: Map<string, Course>): { 
   const members = roadmapCourses(roadmap, byId).map(courseProgress)
   const done = members.reduce((sum, item) => sum + item.done, 0)
   const total = members.reduce((sum, item) => sum + item.total, 0)
-  const state: CourseState = total > 0 && done >= total
+  const state: CourseState = total > 0 && done >= total && members.every(item => item.state === 'concluído')
     ? 'concluído'
     : done > 0 || members.some(item => item.state !== 'não iniciado')
       ? 'em andamento'

@@ -63,6 +63,15 @@ describe('roadmapProgress', () => {
   it('an empty roadmap is 0/0 não iniciado', () => {
     assert.deepEqual(roadmapProgress(roadmap([]), mapOf()), { courses: 0, done: 0, total: 0, state: 'não iniciado' })
   })
+  it('a member made only of undone optional lessons keeps the roadmap em andamento', () => {
+    const optionalOnly: Course = {
+      id: 'opt', title: 'opt', description: null, completed: [], parts: {},
+      sections: [{ title: 'S', lessons: [{ title: 'L0', description: '', optional: true, steps: [], sectionIndex: 0, lessonIndex: 0 }] }],
+    }
+    const result = roadmapProgress(roadmap(['a', 'opt']), mapOf(course('a', 2, 2), optionalOnly))
+    assert.equal(result.state, 'em andamento')
+    assert.deepEqual(roadmapTarget(roadmap(['a', 'opt']), mapOf(course('a', 2, 2), optionalOnly)), { courseId: 'opt', lessonKey: null })
+  })
   it('all courses concluded is concluído', () => {
     const result = roadmapProgress(roadmap(['a', 'b']), mapOf(course('a', 3, 3), course('b', 2, 2)))
     assert.equal(result.state, 'concluído')

@@ -1,10 +1,12 @@
 import type { ReactNode } from 'react'
 import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
 
-export default function PageHeader({ eyebrow, title, description, children }: {
+export default function PageHeader({ eyebrow, title, description, minLines, minLinesDesktop, children }: {
   eyebrow: string
   title: string
   description: string
+  minLines?: number
+  minLinesDesktop?: number
   children?: ReactNode
 }) {
   const isMobile = useMediaQuery(MOBILE_QUERY)
@@ -16,7 +18,7 @@ export default function PageHeader({ eyebrow, title, description, children }: {
       <h1 style={{ fontSize: isMobile ? 'var(--fs-xl)' : 40, fontWeight: 800, color: 'var(--text)', margin: '0 0 10px', letterSpacing: '-0.03em' }}>
         {title}
       </h1>
-      <p style={{ fontSize: isMobile ? 'var(--fs-sm)' : 12, color: 'var(--muted)', margin: 0, maxWidth: 500, lineHeight: 1.7 }}>
+      <p style={{ fontSize: isMobile ? 'var(--fs-sm)' : 12, color: 'var(--muted)', margin: 0, maxWidth: 500, lineHeight: 1.7, minHeight: (isMobile ? minLines : minLinesDesktop) ? `${(isMobile ? minLines : minLinesDesktop)! * 1.7}em` : undefined }}>
         {description}
       </p>
       {children && <div style={{ marginTop: 20 }}>{children}</div>}

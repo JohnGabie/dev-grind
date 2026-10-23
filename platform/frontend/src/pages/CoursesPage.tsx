@@ -476,8 +476,8 @@ export default function CoursesPage() {
       }}>
         {!courseId && (
           tab === 'roadmaps'
-            ? <PageHeader eyebrow="// trilhas de estudo" title="roadmaps" description="Roadmaps agrupam seus cursos em uma trilha. A IA monta e organiza." />
-            : <PageHeader eyebrow="// trilhas de estudo" title="cursos" description="Seus cursos, feitos pela IA com base nos seus livros e nas suas lacunas. Abra um e siga lição por lição." />
+            ? <PageHeader minLines={3} minLinesDesktop={2} eyebrow="// trilhas de estudo" title="roadmaps" description="Roadmaps agrupam seus cursos em uma trilha. A IA monta e organiza." />
+            : <PageHeader minLines={3} minLinesDesktop={2} eyebrow="// trilhas de estudo" title="cursos" description="Seus cursos, feitos pela IA com base nos seus livros e nas suas lacunas. Abra um e siga lição por lição." />
         )}
 
         {!courseId && <CourseTabs tab={tab} onTab={selectTab} />}
