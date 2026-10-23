@@ -455,6 +455,9 @@ export default function CoursesPage() {
         return
       }
     }
+    setCourses(list => list.filter(item => item.id !== course.id))
+    closeDialog()
+    setBusy(false)
     reload()
     navigate('/courses')
   }
