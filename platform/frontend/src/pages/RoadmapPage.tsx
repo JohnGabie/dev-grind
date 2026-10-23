@@ -111,7 +111,7 @@ export default function RoadmapPage() {
       ) : view === 'trilha' ? (
         <RoadmapTrail stages={trailStages(roadmap, byId)} onContinue={onMainAction} />
       ) : (
-        <CourseList entries={entries} view="cards" onOpen={entry => navigate(`/courses/${entry.id}`)} onAction={onMainAction} />
+        <CourseList entries={entries} view="cards" onOpen={entry => navigate(`/courses/${entry.id}`)} onAction={() => {}} />
       )}
     </>,
   )

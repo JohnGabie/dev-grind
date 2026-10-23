@@ -39,7 +39,8 @@ export default function RoadmapTrail({ stages, onContinue }: { stages: TrailStag
             <div style={{ flex: 1, minWidth: 0, paddingBottom: last ? 0 : 'var(--sp-5)' }}>
               <Link
                 to={`/courses/${stage.id}`}
-                style={{ display: 'block', boxSizing: 'border-box', minHeight: 44, padding: 'var(--sp-2) 0', color: 'inherit', textDecoration: 'none' }}
+                aria-current={stage.current ? 'step' : undefined}
+                style={{ display: 'block', boxSizing: 'border-box', minHeight: 'var(--ctl-md)', padding: 'var(--sp-2) 0', color: 'inherit', textDecoration: 'none' }}
               >
                 <span style={{ display: 'block', fontSize: isMobile ? 'var(--fs-lg)' : 18, fontWeight: 700, overflowWrap: 'anywhere' }}>
                   <span style={{ color: 'var(--muted)', fontWeight: 400, fontSize: 'var(--fs-sm)' }}>{stage.position}. </span>
@@ -49,7 +50,7 @@ export default function RoadmapTrail({ stages, onContinue }: { stages: TrailStag
                   <span>{stage.done} de {stage.total} lições · {stage.percent}%</span>
                   <span style={{ color: STATE_COLOR[stage.state] }}> · {stage.state}</span>
                 </span>
-                <ProgressBar done={stage.done} total={stage.total} label={`${stage.title}: ${stage.done} de ${stage.total} lições`} done100={stage.state === 'concluído'} />
+                <span aria-hidden="true" style={{ display: 'block' }}><ProgressBar done={stage.done} total={stage.total} label={`${stage.title}: ${stage.done} de ${stage.total} lições`} done100={stage.state === 'concluído'} /></span>
               </Link>
               {stage.current && (
                 <button
@@ -57,7 +58,7 @@ export default function RoadmapTrail({ stages, onContinue }: { stages: TrailStag
                   onClick={onContinue}
                   style={{
                     background: 'none', border: '1px solid var(--cyan)', borderRadius: 'var(--radius-lg)', color: 'var(--cyan)', cursor: 'pointer',
-                    fontFamily: 'inherit', fontSize: size, padding: '0 14px', minHeight: 44, marginTop: 'var(--sp-2)', boxSizing: 'border-box',
+                    fontFamily: 'inherit', fontSize: size, padding: '0 14px', minHeight: 'var(--ctl-md)', marginTop: 'var(--sp-2)', boxSizing: 'border-box',
                   }}
                 >
                   {actionLabel(stage.state)}
