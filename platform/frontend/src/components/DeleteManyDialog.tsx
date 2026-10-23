@@ -74,6 +74,7 @@ export default function DeleteManyDialog({ title, unit, items, alsoCourses, onDe
         }
         checkbox={alsoCourses ? { label: alsoCourses.label, checked: withCourses, onChange: setWithCourses } : undefined}
         cancelLabel="voltar"
+        stepKey="confirm"
         busy={busy}
         error={error}
         onConfirm={confirm}
@@ -98,7 +99,7 @@ export default function DeleteManyDialog({ title, unit, items, alsoCourses, onDe
               />
               <span>selecionar todos</span>
             </label>
-            <span role="status" style={{ whiteSpace: 'nowrap' }}>{selected.length} selecionados</span>
+            <span role="status" style={{ whiteSpace: 'nowrap' }}>{selected.length} {selected.length === 1 ? 'selecionado' : 'selecionados'}</span>
           </div>
           {remaining.map(item => (
             <label key={item.id} style={row}>
@@ -116,6 +117,7 @@ export default function DeleteManyDialog({ title, unit, items, alsoCourses, onDe
         </>
       }
       confirmDisabled={selected.length === 0}
+      stepKey="list"
       busy={busy}
       error={error}
       onConfirm={() => { setError(null); setStep('confirm') }}

@@ -7,6 +7,7 @@ interface Props {
   cancelLabel?: string
   checkbox?: { label: string; checked: boolean; onChange: (checked: boolean) => void }
   confirmDisabled?: boolean
+  stepKey?: string
   busy?: boolean
   error?: string | null
   onConfirm: () => void
@@ -15,7 +16,7 @@ interface Props {
 
 const FOCUSABLE = 'button:not([disabled]), input:not([disabled])'
 
-export default function ConfirmDialog({ title, body, confirmLabel = 'apagar', cancelLabel = 'cancelar', checkbox, confirmDisabled = false, busy = false, error, onConfirm, onCancel }: Props) {
+export default function ConfirmDialog({ title, body, confirmLabel = 'apagar', cancelLabel = 'cancelar', checkbox, confirmDisabled = false, stepKey, busy = false, error, onConfirm, onCancel }: Props) {
   const titleId = useId()
   const errorId = useId()
   const bodyId = useId()
@@ -24,6 +25,8 @@ export default function ConfirmDialog({ title, body, confirmLabel = 'apagar', ca
 
   const live = useRef({ busy, onCancel })
   useEffect(() => { live.current = { busy, onCancel } })
+
+  useEffect(() => { cancelRef.current?.focus() }, [stepKey])
 
   useEffect(() => {
     const opener = document.activeElement instanceof HTMLElement ? document.activeElement : null

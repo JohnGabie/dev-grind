@@ -78,7 +78,7 @@ export default function ActionsMenu({ items }: Props) {
     item.onSelect()
   }
 
-  const size = isMobile ? 'var(--ctl-md)' : 32
+  const size = 'var(--ctl-md)'
 
   return (
     <div
@@ -128,8 +128,8 @@ export default function ActionsMenu({ items }: Props) {
             boxSizing: 'border-box',
             width: 'max-content',
             minWidth: 200,
-            maxWidth: 'calc(100vw - 32px)',
-            padding: 4,
+            maxWidth: 'calc(100vw - var(--sp-7))',
+            padding: 'var(--sp-1)',
             background: 'var(--bg-card)',
             border: '1px solid var(--border)',
             borderRadius: 'var(--radius-lg)',
@@ -148,12 +148,12 @@ export default function ActionsMenu({ items }: Props) {
               style={{
                 boxSizing: 'border-box',
                 width: '100%',
-                minHeight: isMobile ? 'var(--ctl-md)' : 32,
+                minHeight: 'var(--ctl-md)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'space-between',
-                gap: 16,
-                padding: '0 12px',
+                gap: 'var(--sp-4)',
+                padding: '0 var(--sp-3)',
                 background: 'none',
                 border: 'none',
                 borderRadius: 'var(--radius-md)',
