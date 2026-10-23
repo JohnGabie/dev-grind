@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState, type CSSProperties, type RefObject } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { isAxiosError } from 'axios'
 import api from '../api/client'
+import ConfirmDialog from '../components/ConfirmDialog'
 import CourseNotFound from '../components/CourseNotFound'
 import CourseList from '../components/CourseList'
 import CourseToolbar from '../components/CourseToolbar'
@@ -17,6 +19,8 @@ import PageHeader from '../components/PageHeader'
 import SkillPath from '../components/SkillPath'
 import { type FillPart, type Lesson, type Step } from '../lib/courseModel'
 import { pagePadding } from '../lib/layout'
+
+const DELETE_COURSE_FAILED = 'Não foi possível apagar o curso. Tente de novo.'
 
 function flat(value: string) {
   return value.replace(/\n/g, '').trim()
@@ -416,6 +420,9 @@ export default function CoursesPage() {
   const navigate = useNavigate()
   const { prefs, setView, setSort } = useCoursePrefs()
   const [query, setQuery] = useState('')
+  const [confirming, setConfirming] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [deleteError, setDeleteError] = useState<string | null>(null)
   const [searchParams, setSearchParams] = useSearchParams()
   const tab = tabFromParam(searchParams.get('tab'))
   const [courseId,lessonKey] = (useParams()['*'] ?? '').split('/').filter(Boolean)
@@ -432,6 +439,25 @@ export default function CoursesPage() {
   })))
     .find(entry => entry.key === lessonKey)
   const ready = !loading && !loadError
+
+  const closeDialog = () => { setConfirming(false); setDeleteError(null) }
+
+  const confirmDelete = async () => {
+    if (!course || busy) return
+    setBusy(true)
+    setDeleteError(null)
+    try {
+      await api.delete(`/courses/${course.id}`)
+    } catch (err) {
+      if (!(isAxiosError(err) && err.response?.status === 404)) {
+        setDeleteError(DELETE_COURSE_FAILED)
+        setBusy(false)
+        return
+      }
+    }
+    reload()
+    navigate('/courses')
+  }
 
   useEffect(() => {
     document.body.dataset.courseLesson = lesson ? '1' : ''
@@ -535,6 +561,23 @@ export default function CoursesPage() {
               </button>
               <h1 style={{ fontSize: isMobile ? 'var(--fs-xl)' : 32, margin: 0, paddingRight: isMobile ? 'calc(var(--ctl-md) + var(--sp-2))' : undefined }}>{course.title}</h1>
             </div>
+            <button
+              type="button"
+              onClick={() => setConfirming(true)}
+              style={{ background: 'none', border: 'none', color: 'var(--red)', cursor: 'pointer', fontFamily: 'inherit', padding: 0, margin: '0 0 var(--sp-4, 16px)', boxSizing: 'border-box', minHeight: isMobile ? 'var(--ctl-md)' : undefined, fontSize: isMobile ? 'var(--fs-base)' : undefined }}
+            >
+              apagar curso
+            </button>
+            {confirming && (
+              <ConfirmDialog
+                title={`Apagar “${course.title}”?`}
+                body="O progresso das lições será perdido e o curso sai de todos os roadmaps. Não dá para desfazer."
+                busy={busy}
+                error={deleteError}
+                onConfirm={confirmDelete}
+                onCancel={closeDialog}
+              />
+            )}
             <SkillPath
               courseId={course.id}
               sections={course.sections}
