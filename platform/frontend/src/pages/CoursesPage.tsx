@@ -432,8 +432,8 @@ export default function CoursesPage() {
   const [searchParams, setSearchParams] = useSearchParams()
   const tab = tabFromParam(searchParams.get('tab'))
   const [courseId,lessonKey] = (useParams()['*'] ?? '').split('/').filter(Boolean)
-  const trashRef = useRef<HTMLButtonElement>(null)
-  const focusTrashAfterExit = useRef(false)
+  const actionsRef = useRef<HTMLButtonElement>(null)
+  const focusActionsAfterExit = useRef(false)
 
   const inDeleteMode = deleteMode === tab && !courseId
 
@@ -449,6 +449,11 @@ export default function CoursesPage() {
     setSelected(new Set())
     setConfirming(false)
     setDeleteError(null)
+  }
+
+  const leaveDeleteMode = () => {
+    focusActionsAfterExit.current = true
+    exitDeleteMode()
   }
 
   const changeQuery = (next: string) => {
@@ -508,13 +513,9 @@ export default function CoursesPage() {
   const barOnOwnRow = inDeleteMode && narrow
   const deleteBar = (
     <DeleteModeBar
-      active={inDeleteMode}
       count={chosen.length}
-      empty={allEntries.length === 0}
       busy={busy}
-      trashRef={trashRef}
-      onEnter={enterDeleteMode}
-      onExit={exitDeleteMode}
+      onExit={leaveDeleteMode}
       onDelete={() => setConfirming(true)}
     />
   )
@@ -526,8 +527,7 @@ export default function CoursesPage() {
     setBusy(false)
     if (result.deleted.length > 0) reload()
     if (result.failed.length === 0) {
-      focusTrashAfterExit.current = true
-      exitDeleteMode()
+      leaveDeleteMode()
       return
     }
     setSelected(current => retainFailed(current, result.failed))
@@ -540,9 +540,9 @@ export default function CoursesPage() {
   }
 
   useEffect(() => {
-    if (!focusTrashAfterExit.current || deleteMode !== null) return
-    focusTrashAfterExit.current = false
-    trashRef.current?.focus()
+    if (!focusActionsAfterExit.current || deleteMode !== null) return
+    focusActionsAfterExit.current = false
+    actionsRef.current?.focus()
   }, [deleteMode])
 
   const viewKey = `${tab}|${courseId ?? ''}`
@@ -556,6 +556,7 @@ export default function CoursesPage() {
     if (!inDeleteMode || confirming) return
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== 'Escape' || (event.target as Element | null)?.closest?.('[role="menu"]')) return
+      focusActionsAfterExit.current = true
       exitDeleteMode()
     }
     document.addEventListener('keydown', onKeyDown)
@@ -586,8 +587,7 @@ export default function CoursesPage() {
             onTab={selectTab}
             actions={
               <>
-                {!barOnOwnRow && deleteBar}
-                {!(inDeleteMode && isMobile) && <ActionsMenu items={menuItems} />}
+                {inDeleteMode ? (barOnOwnRow ? null : deleteBar) : <ActionsMenu items={menuItems} buttonRef={actionsRef} />}
               </>
             }
           />

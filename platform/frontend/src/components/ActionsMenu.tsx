@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState, type KeyboardEvent } from 'react'
+import { useEffect, useId, useRef, useState, type KeyboardEvent, type RefObject } from 'react'
 import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
 
 export interface ActionsMenuItem {
@@ -11,14 +11,16 @@ export interface ActionsMenuItem {
 
 interface Props {
   items: ActionsMenuItem[]
+  buttonRef?: RefObject<HTMLButtonElement | null>
 }
 
-export default function ActionsMenu({ items }: Props) {
+export default function ActionsMenu({ items, buttonRef: externalButtonRef }: Props) {
   const isMobile = useMediaQuery(MOBILE_QUERY)
   const [open, setOpen] = useState(false)
   const menuId = useId()
   const rootRef = useRef<HTMLDivElement>(null)
-  const buttonRef = useRef<HTMLButtonElement>(null)
+  const ownButtonRef = useRef<HTMLButtonElement>(null)
+  const buttonRef = externalButtonRef ?? ownButtonRef
   const itemRefs = useRef<Record<string, HTMLButtonElement | null>>({})
   const itemsRef = useRef(items)
   useEffect(() => { itemsRef.current = items })
@@ -56,7 +58,7 @@ export default function ActionsMenu({ items }: Props) {
       document.removeEventListener('pointerdown', onPointerDown)
       document.removeEventListener('keydown', onKeyDown)
     }
-  }, [open])
+  }, [open, buttonRef])
 
   const onMenuKeyDown = (event: KeyboardEvent) => {
     const active = activeItems()
