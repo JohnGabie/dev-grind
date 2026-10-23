@@ -12,6 +12,7 @@ import { awardHonor } from './honor'
 import { recordAttempt } from './progress'
 import { honorToRank } from './rank'
 import type { Env } from '../types'
+import { addCourses, createRoadmap, deleteRoadmap, listCourseSummaries, listRoadmaps, removeCourses, reorderCourses, updateRoadmap } from './roadmaps'
 
 export interface ToolCtx {
   db: ReturnType<typeof getDb>
@@ -704,6 +705,93 @@ export const TOOLS: ToolDef[] = [
       required: ['course_id', 'modules', 'is_complete'],
     },
     run: appendCourseModules,
+  },
+  {
+    name: 'list_courses',
+    description: 'List the user\'s courses with id, title, description, lesson count and creation date. Use the ids with the roadmap tools.',
+    inputSchema: { type: 'object', properties: {} },
+    run: (ctx) => listCourseSummaries(ctx.db, ctx.userId),
+  },
+  {
+    name: 'list_roadmaps',
+    description: 'List the user\'s roadmaps. A roadmap is a folder that groups courses; each entry has id, title, description, created_at and course_ids in order.',
+    inputSchema: { type: 'object', properties: {} },
+    run: (ctx) => listRoadmaps(ctx.db, ctx.userId),
+  },
+  {
+    name: 'create_roadmap',
+    description: 'Create a roadmap, a folder that groups courses (for example "Backend with Python"). You decide what goes in it and in what order. course_ids is optional; use ids from list_courses. A course can be in several roadmaps.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        title: { type: 'string', description: '1-200 characters' },
+        description: { type: 'string', description: 'At most 2000 characters (optional)' },
+        course_ids: { type: 'array', items: { type: 'string' }, description: 'Course ids in order (optional, at most 100)' },
+      },
+      required: ['title'],
+    },
+    run: (ctx, args) => createRoadmap(ctx.db, ctx.userId, args),
+  },
+  {
+    name: 'update_roadmap',
+    description: 'Change a roadmap\'s title and/or description. Does not touch its courses. description: null clears it.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        roadmap_id: { type: 'string' },
+        title: { type: 'string' },
+        description: { type: ['string', 'null'] },
+      },
+      required: ['roadmap_id'],
+    },
+    run: (ctx, args) => updateRoadmap(ctx.db, ctx.userId, String(args.roadmap_id ?? ''), args),
+  },
+  {
+    name: 'add_courses_to_roadmap',
+    description: 'Add courses to a roadmap. Appends at the end, or inserts at position (0-based). Ids already in the roadmap are ignored. If any id is unknown or not the user\'s the whole call fails and nothing changes.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        roadmap_id: { type: 'string' },
+        course_ids: { type: 'array', items: { type: 'string' } },
+        position: { type: 'integer', minimum: 0 },
+      },
+      required: ['roadmap_id', 'course_ids'],
+    },
+    run: (ctx, args) => addCourses(ctx.db, ctx.userId, String(args.roadmap_id ?? ''), args.course_ids, args.position),
+  },
+  {
+    name: 'remove_courses_from_roadmap',
+    description: 'Remove courses from a roadmap. Only the link is removed; the courses themselves stay.',
+    inputSchema: {
+      type: 'object',
+      properties: { roadmap_id: { type: 'string' }, course_ids: { type: 'array', items: { type: 'string' } } },
+      required: ['roadmap_id', 'course_ids'],
+    },
+    run: (ctx, args) => removeCourses(ctx.db, ctx.userId, String(args.roadmap_id ?? ''), args.course_ids),
+  },
+  {
+    name: 'reorder_roadmap_courses',
+    description: 'Set the order of a roadmap\'s courses. course_ids must be exactly the current members, each once, in the new order; otherwise the call fails and the order stays.',
+    inputSchema: {
+      type: 'object',
+      properties: { roadmap_id: { type: 'string' }, course_ids: { type: 'array', items: { type: 'string' } } },
+      required: ['roadmap_id', 'course_ids'],
+    },
+    run: (ctx, args) => reorderCourses(ctx.db, ctx.userId, String(args.roadmap_id ?? ''), args.course_ids),
+  },
+  {
+    name: 'delete_roadmap',
+    description: 'Delete a roadmap. By default only the folder is deleted and its courses stay. With delete_courses: true the roadmap\'s courses are deleted too, with their lesson progress and their links in other roadmaps. This is permanent and cannot be undone; use delete_courses: true only when the user clearly asked for the courses to be deleted.',
+    inputSchema: {
+      type: 'object',
+      properties: {
+        roadmap_id: { type: 'string' },
+        delete_courses: { type: 'boolean', description: 'Default false. true deletes the courses for good.' },
+      },
+      required: ['roadmap_id'],
+    },
+    run: (ctx, args) => deleteRoadmap(ctx.db, ctx.userId, String(args.roadmap_id ?? ''), args.delete_courses === true),
   },
 ]
 
