@@ -1,5 +1,5 @@
-import type { Course } from './courseModel'
-import { courseProgress, orderCourses } from './courseProgress.ts'
+import type { CourseState } from './courseProgress'
+import type { ListEntry } from './listEntry'
 
 export type ViewKey = 'cards' | 'lista' | 'grade' | 'galeria'
 export type SortKey = 'default' | 'recent' | 'name' | 'progress'
@@ -22,21 +22,25 @@ export function matchesQuery(item: { title: string; description?: string | null 
   return normalizeText(item.title).includes(q) || normalizeText(item.description ?? '').includes(q)
 }
 
-function fractionDone(course: Course): number {
-  const { done, total } = courseProgress(course)
-  return total > 0 ? done / total : 0
+function fractionDone(entry: ListEntry): number {
+  return entry.total > 0 ? entry.done / entry.total : 0
 }
 
-const byTitle = (a: Course, b: Course) => a.title.localeCompare(b.title, 'pt', { sensitivity: 'base', numeric: true })
+const byTitle = (a: ListEntry, b: ListEntry) => a.title.localeCompare(b.title, 'pt', { sensitivity: 'base', numeric: true })
 
-export function sortCourses<T extends Course>(courses: T[], key: SortKey): T[] {
-  if (key === 'default') return orderCourses(courses)
-  const indexed = courses.map((course, index) => ({ course, index }))
+const GROUP: Record<CourseState, number> = { 'em andamento': 0, 'não iniciado': 1, 'concluído': 2 }
+
+export function sortEntries<T extends ListEntry>(entries: T[], key: SortKey): T[] {
+  const indexed = entries.map((entry, index) => ({ entry, index }))
   indexed.sort((a, b) => {
-    if (key === 'name') return byTitle(a.course, b.course) || a.index - b.index
-    if (key === 'progress') return fractionDone(b.course) - fractionDone(a.course) || byTitle(a.course, b.course) || a.index - b.index
-    const ca = a.course.created_at ?? ''
-    const cb = b.course.created_at ?? ''
+    if (key === 'default') {
+      if (a.entry.kind === 'roadmap' || b.entry.kind === 'roadmap') return a.index - b.index
+      return GROUP[a.entry.state] - GROUP[b.entry.state] || a.index - b.index
+    }
+    if (key === 'name') return byTitle(a.entry, b.entry) || a.index - b.index
+    if (key === 'progress') return fractionDone(b.entry) - fractionDone(a.entry) || byTitle(a.entry, b.entry) || a.index - b.index
+    const ca = a.entry.created_at ?? ''
+    const cb = b.entry.created_at ?? ''
     if (ca !== cb) {
       if (!ca) return 1
       if (!cb) return -1
@@ -44,11 +48,11 @@ export function sortCourses<T extends Course>(courses: T[], key: SortKey): T[] {
     }
     return a.index - b.index
   })
-  return indexed.map(entry => entry.course)
+  return indexed.map(item => item.entry)
 }
 
-export function visibleCourses<T extends Course>(courses: T[], query: string, key: SortKey): T[] {
-  return sortCourses(courses.filter(course => matchesQuery(course, query)), key)
+export function visibleEntries<T extends ListEntry>(entries: T[], query: string, key: SortKey): T[] {
+  return sortEntries(entries.filter(entry => matchesQuery(entry, query)), key)
 }
 
 export interface CoursePrefs { view: ViewKey; sort: SortKey }

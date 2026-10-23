@@ -5,7 +5,8 @@ import CourseNotFound from '../components/CourseNotFound'
 import CourseList from '../components/CourseList'
 import CourseToolbar from '../components/CourseToolbar'
 import { useCoursePrefs } from '../hooks/useCoursePrefs'
-import { visibleCourses } from '../lib/courseView'
+import { visibleEntries } from '../lib/courseView'
+import { courseEntry } from '../lib/listEntry'
 import { continueTarget, lessonKeyOf } from '../lib/courseProgress'
 import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
 import PageHeader from '../components/PageHeader'
@@ -480,7 +481,8 @@ export default function CoursesPage() {
         )}
 
         {!courseId && courses.length > 0 && (() => {
-          const shown = visibleCourses(courses, query, prefs.sort)
+          const byId = new Map(courses.map(item => [item.id, item]))
+          const shown = visibleEntries(courses.map(item => courseEntry(item)), query, prefs.sort)
           if (shown.length === 0) {
             return (
               <div role="status">
@@ -493,12 +495,13 @@ export default function CoursesPage() {
           }
           return (
             <CourseList
-              courses={shown}
+              entries={shown}
               view={prefs.view}
-              onOpen={item => navigate(`/courses/${item.id}`)}
-              onAction={item => {
-                const key = continueTarget(item)
-                navigate(key ? `/courses/${item.id}/${key}` : `/courses/${item.id}`)
+              onOpen={entry => navigate(`/courses/${entry.id}`)}
+              onAction={entry => {
+                const target = byId.get(entry.id)
+                const key = target ? continueTarget(target) : null
+                navigate(key ? `/courses/${entry.id}/${key}` : `/courses/${entry.id}`)
               }}
             />
           )

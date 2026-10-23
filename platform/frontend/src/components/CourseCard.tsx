@@ -1,16 +1,10 @@
-import type { Course } from '../lib/courseModel'
-import { actionLabel, courseProgress, type CourseState } from '../lib/courseProgress'
+import type { ListEntry } from '../lib/listEntry'
+import { STATE_COLOR } from '../lib/courseDisplay'
 import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
 
-const STATE_COLOR: Record<CourseState, string> = {
-  'não iniciado': 'var(--muted)',
-  'em andamento': 'var(--cyan)',
-  'concluído': 'var(--green)',
-}
-
-export default function CourseCard({ course, onOpen, onAction }: { course: Course; onOpen: () => void; onAction: () => void }) {
+export default function CourseCard({ entry, onOpen, onAction }: { entry: ListEntry; onOpen: () => void; onAction: () => void }) {
   const isMobile = useMediaQuery(MOBILE_QUERY)
-  const { done, total, state } = courseProgress(course)
+  const { done, total, state, detail } = entry
   const percent = total > 0 ? Math.round((done / total) * 100) : 0
   const size = isMobile ? 'var(--fs-base)' : undefined
   return (
@@ -19,12 +13,12 @@ export default function CourseCard({ course, onOpen, onAction }: { course: Cours
         type="button"
         style={{ display: 'block', width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: 0, color: 'inherit', cursor: 'pointer', fontFamily: 'inherit' }}
       >
-        <span style={{ display: 'block', fontSize: isMobile ? 'var(--fs-lg)' : 18, fontWeight: 700, marginBottom: 6 }}>{course.title}</span>
-        {course.description && <span style={{ display: 'block', color: 'var(--muted)', marginBottom: 8, fontSize: size }}>{course.description}</span>}
+        <span style={{ display: 'block', fontSize: isMobile ? 'var(--fs-lg)' : 18, fontWeight: 700, marginBottom: 6 }}>{entry.position != null && <span style={{ color: 'var(--muted)', fontWeight: 400 }}>{entry.position}. </span>}{entry.title}</span>
+        {entry.description && <span style={{ display: 'block', color: 'var(--muted)', marginBottom: 8, fontSize: size }}>{entry.description}</span>}
       </button>
       <div
         role="progressbar"
-        aria-label={`${course.title}: ${done} de ${total} lições`}
+        aria-label={`${entry.title}: ${done} de ${total} lições`}
         aria-valuemin={0}
         aria-valuemax={total}
         aria-valuenow={done}
@@ -34,7 +28,7 @@ export default function CourseCard({ course, onOpen, onAction }: { course: Cours
       </div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
         <span style={{ fontSize: size }}>
-          <span style={{ color: 'var(--text)' }}>{done} de {total} lições</span>
+          <span style={{ color: 'var(--text)' }}>{detail ? detail + ' · ' : ''}{done} de {total} lições</span>
           <span style={{ color: STATE_COLOR[state] }}> · {state}</span>
         </span>
         <button
@@ -45,7 +39,7 @@ export default function CourseCard({ course, onOpen, onAction }: { course: Cours
             fontFamily: 'inherit', fontSize: size, padding: '0 14px', minHeight: isMobile ? 'var(--ctl-md)' : 32, whiteSpace: 'nowrap',
           }}
         >
-          {actionLabel(state)}
+          {entry.action}
         </button>
       </div>
     </div>

@@ -1,10 +1,10 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
-import type { Course } from './courseModel.ts'
-import { DEFAULT_PREFS, loadPrefs, matchesQuery, normalizeText, savePrefs, sortCourses, visibleCourses } from './courseView.ts'
+import { courseEntry, type ListEntry } from './listEntry.ts'
+import { DEFAULT_PREFS, loadPrefs, matchesQuery, normalizeText, savePrefs, sortEntries, visibleEntries } from './courseView.ts'
 
-function make(id: string, title: string, done: number, total: number, created_at?: string, description: string | null = null): Course {
-  return {
+function make(id: string, title: string, done: number, total: number, created_at?: string, description: string | null = null): ListEntry {
+  return courseEntry({
     id, title, description, created_at,
     completed: Array.from({ length: done }, (_, i) => `0-${i}`),
     parts: {},
@@ -12,10 +12,15 @@ function make(id: string, title: string, done: number, total: number, created_at
       title: 'S',
       lessons: Array.from({ length: total }, (_, i) => ({ title: `L${i}`, description: '', optional: false, steps: [], sectionIndex: 0, lessonIndex: i })),
     }],
-  }
+  })
 }
 
-const ids = (list: Course[]) => list.map(c => c.id)
+function roadmap(id: string, title: string, done: number, total: number, created_at?: string): ListEntry {
+  const state = total > 0 && done >= total ? 'concluído' : done > 0 ? 'em andamento' : 'não iniciado'
+  return { id, kind: 'roadmap', title, description: null, created_at, done, total, state, action: 'começar', detail: '2 cursos' }
+}
+
+const ids = (list: ListEntry[]) => list.map(c => c.id)
 
 describe('normalizeText and matchesQuery', () => {
   it('ignores case, accents and surrounding spaces', () => {
@@ -36,41 +41,61 @@ describe('normalizeText and matchesQuery', () => {
   })
 })
 
-describe('sortCourses', () => {
+describe('sortEntries', () => {
   const html = make('html', 'HTML', 5, 5, '2026-10-01 10:00:00')
   const git = make('git', 'Git', 0, 3, '2026-10-03 10:00:00')
   const py = make('py', 'Python', 2, 4, '2026-10-02 10:00:00')
   it('default is em andamento, não iniciado, concluído', () => {
-    assert.deepEqual(ids(sortCourses([html, git, py], 'default')), ['py', 'git', 'html'])
+    assert.deepEqual(ids(sortEntries([html, git, py], 'default')), ['py', 'git', 'html'])
   })
   it('recent is newest created first; missing dates go last', () => {
     const none = make('none', 'None', 0, 1)
-    assert.deepEqual(ids(sortCourses([html, none, git, py], 'recent')), ['git', 'py', 'html', 'none'])
+    assert.deepEqual(ids(sortEntries([html, none, git, py], 'recent')), ['git', 'py', 'html', 'none'])
   })
   it('name is alphabetical, accent and case insensitive, numeric aware', () => {
     const a = make('a', 'água', 0, 1), b = make('b', 'Banco', 0, 1), c10 = make('c10', 'Curso 10', 0, 1), c2 = make('c2', 'Curso 2', 0, 1)
-    assert.deepEqual(ids(sortCourses([c10, b, c2, a], 'name')), ['a', 'b', 'c2', 'c10'])
+    assert.deepEqual(ids(sortEntries([c10, b, c2, a], 'name')), ['a', 'b', 'c2', 'c10'])
   })
   it('progress is highest percentage first, ties by title, total 0 is 0%', () => {
     const half = make('half', 'Zeta', 1, 2), half2 = make('half2', 'Alfa', 2, 4), empty = make('empty', 'Vazio', 0, 0), full = make('full', 'Cheio', 3, 3)
-    assert.deepEqual(ids(sortCourses([empty, half, full, half2], 'progress')), ['full', 'half2', 'half', 'empty'])
+    assert.deepEqual(ids(sortEntries([empty, half, full, half2], 'progress')), ['full', 'half2', 'half', 'empty'])
   })
   it('keeps the input order for equal keys and does not mutate', () => {
     const list = [make('a', 'Same', 0, 1, '2026-10-01'), make('b', 'Same', 0, 1, '2026-10-01')]
     const before = ids(list)
-    assert.deepEqual(ids(sortCourses(list, 'name')), ['a', 'b'])
-    assert.deepEqual(ids(sortCourses(list, 'recent')), ['a', 'b'])
+    assert.deepEqual(ids(sortEntries(list, 'name')), ['a', 'b'])
+    assert.deepEqual(ids(sortEntries(list, 'recent')), ['a', 'b'])
     assert.deepEqual(ids(list), before)
   })
 })
 
-describe('visibleCourses', () => {
+describe('sortEntries on roadmap entries', () => {
+  const a = roadmap('a', 'Zeta', 3, 3, '2026-10-01 10:00:00')
+  const b = roadmap('b', 'Alfa', 0, 4, '2026-10-03 10:00:00')
+  const c = roadmap('c', 'Meio', 1, 4, '2026-10-02 10:00:00')
+  it('default keeps the input order', () => {
+    assert.deepEqual(ids(sortEntries([a, b, c], 'default')), ['a', 'b', 'c'])
+    assert.deepEqual(ids(sortEntries([c, a, b], 'default')), ['c', 'a', 'b'])
+  })
+  it('recent, name and progress work on roadmaps', () => {
+    assert.deepEqual(ids(sortEntries([a, b, c], 'recent')), ['b', 'c', 'a'])
+    assert.deepEqual(ids(sortEntries([a, b, c], 'name')), ['b', 'c', 'a'])
+    assert.deepEqual(ids(sortEntries([a, b, c], 'progress')), ['a', 'c', 'b'])
+  })
+  it('does not mutate the input', () => {
+    const list = [a, b, c]
+    sortEntries(list, 'name')
+    assert.deepEqual(ids(list), ['a', 'b', 'c'])
+  })
+})
+
+describe('visibleEntries', () => {
   it('filters then sorts', () => {
     const list = [make('b', 'Backend', 0, 1), make('a', 'Algoritmos', 0, 1), make('p', 'Python', 0, 1)]
-    assert.deepEqual(ids(visibleCourses(list, 'a', 'name')), ['a', 'b'])
+    assert.deepEqual(ids(visibleEntries(list, 'a', 'name')), ['a', 'b'])
   })
   it('a query with no match gives an empty list', () => {
-    assert.deepEqual(visibleCourses([make('a', 'A', 0, 1)], 'zzzz', 'default'), [])
+    assert.deepEqual(visibleEntries([make('a', 'A', 0, 1)], 'zzzz', 'default'), [])
   })
 })
 

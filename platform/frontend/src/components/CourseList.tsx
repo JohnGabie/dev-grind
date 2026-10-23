@@ -1,4 +1,4 @@
-import type { Course } from '../lib/courseModel'
+import type { ListEntry } from '../lib/listEntry'
 import type { ViewKey } from '../lib/courseView'
 import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
 import CourseCard from './CourseCard'
@@ -7,27 +7,27 @@ import CourseRow from './CourseRow'
 import CourseTile from './CourseTile'
 
 interface Props {
-  courses: Course[]
+  entries: ListEntry[]
   view: ViewKey
-  onOpen: (course: Course) => void
-  onAction: (course: Course) => void
+  onOpen: (entry: ListEntry) => void
+  onAction: (entry: ListEntry) => void
 }
 
-export default function CourseList({ courses, view, onOpen, onAction }: Props) {
+export default function CourseList({ entries, view, onOpen, onAction }: Props) {
   const isMobile = useMediaQuery(MOBILE_QUERY)
   const grid = (columns: string) => ({ display: 'grid', gridTemplateColumns: columns, gap: 12, width: '100%' })
 
   if (view === 'grade') {
     return (
       <div style={grid(isMobile ? 'repeat(2, minmax(0, 1fr))' : 'repeat(auto-fill, minmax(220px, 1fr))')}>
-        {courses.map(course => <CourseTile key={course.id} course={course} onOpen={() => onOpen(course)} />)}
+        {entries.map(entry => <CourseTile key={entry.id} entry={entry} onOpen={() => onOpen(entry)} />)}
       </div>
     )
   }
   if (view === 'galeria') {
     return (
       <div style={grid(isMobile ? 'minmax(0, 1fr)' : 'repeat(2, minmax(0, 1fr))')}>
-        {courses.map(course => <CourseGalleryTile key={course.id} course={course} onOpen={() => onOpen(course)} onAction={() => onAction(course)} />)}
+        {entries.map(entry => <CourseGalleryTile key={entry.id} entry={entry} onOpen={() => onOpen(entry)} onAction={() => onAction(entry)} />)}
       </div>
     )
   }
@@ -35,7 +35,7 @@ export default function CourseList({ courses, view, onOpen, onAction }: Props) {
   const columns = view === 'lista' || isMobile ? 'minmax(0, 1fr)' : 'repeat(auto-fill, minmax(420px, 1fr))'
   return (
     <div style={grid(columns)}>
-      {courses.map(course => <Item key={course.id} course={course} onOpen={() => onOpen(course)} onAction={() => onAction(course)} />)}
+      {entries.map(entry => <Item key={entry.id} entry={entry} onOpen={() => onOpen(entry)} onAction={() => onAction(entry)} />)}
     </div>
   )
 }
