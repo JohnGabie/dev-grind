@@ -24,7 +24,7 @@ export default function RoadmapPage() {
 
   const shell = (children: ReactNode) => (
     <div style={{ height: '100%', overflow: 'auto' }}>
-      <div style={{ maxWidth: 1080, width: '100%', margin: '0 auto', boxSizing: 'border-box', padding: pagePadding('40px 48px 72px', isMobile, true) }}>
+      <div style={{ maxWidth: 1080, width: '100%', margin: '0 auto', boxSizing: 'border-box', padding: pagePadding('40px 48px 72px', isMobile, true, false) }}>
         {children}
       </div>
     </div>

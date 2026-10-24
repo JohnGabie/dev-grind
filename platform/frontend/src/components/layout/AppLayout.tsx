@@ -8,7 +8,7 @@ import { CosmeticsProvider } from '../../contexts/CosmeticsContext'
 import { useMediaQuery, MOBILE_QUERY } from '../../hooks/useMediaQuery'
 import { TOPBAR_SPACE, MOBILE_TOP_INSET, MOBILE_NAV_SPACE, LESSON_CHAT_TOP } from '../../lib/layout'
 import { SAFE_BOTTOM } from '../../lib/safeArea'
-import { isInsideCourse, isInsideLesson, isOnSolvePage } from '../../lib/courseProgress'
+import { isInsideCourse, isInsideLesson, isInsideRoadmap, isOnSolvePage } from '../../lib/courseProgress'
 import api from '../../api/client'
 
 // ── TopBar ───────────────────────────────────────────────────────────────────
@@ -162,7 +162,8 @@ function ChatBubble() {
   const isMobile = useMediaQuery(MOBILE_QUERY)
   const inCourse = isMobile && isInsideCourse(location.pathname)
   const inLesson = isMobile && isInsideLesson(location.pathname)
-  const dockSpace = inCourse ? SAFE_BOTTOM : MOBILE_NAV_SPACE
+  const dockHidden = inCourse || (isMobile && isInsideRoadmap(location.pathname))
+  const dockSpace = dockHidden ? SAFE_BOTTOM : MOBILE_NAV_SPACE
   const [lessonDock, setLessonDock] = useState(false)
   useEffect(() => {
     const sync = () => setLessonDock(document.body.dataset.courseLesson === '1')
@@ -284,7 +285,7 @@ export default function AppLayout() {
   // "sobre" rola como qualquer outra.
   const isFixedLayout = FIXED_LAYOUT_PATHS.some(p => location.pathname.startsWith(p))
     || location.pathname.endsWith('/solve')
-  const hideDock = inCourse || (isMobile && isOnSolvePage(location.pathname))
+  const hideDock = inCourse || (isMobile && (isOnSolvePage(location.pathname) || isInsideRoadmap(location.pathname)))
 
   return (
     <CosmeticsProvider>

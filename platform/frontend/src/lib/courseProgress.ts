@@ -54,3 +54,7 @@ export function isInsideLesson(pathname: string): boolean {
 export function isOnSolvePage(pathname: string): boolean {
   return /^\/exercise\/[^/]+\/solve$/.test(pathname)
 }
+
+export function isInsideRoadmap(pathname: string): boolean {
+  return /^\/roadmaps\/[^/]+/.test(pathname)
+}

@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import type { Course } from './courseModel.ts'
-import { actionLabel, continueTarget, courseProgress, isInsideCourse, isInsideLesson, isOnSolvePage, lessonKeyOf, orderCourses } from './courseProgress.ts'
+import { actionLabel, continueTarget, courseProgress, isInsideCourse, isInsideLesson, isInsideRoadmap, isOnSolvePage, lessonKeyOf, orderCourses } from './courseProgress.ts'
 
 function makeCourse(id: string, lessons: { optional?: boolean; lessonIndex?: number }[], completed: string[], parts: Record<string, number> = {}): Course {
   return {
@@ -114,5 +114,14 @@ describe('isOnSolvePage', () => {
     assert.equal(isOnSolvePage('/exercise/saudacao'), false)
     assert.equal(isOnSolvePage('/exercise'), false)
     assert.equal(isOnSolvePage('/courses/abc/0-1'), false)
+  })
+})
+
+describe('isInsideRoadmap', () => {
+  it('is true only on a roadmap page', () => {
+    assert.equal(isInsideRoadmap('/roadmaps/abc'), true)
+    assert.equal(isInsideRoadmap('/roadmaps'), false)
+    assert.equal(isInsideRoadmap('/courses?tab=roadmaps'), false)
+    assert.equal(isInsideRoadmap('/courses/abc'), false)
   })
 })
