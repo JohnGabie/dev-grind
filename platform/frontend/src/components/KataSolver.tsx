@@ -1,8 +1,10 @@
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import Editor, { type OnMount } from '@monaco-editor/react'
 import { usePyodide, type TestResult } from '../hooks/usePyodide'
-import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
+import { useMediaQuery, MOBILE_QUERY, TOUCH_QUERY } from '../hooks/useMediaQuery'
 import { hiddenCasesNote, summarizeResults } from '../lib/kataResults'
+import { useSoftKeyboard } from '../hooks/useSoftKeyboard'
+import { LESSON_CHAT_TOP } from '../lib/layout'
 import { DIFF_COLOR, renderDesc, type ExerciseData } from '../lib/exercise'
 import type { VerifyResult } from '../lib/kataPhase'
 import api from '../api/client'
@@ -25,7 +27,8 @@ export type KataSolverProps = {
   exercise: ExerciseData
   mode: 'page' | 'lesson'
   onAccepted?: () => void
-  onKeyboardOpen?: (open: boolean) => void
+  /** lesson. Soft keyboard height from the lesson (useSoftKeyboard); the page measures it itself. */
+  keyboard?: number
   /** One callback. The page reads pyLoading for its indicator; the lesson disables its footer with pyLoading || running. */
   onActivity?: (activity: { pyLoading: boolean; running: boolean }) => void
   /** page. ExercisePage navigates to `/exercise/${slug}`. The lesson does not pass it. */
@@ -69,10 +72,11 @@ const TOKENS: { rotulo: string; inserir: string; voltar?: number }[] = [
 type CodeEditor = Parameters<OnMount>[0]
 
 export const KataSolver = forwardRef<KataSolverHandle, KataSolverProps>(function KataSolver(
-  { exercise, mode, onAccepted, onKeyboardOpen, onActivity, onOpenSolutions, onToggleChat, chatOpen = false, onGradeState },
+  { exercise, mode, onAccepted, keyboard = 0, onActivity, onOpenSolutions, onToggleChat, chatOpen = false, onGradeState },
   ref,
 ) {
   const isMobile = useMediaQuery(MOBILE_QUERY)
+  const touch = useMediaQuery(TOUCH_QUERY)
 
   const [code, setCode] = useState(exercise.stub)
   const [results, setResults] = useState<TestResult[] | null>(null)
@@ -85,32 +89,35 @@ export const KataSolver = forwardRef<KataSolverHandle, KataSolverProps>(function
   const { loading: pyLoading, load: loadPy, runTests } = usePyodide()
 
   const editorRef = useRef<CodeEditor | null>(null)
-  const [teclado, setTeclado] = useState(0)
+  const caixaRef = useRef<HTMLDivElement | null>(null)
+  // One keyboard listener per screen: the page measures here, the lesson passes `keyboard`.
+  const tecladoProprio = useSoftKeyboard(touch && mode === 'page')
+  const teclado = mode === 'lesson' ? keyboard : tecladoProprio
+  const tecladoAntes = useRef(0)
 
   useEffect(() => { loadPy() }, [loadPy])
 
-  // No iOS o teclado não redimensiona o layout viewport, só o visual. Sem medir
-  // isso, a barra de tokens — que é o ponto todo — fica atrás do teclado.
+  // When the keyboard closes (BACK), the editor gives up focus: otherwise a tap on
+  // the still-focused editor does not open the keyboard again.
   useEffect(() => {
-    const vv = window.visualViewport
-    if (!vv || !isMobile) return
-    const medir = () => {
-      const coberto = window.innerHeight - vv.height - vv.offsetTop
-      setTeclado(coberto > 80 ? Math.round(coberto) : 0)
+    if (tecladoAntes.current > 0 && teclado === 0 && editorRef.current?.hasTextFocus()) {
+      (document.activeElement as HTMLElement | null)?.blur()
     }
-    vv.addEventListener('resize', medir)
-    vv.addEventListener('scroll', medir)
-    medir()
-    return () => {
-      vv.removeEventListener('resize', medir)
-      vv.removeEventListener('scroll', medir)
-    }
-  }, [isMobile])
+    tecladoAntes.current = teclado
+  }, [teclado])
+
+  // Lesson: the editor box is one of several blocks in a scrolling column. With
+  // the keyboard open the box takes the visible height below the chat button,
+  // and the column scrolls to it: the statement scrolls away, the token bar sits
+  // on the keyboard.
+  useEffect(() => {
+    if (mode === 'lesson' && teclado > 0) caixaRef.current?.scrollIntoView({ block: 'start' })
+  }, [mode, teclado])
+  const acimaDaCaixa = isMobile ? `calc(${LESSON_CHAT_TOP} + var(--ctl-md) + var(--sp-2))` : 'var(--sp-2)'
 
   const { passedCount, totalCount, allPassed } = summarizeResults(results)
   const hiddenCount = exercise.test_cases.filter(tc => !tc.visible).length
 
-  useEffect(() => { onKeyboardOpen?.(teclado > 0) }, [teclado, onKeyboardOpen])
   useEffect(() => { onActivity?.({ pyLoading, running }) }, [pyLoading, running, onActivity])
   useEffect(() => { onGradeState?.({ allPassed, accepted }) }, [allPassed, accepted, onGradeState])
 
@@ -176,7 +183,20 @@ export const KataSolver = forwardRef<KataSolverHandle, KataSolverProps>(function
       defaultLanguage="python"
       value={code}
       onChange={v => setCode(v || '')}
-      onMount={ed => { editorRef.current = ed }}
+      onMount={ed => {
+        editorRef.current = ed
+        // The editor can keep focus with the keyboard closed (a tab or app switch
+        // closes the keyboard without a resize here): a tap on it then opens nothing.
+        // A tap on the already-focused editor with no keyboard focuses it again.
+        const node = ed.getDomNode()
+        let tinhaFoco = false
+        node?.addEventListener('touchstart', () => { tinhaFoco = ed.hasTextFocus() }, { capture: true, passive: true })
+        node?.addEventListener('touchend', () => {
+          if (!tinhaFoco || tecladoAntes.current > 0) return
+          ;(document.activeElement as HTMLElement | null)?.blur()
+          ed.focus()
+        })
+      }}
       theme="vs-dark"
       options={{
         // 16px no celular por dois motivos: abaixo disso o iOS dá zoom ao focar
@@ -187,6 +207,8 @@ export const KataSolver = forwardRef<KataSolverHandle, KataSolverProps>(function
         lineNumbersMinChars: isMobile ? 2 : 3,
         minimap: { enabled: false },
         scrollBeyondLastLine: false,
+        // One line of margin between the caret and the keyboard edge.
+        cursorSurroundingLines: touch ? 1 : 0,
         renderLineHighlight: 'line',
         padding: { top: isMobile ? 10 : 16, bottom: isMobile ? 10 : 16 },
         wordWrap: 'on',
@@ -325,7 +347,10 @@ export const KataSolver = forwardRef<KataSolverHandle, KataSolverProps>(function
           )}
         </div>
 
-        <div style={{ flex: 1, minHeight: 280, display: 'flex', flexDirection: 'column', borderRadius: 10, border: '1px solid var(--border)', overflow: 'hidden' }}>
+        <div ref={caixaRef} style={{
+          flex: 1, minHeight: 280, display: 'flex', flexDirection: 'column', borderRadius: 10, border: '1px solid var(--border)', overflow: 'hidden',
+          ...(teclado > 0 ? { flex: 'none', minHeight: 0, height: `calc(100dvh - ${acimaDaCaixa} - var(--sp-2))`, scrollMarginTop: acimaDaCaixa } : {}),
+        }}>
           {/* Monaco mede o pai: o absoluto dá a ele a altura que o flex calculou. */}
           <div style={{ position: 'relative', flex: 1, minHeight: 0 }}>
             <div style={{ position: 'absolute', inset: 0 }}>{editor}</div>
@@ -353,7 +378,9 @@ export const KataSolver = forwardRef<KataSolverHandle, KataSolverProps>(function
     <>
       <div style={{ flex: 1, minHeight: 0 }}>{editor}</div>
 
-      <div style={{
+      {/* A phone in landscape gets this layout. With the keyboard open about 100 px
+          are left: the bar and the results leave them to the editor. */}
+      {teclado === 0 && <div style={{
         flexShrink: 0, display: 'flex', alignItems: 'center', gap: 8,
         padding: '9px 14px', borderTop: '1px solid var(--border)', background: 'var(--bg)',
       }}>
@@ -433,9 +460,9 @@ export const KataSolver = forwardRef<KataSolverHandle, KataSolverProps>(function
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
           </svg>
         </button>
-      </div>
+      </div>}
 
-      {(results || runError) && (
+      {teclado === 0 && (results || runError) && (
         <div style={{
           flexShrink: 0, maxHeight: 200, overflowY: 'auto',
           borderTop: '1px solid var(--border)', padding: '10px 14px', background: 'var(--bg)',

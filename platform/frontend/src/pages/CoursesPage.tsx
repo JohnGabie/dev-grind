@@ -18,7 +18,8 @@ import { useCoursePrefs } from '../hooks/useCoursePrefs'
 import { visibleEntries } from '../lib/courseView'
 import { courseEntry } from '../lib/listEntry'
 import { lessonKeyOf } from '../lib/courseProgress'
-import { useMediaQuery, MOBILE_QUERY, NARROW_QUERY } from '../hooks/useMediaQuery'
+import { useMediaQuery, LANDSCAPE_QUERY, MOBILE_QUERY, NARROW_QUERY, TOUCH_QUERY } from '../hooks/useMediaQuery'
+import { useSoftKeyboard } from '../hooks/useSoftKeyboard'
 import PageHeader from '../components/PageHeader'
 import SkillPath from '../components/SkillPath'
 import { type FillPart, type Lesson, type Step } from '../lib/courseModel'
@@ -33,7 +34,7 @@ type KataStep = {
   error: string | null
   exercise: ExerciseData | null
   onActivity: (activity: { pyLoading: boolean; running: boolean }) => void
-  onKeyboardOpen: (open: boolean) => void
+  keyboard: number
 }
 
 function flat(value: string) {
@@ -114,7 +115,7 @@ function StepView({
         exercise={kata.exercise}
         mode="lesson"
         onActivity={kata.onActivity}
-        onKeyboardOpen={kata.onKeyboardOpen}
+        keyboard={kata.keyboard}
       />
     )
   }
@@ -343,7 +344,8 @@ function LessonPlayer({
   const [kataError, setKataError] = useState<string | null>(() => initialKataState(kataSlug ?? '').error)
   const [exercise, setExercise] = useState<ExerciseData | null>(null)
   const [solverBusy, setSolverBusy] = useState(false)
-  const [keyboardOpen, setKeyboardOpen] = useState(false)
+  const keyboard = useSoftKeyboard(useMediaQuery(TOUCH_QUERY))
+  const landscape = useMediaQuery(LANDSCAPE_QUERY)
   const solverRef = useRef<KataSolverHandle>(null)
   const inFlight = useRef(false)
   const onActivity = useCallback((activity: { pyLoading: boolean; running: boolean }) => {
@@ -432,7 +434,6 @@ function LessonPlayer({
     setKataError(nextKata.error)
     setExercise(null)
     setSolverBusy(false)
-    setKeyboardOpen(false)
   }
 
   const clickKata = async () => {
@@ -455,6 +456,9 @@ function LessonPlayer({
   const isKata = step.type === 'kata'
   const kataButton = isKata ? footerButton(kataPhase, solverBusy, last) : null
   const footerRed = isKata ? kataPhase === 'failed' : wrong
+  // While typing, the kata step gives the footer space to the token bar. In landscape
+  // the keyboard leaves about 100 px: the footer would cover the typing field.
+  const hideFooter = keyboard > 0 && (isKata || landscape)
 
   return (
     <div style={{ flex: 1, minHeight: 0, width: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -491,7 +495,7 @@ function LessonPlayer({
                   onClear={() => changeBlank(-1, '')}
                   onSubmit={wrong ? retry : goNext}
                   inputRef={terminalRef}
-                  kata={{ phase: kataPhase, error: kataError, exercise, onActivity, onKeyboardOpen: setKeyboardOpen }}
+                  kata={{ phase: kataPhase, error: kataError, exercise, onActivity, keyboard }}
                   solverRef={solverRef}
                 />
               </div>
@@ -499,7 +503,7 @@ function LessonPlayer({
           </div>
         </div>
       </div>
-      <div style={{ width: '100%', borderTop: `1px solid ${footerRed ? '#f07178' : 'var(--border)'}`, display: isKata && keyboardOpen ? 'none' : undefined }}>
+      <div style={{ width: '100%', borderTop: `1px solid ${footerRed ? '#f07178' : 'var(--border)'}`, display: hideFooter ? 'none' : undefined }}>
         <div style={{ padding: pagePadding('14px 48px 14px', isMobile, false, false) }}>
           <div
             role="status"

@@ -6,7 +6,7 @@ import { useAuth } from '../../auth/AuthContext'
 import { ChatPanel } from '../ChatPanel'
 import { CosmeticsProvider } from '../../contexts/CosmeticsContext'
 import { useMediaQuery, MOBILE_QUERY } from '../../hooks/useMediaQuery'
-import { TOPBAR_SPACE, MOBILE_TOP_INSET, MOBILE_NAV_SPACE } from '../../lib/layout'
+import { TOPBAR_SPACE, MOBILE_TOP_INSET, MOBILE_NAV_SPACE, LESSON_CHAT_TOP } from '../../lib/layout'
 import { isInsideCourse, isInsideLesson, isOnSolvePage } from '../../lib/courseProgress'
 import api from '../../api/client'
 
@@ -195,7 +195,7 @@ function ChatBubble() {
   const naDashboardMobile = isMobile && location.pathname === '/'
   if (naTelaDeResolver || naDashboardMobile) return null
 
-  const squareTop = `calc(${MOBILE_TOP_INSET} + 20px)`
+  const squareTop = LESSON_CHAT_TOP
   const panelStyle: CSSProperties = inLesson
     ? {
         position: 'fixed', top: `calc(${squareTop} + var(--ctl-md) + 8px)`, right: rightOffset, zIndex: 41,
@@ -287,7 +287,7 @@ export default function AppLayout() {
 
   return (
     <CosmeticsProvider>
-      <div style={{ display: 'flex', height: '100vh', overflow: 'hidden', background: 'var(--bg)' }}>
+      <div style={{ display: 'flex', height: '100dvh', overflow: 'hidden', background: 'var(--bg)' }}>
         {!isMobile && <Sidebar />}
         <main style={{
           flex: 1,

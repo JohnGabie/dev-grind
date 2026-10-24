@@ -62,3 +62,6 @@ export function pagePadding(desktop: string, isMobile: boolean, absorbTopBar = f
     default: return `${t} ${g} ${b} ${g}`
   }
 }
+
+/** Top of the square chat button of a lesson on the phone (AppLayout); its size is --ctl-md. */
+export const LESSON_CHAT_TOP = `calc(${MOBILE_TOP_INSET} + 20px)`
