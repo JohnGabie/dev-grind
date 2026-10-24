@@ -268,9 +268,11 @@ Community articles; interview preparation.
 
 - **Languages:** English first; Portuguese second (João's and his friends' native language); then others, brought in
   as marketing and the regions learners come from show demand. A bilingual platform from early on.
-- **Web first.**
-- **A real native mobile app — not a PWA or a browser port — after the MVP**, focused on what a phone does well:
-  reading and listening to books, reviews, short lessons, quizzes, progress. Heavy katas stay on the web.
+- **The phone is the main way to use DevGrind (João, 2026-10-24).** The web comes first because the web is faster
+  to build and to port from. The web is the workbench, not the main product.
+- **A real native mobile app is part of the MVP.** The app is not a PWA and not a browser port. The MVP ends with
+  the Play Store release of the app. The app focuses on what a phone does well: books, reviews, short lessons,
+  quizzes, progress. Heavy katas stay on the web.
 
 ## 9. Principles and anti-goals
 
@@ -306,17 +308,23 @@ Community articles; interview preparation.
 ## 11. MVP
 
 The real minimum of usability, enough to start collecting data and understanding who the learner is, what to make
-easier and what they need:
-- **Courses.**
+easier and what they need. **The MVP is done when João, one learner, uses it for his own study** (João,
+2026-10-24). Other learners are not a goal of the MVP. The MVP contains:
+- **Courses:** create them with AI, and do them.
 - **Katas.**
+- **Books,** with 3 free slots and no coins.
 - **The leveling test.**
-- **The core of the adaptive engine:** the data collection and the learner profile it builds.
+- **The core of the adaptive engine:** the data collection, the learner profile and the gaps in the profile.
+- **The native mobile app,** on the Play Store. The Play Store release is the MVP line.
 
-Store, G-Coins, guilds, book slots, personalization and the native app come after.
+These modules stay hidden until v2: store, G-Coins, book-slot purchase, community, guilds, friends, personalization.
+After v2, each module comes back in its own version. The versions, the order and the completion criteria are in
+`docs/ROADMAP.md`.
 
 ## 12. Not in this overview
 
 - **Roadmaps** (groups of courses an agent can assemble): being built in the Courses feature; kept out of the mission.
+- **Versions and order** to the MVP: `docs/ROADMAP.md`.
 - **Current state** of the code: see the feature MDs and `docs/learning/learning.db` (findings from the code read on
   2026-10-21).
 
