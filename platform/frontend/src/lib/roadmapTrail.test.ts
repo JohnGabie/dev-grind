@@ -34,6 +34,14 @@ describe('trailStages', () => {
     assert.deepEqual(stages.map(stage => stage.current), [false, true, false])
     assert.deepEqual(stages.map(stage => stage.state), ['concluído', 'em andamento', 'não iniciado'])
   })
+  it('does not mark a course with no required lesson as current', () => {
+    const optionalOnly: Course = {
+      id: 'opt', title: 'opt', description: null, created_at: '2026-10-01 10:00:00', completed: [], parts: {},
+      sections: [{ title: 'S', lessons: [{ title: 'L0', description: '', optional: true, steps: [], sectionIndex: 0, lessonIndex: 0 }] }],
+    }
+    const stages = trailStages(roadmap(['opt', 'b']), mapOf(optionalOnly, course('b', 1, 3)))
+    assert.deepEqual(stages.map(stage => stage.current), [false, true])
+  })
   it('has no current stage when every stage is concluído', () => {
     const stages = trailStages(roadmap(['a', 'b']), mapOf(course('a', 2, 2), course('b', 1, 1)))
     assert.equal(stages.some(stage => stage.current), false)

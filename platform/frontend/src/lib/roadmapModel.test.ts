@@ -15,6 +15,13 @@ function course(id: string, done: number, total: number, parts: Record<string, n
   }
 }
 
+function optionalOnly(): Course {
+  return {
+    id: 'opt', title: 'opt', description: null, created_at: '2026-10-01 10:00:00', completed: [], parts: {},
+    sections: [{ title: 'S', lessons: [{ title: 'L0', description: '', optional: true, steps: [], sectionIndex: 0, lessonIndex: 0 }] }],
+  }
+}
+
 function roadmap(ids: string[]): Roadmap {
   return { id: 'r1', title: 'Backend', description: null, created_at: '2026-10-02 10:00:00', course_ids: ids }
 }
@@ -63,14 +70,12 @@ describe('roadmapProgress', () => {
   it('an empty roadmap is 0/0 não iniciado', () => {
     assert.deepEqual(roadmapProgress(roadmap([]), mapOf()), { courses: 0, done: 0, total: 0, state: 'não iniciado' })
   })
-  it('a member made only of undone optional lessons keeps the roadmap em andamento', () => {
-    const optionalOnly: Course = {
-      id: 'opt', title: 'opt', description: null, completed: [], parts: {},
-      sections: [{ title: 'S', lessons: [{ title: 'L0', description: '', optional: true, steps: [], sectionIndex: 0, lessonIndex: 0 }] }],
-    }
-    const result = roadmapProgress(roadmap(['a', 'opt']), mapOf(course('a', 2, 2), optionalOnly))
-    assert.equal(result.state, 'em andamento')
-    assert.deepEqual(roadmapTarget(roadmap(['a', 'opt']), mapOf(course('a', 2, 2), optionalOnly)), { courseId: 'opt', lessonKey: null })
+  it('a member with no required lesson does not keep the roadmap em andamento', () => {
+    const result = roadmapProgress(roadmap(['a', 'opt']), mapOf(course('a', 2, 2), optionalOnly()))
+    assert.equal(result.state, 'concluído')
+  })
+  it('a roadmap of only optional-only members falls back to counting them', () => {
+    assert.equal(roadmapProgress(roadmap(['opt']), mapOf(optionalOnly())).state, 'não iniciado')
   })
   it('all courses concluded is concluído', () => {
     const result = roadmapProgress(roadmap(['a', 'b']), mapOf(course('a', 3, 3), course('b', 2, 2)))
@@ -87,6 +92,12 @@ describe('roadmapProgress', () => {
 })
 
 describe('roadmapTarget', () => {
+  it('skips a member with no required lesson', () => {
+    assert.deepEqual(roadmapTarget(roadmap(['opt', 'b']), mapOf(optionalOnly(), course('b', 1, 3))), { courseId: 'b', lessonKey: '0-1' })
+  })
+  it('is null when only members with no required lesson are left', () => {
+    assert.equal(roadmapTarget(roadmap(['a', 'opt']), mapOf(course('a', 2, 2), optionalOnly())), null)
+  })
   it('picks the first non-concluded member and its continue lesson', () => {
     const target = roadmapTarget(roadmap(['a', 'b', 'c']), mapOf(course('a', 3, 3), course('b', 1, 3), course('c', 0, 2)))
     assert.deepEqual(target, { courseId: 'b', lessonKey: '0-1' })

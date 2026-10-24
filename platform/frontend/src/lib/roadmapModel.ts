@@ -32,20 +32,33 @@ export function roadmapCourses(roadmap: Roadmap, byId: Map<string, Course>): Cou
   })
 }
 
+function hasRequiredLesson(course: Course): boolean {
+  return course.sections.some(section => section.lessons.some(lesson => !lesson.optional))
+}
+
+export function stateMembers(roadmap: Roadmap, byId: Map<string, Course>): Course[] {
+  const members = roadmapCourses(roadmap, byId)
+  const required = members.filter(hasRequiredLesson)
+  return required.length > 0 ? required : members
+}
+
 export function roadmapProgress(roadmap: Roadmap, byId: Map<string, Course>): { courses: number; done: number; total: number; state: CourseState } {
-  const members = roadmapCourses(roadmap, byId).map(courseProgress)
-  const done = members.reduce((sum, item) => sum + item.done, 0)
-  const total = members.reduce((sum, item) => sum + item.total, 0)
-  const state: CourseState = total > 0 && done >= total && members.every(item => item.state === 'concluído')
+  const all = roadmapCourses(roadmap, byId).map(courseProgress)
+  const members = stateMembers(roadmap, byId).map(courseProgress)
+  const done = all.reduce((sum, item) => sum + item.done, 0)
+  const total = all.reduce((sum, item) => sum + item.total, 0)
+  const stateDone = members.reduce((sum, item) => sum + item.done, 0)
+  const stateTotal = members.reduce((sum, item) => sum + item.total, 0)
+  const state: CourseState = stateTotal > 0 && stateDone >= stateTotal && members.every(item => item.state === 'concluído')
     ? 'concluído'
-    : done > 0 || members.some(item => item.state !== 'não iniciado')
+    : stateDone > 0 || members.some(item => item.state !== 'não iniciado')
       ? 'em andamento'
       : 'não iniciado'
-  return { courses: members.length, done, total, state }
+  return { courses: all.length, done, total, state }
 }
 
 export function roadmapTarget(roadmap: Roadmap, byId: Map<string, Course>): { courseId: string; lessonKey: string | null } | null {
-  const next = roadmapCourses(roadmap, byId).find(course => courseProgress(course).state !== 'concluído')
+  const next = stateMembers(roadmap, byId).find(course => courseProgress(course).state !== 'concluído')
   return next ? { courseId: next.id, lessonKey: continueTarget(next) } : null
 }
 
