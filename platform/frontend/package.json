@@ -8,7 +8,7 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "test": "node --experimental-strip-types --test src/lib/skillPath.test.ts src/lib/courseModel.test.ts src/components/SkillPath.contract.test.ts src/lib/uiScale.test.ts src/mobile/rank.test.ts src/mobile/heatmap.test.ts src/mobile/badges.test.ts src/mobile/nextAction.test.ts src/mobile/insightSeen.test.ts src/mobile/format.test.ts src/mobile/statusJson.test.ts src/mobile/markdown.test.ts src/mobile/visualLines.test.ts src/mobile/mobile.contract.test.ts src/lib/courseProgress.test.ts src/lib/layout.test.ts src/lib/courseView.test.ts src/lib/courseDisplay.test.ts src/lib/listEntry.test.ts src/lib/roadmapModel.test.ts src/lib/courseTab.test.ts src/lib/roadmapDelete.test.ts src/lib/bulkDelete.test.ts src/lib/selection.test.ts src/lib/roadmapTrail.test.ts src/lib/kataResults.test.ts"
+    "test": "node --experimental-strip-types --test src/lib/skillPath.test.ts src/lib/courseModel.test.ts src/components/SkillPath.contract.test.ts src/lib/uiScale.test.ts src/mobile/rank.test.ts src/mobile/heatmap.test.ts src/mobile/badges.test.ts src/mobile/nextAction.test.ts src/mobile/insightSeen.test.ts src/mobile/format.test.ts src/mobile/statusJson.test.ts src/mobile/markdown.test.ts src/mobile/visualLines.test.ts src/mobile/mobile.contract.test.ts src/lib/courseProgress.test.ts src/lib/layout.test.ts src/lib/courseView.test.ts src/lib/courseDisplay.test.ts src/lib/listEntry.test.ts src/lib/roadmapModel.test.ts src/lib/courseTab.test.ts src/lib/roadmapDelete.test.ts src/lib/bulkDelete.test.ts src/lib/selection.test.ts src/lib/roadmapTrail.test.ts src/lib/kataResults.test.ts src/lib/kataPhase.test.ts"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
