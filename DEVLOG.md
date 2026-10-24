@@ -12,3 +12,8 @@ Evidence journal. One entry per verified fact or surprise that the code and `git
 - Several agents share one Playwright browser. Symptom: pages change under a running check. Fix: tell each agent to use its own browser context.
 - ESLint rule `react-hooks/set-state-in-effect` rejects `setState` inside `useEffect`. To reset state when a route value changes, store the previous key in state and compare it during render.
 - A bulk delete from the app calls `DELETE /courses/:id` once per item and counts a 404 as deleted. No bulk route exists in the Worker.
+
+## 2026-10-24 — testing on a real Android phone
+- `adb reverse tcp:<port> tcp:<port>` makes `localhost:<port>` on the phone reach the PC over USB, with no network change. The phone must show "Allow USB debugging".
+- Symptom: Firefox on the phone shows "A conexão foi reiniciada". Cause: Vite listens only on `[::1]` (IPv6), and `adb reverse` connects to `127.0.0.1`. Fix without touching the project: a small Node relay that listens on `127.0.0.1:5174` and forwards to `[::1]:5173`, then `adb reverse tcp:5173 tcp:5174`. The Worker listens on `127.0.0.1:8787`, so it needs no relay, and the frontend reaches it through the Vite `/api` proxy.
+- Screenshots: `adb exec-out screencap -p > file.png`. Taps: `adb shell input tap X Y` in the full 1080x2400 pixels of the screen.
