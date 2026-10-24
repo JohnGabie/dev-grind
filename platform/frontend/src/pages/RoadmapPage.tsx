@@ -58,12 +58,12 @@ export default function RoadmapPage() {
     <>
       <div style={{
         position: 'sticky', top: 0, zIndex: 5, background: 'var(--bg)', borderBottom: '1px solid var(--border)',
-        margin: '0 0 var(--sp-4)', padding: `${isMobile ? MOBILE_TOP_INSET : 'var(--sp-2)'} 0 var(--sp-3)`,
+        margin: '0 0 var(--sp-2)', padding: `${isMobile ? MOBILE_TOP_INSET : 'var(--sp-4)'} 0 var(--sp-4)`,
       }}>
         <button
           type="button"
           onClick={() => navigate(ROADMAPS_TAB)}
-          style={{ background: 'none', border: 'none', color: 'var(--cyan)', cursor: 'pointer', fontFamily: 'inherit', padding: 0, marginBottom: isMobile ? 0 : 10, display: isMobile ? 'inline-flex' : undefined, alignItems: isMobile ? 'center' : undefined, minHeight: isMobile ? 'var(--ctl-md)' : undefined, fontSize: base }}
+          style={{ background: 'none', border: 'none', color: 'var(--cyan)', cursor: 'pointer', fontFamily: 'inherit', padding: 0, marginBottom: isMobile ? 0 : 'var(--sp-3)', display: isMobile ? 'inline-flex' : undefined, alignItems: isMobile ? 'center' : undefined, minHeight: isMobile ? 'var(--ctl-md)' : undefined, fontSize: base }}
         >
           ← roadmaps
         </button>
