@@ -1,12 +1,10 @@
 import type { ReactNode } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import CourseNotFound from '../components/CourseNotFound'
-import ProgressRing from '../components/ProgressRing'
 import RoadmapTrail from '../components/RoadmapTrail'
 import { useCourseData } from '../hooks/useCourseData'
 import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
-import { STATE_COLOR, percentOf } from '../lib/courseDisplay'
-import { actionLabel } from '../lib/courseProgress'
+import { STATE_COLOR } from '../lib/courseDisplay'
 import { pagePadding } from '../lib/layout'
 import { roadmapCourses, roadmapProgress, roadmapTarget } from '../lib/roadmapModel'
 import { trailStages } from '../lib/roadmapTrail'
@@ -49,14 +47,11 @@ export default function RoadmapPage() {
   const { courses: count, done, total, state } = roadmapProgress(roadmap, byId)
   const members = roadmapCourses(roadmap, byId)
   const target = roadmapTarget(roadmap, byId)
-  const action = actionLabel(state)
 
   const onMainAction = () => {
     if (target) return navigate(target.lessonKey ? `/courses/${target.courseId}/${target.lessonKey}` : `/courses/${target.courseId}`)
     if (members.length > 0) navigate(`/courses/${members[0].id}`)
   }
-
-  const ghost = { background: 'none', borderRadius: 'var(--radius-lg)', cursor: 'pointer', fontFamily: 'inherit', fontSize: base, padding: '0 14px', minHeight: 'var(--ctl-md)', boxSizing: 'border-box' as const }
 
   return shell(
     <>
@@ -65,20 +60,10 @@ export default function RoadmapPage() {
       </Link>
       <h1 style={{ fontSize: isMobile ? 'var(--fs-xl)' : 32, margin: '4px 0 8px', overflowWrap: 'anywhere' }}>{roadmap.title}</h1>
       {roadmap.description && <p style={{ color: 'var(--muted)', fontSize: base, margin: '0 0 12px', overflowWrap: 'anywhere' }}>{roadmap.description}</p>}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--sp-4)', margin: '0 0 var(--sp-6)' }}>
-        <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 'var(--sp-3)' }}>
-          <p style={{ fontSize: base, margin: 0, overflowWrap: 'anywhere' }}>
-            {count === 1 ? '1 curso' : `${count} cursos`} · {done} de {total} lições
-            <span style={{ color: STATE_COLOR[state] }}> · {state}</span>
-          </p>
-          {members.length > 0 && (
-            <button type="button" onClick={onMainAction} style={{ ...ghost, border: '1px solid var(--cyan)', color: 'var(--cyan)' }}>
-              {action}
-            </button>
-          )}
-        </div>
-        <ProgressRing percent={percentOf(done, total)} complete={state === 'concluído'} label={`${roadmap.title}: ${percentOf(done, total)}%`} />
-      </div>
+      <p style={{ fontSize: base, margin: '0 0 var(--sp-6)', overflowWrap: 'anywhere' }}>
+        {count === 1 ? '1 curso' : `${count} cursos`} · {done} de {total} lições
+        <span style={{ color: STATE_COLOR[state] }}> · {state}</span>
+      </p>
 
       {members.length === 0 ? (
         <p style={{ color: 'var(--muted)', fontSize: base, margin: '16px 0 0' }}>Roadmap vazio. A IA adiciona cursos aqui.</p>
