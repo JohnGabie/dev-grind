@@ -16,6 +16,10 @@ The content comes from two reviews:
 
 A number marked `[T]` is an example to tune. João decides each `[T]` number. The code keeps each one in one named constant.
 
+Each version has one spec MD: `docs/superpowers/specs/YYYY-MM-DD-v0.N-<name>.md` (João, 2026-10-24).
+The spec MD holds the contract, the Acceptance scenarios and the plan of the version.
+The `CLAUDE.md` rule "one feature, one MD" changes to "one version, one MD". Make that change after the Courses work lands in `dev`.
+
 ---
 
 ## 1. The MVP, in João's words
@@ -99,18 +103,18 @@ The recommended option is first in each row.
 | D6 | How the learner sees the process data | (a) A settings screen shows what is collected and why. A switch stops the collection. (b) The privacy policy only. | v0.2 |
 | D7 | The daily agent after the core | (a) The agent reads the core estimate and only creates exercises. (b) The core replaces the agent. (c) Both run independently. | v0.2 |
 | D9 | The MVP language | (a) Portuguese. Each screen keeps its strings in one place, for i18n later. (b) English and Portuguese before the Play Store. | v1.0 |
-| D14 | The move to EPUB (D5) | (a) In v0.1: the reader reads EPUB, and João converts or removes his PDFs. (b) In v0.4, with the app reader. Until then, PDF stays. | v0.1 or v0.4 |
 
 ### Decided
 
 | # | Decision | Choice | Date | Applies in |
 |---|---|---|---|---|
-| D5 | The book format | EPUB only. The platform stops supporting PDF. Open item: see D14. | 2026-10-24 | D14 |
+| D5 | The book format | EPUB only. The platform stops supporting PDF. Decision D14 sets the timing. | 2026-10-24 | v0.4 |
 | D8 | The kyu rank | Calculate the rank from the mastery estimate. Until v0.2, the rank stays as it is today. | 2026-10-24 | v0.2 |
 | D10 | Book text through MCP | Excerpts with a length limit `[T]`. Rule SEC8 sets this decision. | 2026-10-24 | v0.1 |
 | D11 | A book delete | Keep the reading record: title, pages read, related work. Remove the file and free the slot. | 2026-10-24 | v0.1 |
 | D12 | A delete that an agent asks for | A soft delete. The item stays in a trash for 30 days `[T]`. The learner can undo the delete in that period. | 2026-10-24 | v0.1 |
 | D13 | The Profile page | Keep the learner-profile parts. Hide the social parts (bio, links, cover, portfolio) until v2. | 2026-10-24 | v0.1 |
+| D14 | The move to EPUB | In v0.4, with the app reader. Until v0.4, the web keeps the PDF reader. | 2026-10-24 | v0.4 |
 
 ## 6. What does not matter for the MVP
 
@@ -127,6 +131,34 @@ The items below wait until after v1.0. An open question in this list does not bl
 
 A version is done when each "Done when" item passes. Write the evidence next to each item.
 
+### v0.0 Environment — the system is ready for the work
+
+**Goal:** prepare the environments, the checks, the QA and the release flow. Each later version builds on v0.0.
+
+**Scope**
+1. **Local environment.** A clean clone starts the Worker, the frontend and a local D1 with seed data. The README lists the commands.
+2. **Separate environments.** Keep three environments: local, dev and production. Each environment has its own D1, R2 and secrets.
+3. **Agents use dev.** The daily agent, the MCP tests and the QA runs use the dev environment, never production.
+4. **Release flow.** Write an ADR for the flow: feature branch, then `dev`, then `main`. The dev environment runs `dev`. Production runs `main`.
+5. **CI.** Add the frontend tests, the frontend lint and a migration check to `.github/workflows/ci.yml`.
+6. **Supply chain checks.** Add a dependency audit and a secret scan to CI.
+7. **QA harness.** An agent runs the Acceptance scenarios headless in a browser, with one command. Each run saves screenshots as evidence.
+8. **Logs.** Turn on the Worker logs. The logs contain no personal data and no secrets (SEC8).
+9. **D1 backup.** Restore a D1 backup into the dev environment one time, to prove the restore works.
+10. **Android toolchain.** Prepare the Android build tools and João's phone for spikes S0 and S1.
+
+**Done when**
+- From a clean clone, the README commands start the platform locally. The dev login works.
+- The dev environment has its own URL, D1 and R2. A change in dev does not change production data.
+- A push to `dev` deploys to the dev environment. A push to `main` deploys to production.
+- CI fails when a frontend test fails. Prove this one time with a test that fails on purpose.
+- CI fails when a dependency has a known high vulnerability or when a commit contains a secret.
+- One command runs a sample Acceptance scenario headless and saves a screenshot.
+- The Worker logs of a request are visible, without personal data.
+- A D1 restore into dev succeeds, and the restored data matches the source.
+- A sample app from the Android toolchain installs and opens on João's phone.
+
+
 ### v0.1 Foundation and risk spikes
 
 **Part A — Foundation**
@@ -140,7 +172,7 @@ A version is done when each "Done when" item passes. Write the evidence next to 
 8. Write the security ADR with the rules SEC1-SEC8 (N15). The status is `Proposed`.
 9. Audit the current code against SEC1-SEC8. Record each finding in section 9.
 10. Fix each high finding before the deploy. A high finding has a real path to the session token or to learner data.
-11. Deploy to production.
+11. Merge `dev` into `main`, so the release flow of v0.0 deploys to production. João does the merge.
 
 **Part B — Risk spikes**
 
@@ -161,7 +193,7 @@ S3 needs Part A step 4. The other spikes can run in parallel with Part A.
 | S6 Isolated code runner | Can Pyodide run outside the page, with no session, no page and no network? Try a Web Worker in a sandboxed iframe with an opaque origin. | A test kata tries to read the token, read the page and call the network. Each try fails. A normal kata passes. An infinite loop stops after 5 s `[T]`. The page stays responsive. | 1. A Web Worker without the iframe, plus a strict Content Security Policy. 2. Katas run only on a separate origin with no session. |
 
 **Done when**
-- `dev` contains the Courses work. Production runs `dev`.
+- `dev` contains the Courses work. Production runs `main` with the v0.1 work.
 - The navigation shows only MVP modules.
 - `/store`, `/guild`, `/community` and `/friends` show the unknown-address state. Their Worker routes return 404.
 - The platform refuses a fourth book upload. The message names the 3-slot limit.
