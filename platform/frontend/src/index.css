@@ -108,11 +108,13 @@ body {
   border: 1px solid var(--border);
   border-radius: 6px;
 }
-.course-item:has(.course-item__open:focus-visible) {
-  outline: 2px solid var(--cyan);
-  outline-offset: 2px;
+@supports selector(:has(*)) {
+  .course-item:has(.course-item__open:focus-visible) {
+    outline: 2px solid var(--cyan);
+    outline-offset: 2px;
+  }
+  .course-item__open:focus-visible { outline: none; }
 }
-.course-item__open:focus-visible { outline: none; }
 .card-hover {
   cursor: pointer;
   transition: border-color 150ms, background 150ms;

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { useNavigate, useParams } from 'react-router-dom'
+import { Link, useNavigate, useParams } from 'react-router-dom'
 import CourseNotFound from '../components/CourseNotFound'
 import RoadmapTrail from '../components/RoadmapTrail'
 import { useCourseData } from '../hooks/useCourseData'
@@ -60,13 +60,12 @@ export default function RoadmapPage() {
         position: 'sticky', top: 0, zIndex: 5, background: 'var(--bg)', borderBottom: '1px solid var(--border)',
         margin: '0 0 var(--sp-2)', padding: `${isMobile ? MOBILE_TOP_INSET : 'var(--sp-4)'} 0 var(--sp-4)`,
       }}>
-        <button
-          type="button"
-          onClick={() => navigate(ROADMAPS_TAB)}
-          style={{ background: 'none', border: 'none', color: 'var(--cyan)', cursor: 'pointer', fontFamily: 'inherit', padding: 0, marginBottom: isMobile ? 0 : 'var(--sp-3)', display: isMobile ? 'inline-flex' : undefined, alignItems: isMobile ? 'center' : undefined, minHeight: isMobile ? 'var(--ctl-md)' : undefined, fontSize: base }}
+        <Link
+          to={ROADMAPS_TAB}
+          style={{ color: 'var(--cyan)', display: 'inline-flex', alignItems: 'center', marginBottom: isMobile ? 0 : 'var(--sp-3)', minHeight: isMobile ? 'var(--ctl-md)' : undefined, fontSize: base }}
         >
           ← roadmaps
-        </button>
+        </Link>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--sp-3)', flexWrap: 'wrap' }}>
         <div style={{ minWidth: 0, flex: '1 1 220px' }}>
           <h1 style={{ fontSize: isMobile ? 'var(--fs-xl)' : 28, margin: '0 0 var(--sp-1)', overflowWrap: 'anywhere' }}>{roadmap.title}</h1>
