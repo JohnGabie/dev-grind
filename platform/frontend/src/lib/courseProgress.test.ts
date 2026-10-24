@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import type { Course } from './courseModel.ts'
-import { actionLabel, continueTarget, courseProgress, isInsideCourse, isInsideLesson, lessonKeyOf, orderCourses } from './courseProgress.ts'
+import { actionLabel, continueTarget, courseProgress, isInsideCourse, isInsideLesson, isOnSolvePage, lessonKeyOf, orderCourses } from './courseProgress.ts'
 
 function makeCourse(id: string, lessons: { optional?: boolean; lessonIndex?: number }[], completed: string[], parts: Record<string, number> = {}): Course {
   return {
@@ -105,5 +105,14 @@ describe('actionLabel and helpers', () => {
     assert.equal(isInsideCourse('/courses'), false)
     assert.equal(isInsideCourse('/courses/'), false)
     assert.equal(isInsideCourse('/exercise/abc'), false)
+  })
+})
+
+describe('isOnSolvePage', () => {
+  it('is true only for the kata solve page', () => {
+    assert.equal(isOnSolvePage('/exercise/saudacao/solve'), true)
+    assert.equal(isOnSolvePage('/exercise/saudacao'), false)
+    assert.equal(isOnSolvePage('/exercise'), false)
+    assert.equal(isOnSolvePage('/courses/abc/0-1'), false)
   })
 })

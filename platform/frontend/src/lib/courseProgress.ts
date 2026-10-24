@@ -50,3 +50,7 @@ export function isInsideCourse(pathname: string): boolean {
 export function isInsideLesson(pathname: string): boolean {
   return /^\/courses\/[^/]+\/[^/]/.test(pathname)
 }
+
+export function isOnSolvePage(pathname: string): boolean {
+  return /^\/exercise\/[^/]+\/solve$/.test(pathname)
+}

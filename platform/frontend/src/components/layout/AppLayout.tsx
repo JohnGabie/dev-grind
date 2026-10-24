@@ -7,7 +7,7 @@ import { ChatPanel } from '../ChatPanel'
 import { CosmeticsProvider } from '../../contexts/CosmeticsContext'
 import { useMediaQuery, MOBILE_QUERY } from '../../hooks/useMediaQuery'
 import { TOPBAR_SPACE, MOBILE_TOP_INSET, MOBILE_NAV_SPACE } from '../../lib/layout'
-import { isInsideCourse, isInsideLesson } from '../../lib/courseProgress'
+import { isInsideCourse, isInsideLesson, isOnSolvePage } from '../../lib/courseProgress'
 import api from '../../api/client'
 
 // ── TopBar ───────────────────────────────────────────────────────────────────
@@ -283,6 +283,7 @@ export default function AppLayout() {
   // "sobre" rola como qualquer outra.
   const isFixedLayout = FIXED_LAYOUT_PATHS.some(p => location.pathname.startsWith(p))
     || location.pathname.endsWith('/solve')
+  const hideDock = inCourse || (isMobile && isOnSolvePage(location.pathname))
 
   return (
     <CosmeticsProvider>
@@ -292,7 +293,7 @@ export default function AppLayout() {
           flex: 1,
           overflow: 'hidden',
           position: 'relative',
-          paddingBottom: isMobile && isFixedLayout ? MOBILE_NAV_SPACE : 0,
+          paddingBottom: isMobile && isFixedLayout ? (hideDock ? 'env(safe-area-inset-bottom, 0px)' : MOBILE_NAV_SPACE) : 0,
         }}>
           {!isMobile && !hideTopBar && <TopBar />}
           {/* Só os layouts de altura fixa cedem a faixa aqui — o header próprio
@@ -309,7 +310,7 @@ export default function AppLayout() {
             <Outlet />
           </div>
         </main>
-        {isMobile && !inCourse && <MobileNav />}
+        {isMobile && !hideDock && <MobileNav />}
         <ChatBubble />
       </div>
     </CosmeticsProvider>
