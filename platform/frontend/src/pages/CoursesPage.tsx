@@ -11,7 +11,7 @@ import CourseTabs from '../components/CourseTabs'
 import { useCourseData } from '../hooks/useCourseData'
 import { tabFromParam, type CourseTab } from '../lib/courseTab'
 import { bulkDelete } from '../lib/bulkDelete'
-import { deleteCoursesNotice, deleteRoadmapParams } from '../lib/roadmapDelete'
+import { courseTitlesLine, deleteCoursesNotice, deleteRoadmapParams } from '../lib/roadmapDelete'
 import { retainFailed, selectionAfterQuery, toggleSelection } from '../lib/selection'
 import { roadmapEntry } from '../lib/roadmapModel'
 import { useCoursePrefs } from '../hooks/useCoursePrefs'
@@ -508,7 +508,8 @@ export default function CoursesPage() {
   const shown = visibleEntries(allEntries, query, prefs.sort)
   const chosen = shown.filter(entry => selected.has(entry.id))
   const chosenIds = chosen.map(entry => entry.id)
-  const coursesOfChosen = new Set(roadmaps.filter(item => chosenIds.includes(item.id)).flatMap(item => item.course_ids).filter(id => byId.has(id))).size
+  const courseIdsOfChosen = [...new Set(roadmaps.filter(item => chosenIds.includes(item.id)).flatMap(item => item.course_ids).filter(id => byId.has(id)))]
+  const coursesOfChosen = courseIdsOfChosen.length
 
   const barOnOwnRow = inDeleteMode && narrow
   const deleteBar = (
@@ -664,7 +665,11 @@ export default function CoursesPage() {
                   {chosen.map(entry => <li key={entry.id}>{entry.title}</li>)}
                 </ul>
                 <p style={{ margin: '8px 0 0' }}>O progresso será perdido. Não dá para desfazer.</p>
-                {roadmapTab && alsoCourses && <p style={{ margin: '8px 0 0', color: 'var(--red)' }}>{deleteCoursesNotice(coursesOfChosen)}</p>}
+                {roadmapTab && alsoCourses && coursesOfChosen > 0 && (
+                  <p style={{ margin: '8px 0 0', color: 'var(--red)', overflowWrap: 'anywhere' }}>
+                    {deleteCoursesNotice(coursesOfChosen)}: {courseTitlesLine(courseIdsOfChosen.map(id => byId.get(id)?.title ?? ''))}
+                  </p>
+                )}
               </>
             }
             checkbox={roadmapTab ? { label: 'apagar os cursos também', checked: alsoCourses, onChange: setAlsoCourses } : undefined}
