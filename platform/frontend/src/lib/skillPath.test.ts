@@ -269,6 +269,13 @@ describe('narrow stacked map', () => {
     assert.deepEqual(map.nodes.map(node => node.x), [42, 329, 42, 329])
   })
 
+  it('ends the map a few pixels under the last node, not 128 px', () => {
+    const lessons = ['0-0', '0-1', '0-2', '0-3'].map(key => lesson(key, 0, 'Python básico'))
+    const map = placeSkillPath(PYTHON, lessons, [], { laneX: narrowLanes, labelW: 0, stacked: true })
+    const lastBottom = Math.max(...map.nodes.map(node => node.y + 42))
+    assert.equal(map.minY + map.height - lastBottom <= 16, true)
+  })
+
   it('branches an optional lesson of a right-edge lesson to the left edge', () => {
     const lessons = [lesson('0-0', 0, 'S'), lesson('0-1', 0, 'S'), lesson('0-2', 0, 'S', true), lesson('0-3', 0, 'S')]
     const map = placeSkillPath(PYTHON, lessons, [], { laneX: narrowLanes, labelW: 0, stacked: true })

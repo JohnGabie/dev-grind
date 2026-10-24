@@ -113,6 +113,8 @@ const CHAR_W = 10.8
 const CHAR_SP = 1.08
 const COLUMN_W = 420
 const BOTTOM_PAD = 128
+/** The narrow map ends just under the last node: the page padding already clears the chat bubble. */
+const NARROW_BOTTOM_PAD = 8
 export const FRACTION_W = 56
 export const FRACTION_GAP = 10
 
@@ -200,7 +202,7 @@ function labelBlockHeight(node: { description: string; optional: boolean }): num
   return height
 }
 
-function frame(nodes: PlacedNode[], strokes: PlacedStroke[], sectionTitles: PlacedSectionTitle[], labelW: number, fractionBeside = true): SkillMap {
+function frame(nodes: PlacedNode[], strokes: PlacedStroke[], sectionTitles: PlacedSectionTitle[], labelW: number, fractionBeside = true, bottomPad = BOTTOM_PAD): SkillMap {
   let minX = 0
   let maxX = COLUMN_W
   let minY = 0
@@ -220,7 +222,7 @@ function frame(nodes: PlacedNode[], strokes: PlacedStroke[], sectionTitles: Plac
     minY = Math.min(minY, title.y)
     maxY = Math.max(maxY, title.y + TITLE_LINE)
   }
-  maxY += BOTTOM_PAD
+  maxY += bottomPad
   return { nodes, strokes, sectionTitles, minX, minY, width: maxX - minX, height: maxY - minY }
 }
 
@@ -327,7 +329,7 @@ function placeStacked(
     const node = nodes[index]
     sectionTitles.push({ text: lesson.sectionTitle, x: node.x, y: node.y - NODE / 2 - TITLE_BLOCK + (TITLE_BLOCK - TITLE_LINE) / 2, place: 'band' })
   })
-  return frame(nodes, strokes, sectionTitles, 0, false)
+  return frame(nodes, strokes, sectionTitles, 0, false, NARROW_BOTTOM_PAD)
 }
 
 export function placeSkillPath(courseId: string, lessons: readonly PathLesson[], completed: readonly string[], options: PathOptions = {}): SkillMap {
