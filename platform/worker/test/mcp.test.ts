@@ -201,6 +201,56 @@ describe('mcp', () => {
     expect(append?.inputSchema.properties.modules?.description).toContain('optional: true')
   })
 
+  it('documents the kata step in the course tools and keeps create_exercise free of steps', async () => {
+    const list = await mcp(token, 'tools/list')
+    const tools = list.body.result.tools as Array<{
+      name: string
+      description: string
+      inputSchema: { properties: Record<string, { description?: string }> }
+    }>
+    const create = tools.find(tool => tool.name === 'create_course')
+    const append = tools.find(tool => tool.name === 'append_course_modules')
+    const exercise = tools.find(tool => tool.name === 'create_exercise')
+
+    expect(create?.description).toContain('kata')
+    expect(create?.description).toContain('slug')
+    expect(create?.description).toContain('Do not copy stub, tests, or solution into the step.')
+    expect(create?.inputSchema.properties.modules?.description).toContain('[text|fill|browser|terminal|kata]')
+    expect(append?.description).toContain('kata')
+    expect(append?.inputSchema.properties.modules?.description).toContain('kata')
+    expect(exercise?.inputSchema.properties).not.toHaveProperty('steps')
+  })
+
+  it('returns a kata step unchanged, with no stub or solution in modules', async () => {
+    const exercise = await callTool(token, 'create_exercise', {
+      title: 'Saudacao', description: 'd', difficulty: '8kyu',
+      tags: [], stub: 'def saudacao(nome):', test_cases: [{ description: 't', input: '"a"', expected: '"Oi a"', visible: true }],
+    })
+    const kataStep = { type: 'kata', slug: exercise.slug }
+    const created = await callTool(token, 'create_course', {
+      title: 'Funcoes',
+      description: 'desc',
+      is_complete: true,
+      modules: [{
+        title: 'Secao',
+        lessons: [{ title: 'Licao', steps: [{ type: 'text', body: 'antes' }, kataStep, { type: 'text', body: 'depois' }] }],
+      }],
+    })
+
+    const res = await authed('/courses')
+    const rows = await res.json<Array<{ id: string; modules: Array<{ lessons: Array<{ steps: unknown[] }> }> }>>()
+    const course = rows.find(row => row.id === created.id)
+    expect(course?.modules[0].lessons[0].steps).toEqual([
+      { type: 'text', body: 'antes' },
+      { type: 'kata', slug: 'saudacao' },
+      { type: 'text', body: 'depois' },
+    ])
+    const json = JSON.stringify(course?.modules)
+    expect(json).not.toContain('stub')
+    expect(json).not.toContain('solution')
+    expect(json).not.toContain('def saudacao')
+  })
+
   it('keeps the tool registry and the claude-md instructions in sync', async () => {
     const res = await authed('/auth/tokens/claude-md')
     const text = await res.text()
