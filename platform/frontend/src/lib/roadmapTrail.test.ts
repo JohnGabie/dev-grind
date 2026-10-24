@@ -2,7 +2,7 @@ import assert from 'node:assert/strict'
 import { describe, it } from 'node:test'
 import type { Course } from './courseModel.ts'
 import type { Roadmap } from './roadmapModel.ts'
-import { loadRoadmapView, saveRoadmapView, trailStages } from './roadmapTrail.ts'
+import { trailStages } from './roadmapTrail.ts'
 
 function course(id: string, done: number, total: number): Course {
   return {
@@ -56,27 +56,5 @@ describe('trailStages', () => {
   it('carries the title, done and total of the course', () => {
     const [stage] = trailStages(roadmap(['a']), mapOf(course('a', 2, 4)))
     assert.deepEqual(stage, { id: 'a', position: 1, title: 'T-a', done: 2, total: 4, percent: 50, state: 'em andamento', current: true })
-  })
-})
-
-describe('roadmap view preference', () => {
-  const store = (value: string | null) => ({ getItem: (key: string) => (key === 'devgrind.roadmap.view' ? value : 'lista') })
-  it('defaults to trilha', () => {
-    assert.equal(loadRoadmapView(store(null)), 'trilha')
-    assert.equal(loadRoadmapView(null), 'trilha')
-  })
-  it('reads cards', () => {
-    assert.equal(loadRoadmapView(store('cards')), 'cards')
-  })
-  it('ignores an unknown value and the key of the course list', () => {
-    assert.equal(loadRoadmapView(store('lista')), 'trilha')
-  })
-  it('falls back to trilha when the storage throws', () => {
-    assert.equal(loadRoadmapView({ getItem: () => { throw new Error('blocked') } }), 'trilha')
-  })
-  it('saves under its own key', () => {
-    const saved: string[][] = []
-    saveRoadmapView({ setItem: (key, value) => { saved.push([key, value]) } }, 'cards')
-    assert.deepEqual(saved, [['devgrind.roadmap.view', 'cards']])
   })
 })

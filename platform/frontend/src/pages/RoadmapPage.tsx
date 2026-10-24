@@ -1,18 +1,15 @@
 import type { ReactNode } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
-import CourseList from '../components/CourseList'
 import CourseNotFound from '../components/CourseNotFound'
 import ProgressBar from '../components/ProgressBar'
 import RoadmapTrail from '../components/RoadmapTrail'
 import { useCourseData } from '../hooks/useCourseData'
-import { useRoadmapView } from '../hooks/useRoadmapView'
 import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
 import { STATE_COLOR } from '../lib/courseDisplay'
 import { actionLabel } from '../lib/courseProgress'
-import { courseEntry } from '../lib/listEntry'
 import { pagePadding } from '../lib/layout'
 import { roadmapCourses, roadmapProgress, roadmapTarget } from '../lib/roadmapModel'
-import { ROADMAP_VIEWS, trailStages } from '../lib/roadmapTrail'
+import { trailStages } from '../lib/roadmapTrail'
 
 const ROADMAPS_TAB = '/courses?tab=roadmaps'
 
@@ -21,7 +18,6 @@ export default function RoadmapPage() {
   const navigate = useNavigate()
   const { roadmapId } = useParams()
   const { roadmaps, byId, loading, error, roadmapsError, reload } = useCourseData()
-  const { view, setView } = useRoadmapView()
 
   const roadmap = roadmaps.find(item => item.id === roadmapId) ?? null
   const loadError = error ?? roadmapsError
@@ -54,7 +50,6 @@ export default function RoadmapPage() {
   const members = roadmapCourses(roadmap, byId)
   const target = roadmapTarget(roadmap, byId)
   const action = actionLabel(state)
-  const entries = members.map((course, index) => ({ ...courseEntry(course, index + 1), action: null }))
 
   const onMainAction = () => {
     if (target) return navigate(target.lessonKey ? `/courses/${target.courseId}/${target.lessonKey}` : `/courses/${target.courseId}`)
@@ -70,27 +65,6 @@ export default function RoadmapPage() {
       </Link>
       <h1 style={{ fontSize: isMobile ? 'var(--fs-xl)' : 32, margin: '4px 0 8px', overflowWrap: 'anywhere' }}>{roadmap.title}</h1>
       {roadmap.description && <p style={{ color: 'var(--muted)', fontSize: base, margin: '0 0 12px', overflowWrap: 'anywhere' }}>{roadmap.description}</p>}
-      {members.length > 0 && (
-        <div role="group" aria-label="visualização do roadmap" style={{ display: 'inline-flex', gap: 'var(--sp-1)', margin: '0 0 var(--sp-4)', padding: 2, border: '1px solid var(--border)', borderRadius: 'var(--radius-lg)' }}>
-          {ROADMAP_VIEWS.map(item => {
-            const on = item === view
-            return (
-              <button
-                key={item}
-                type="button"
-                aria-pressed={on}
-                onClick={() => setView(item)}
-                style={{
-                  ...ghost, border: 'none', borderRadius: 'var(--radius-md)', padding: '0 16px', minHeight: isMobile ? 'var(--ctl-md)' : 32,
-                  background: on ? 'var(--cyan-faint)' : 'none', color: on ? 'var(--cyan)' : 'var(--muted)', fontWeight: on ? 700 : 400,
-                }}
-              >
-                {item}
-              </button>
-            )
-          })}
-        </div>
-      )}
       <div style={{ margin: '0 0 var(--sp-6)' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--sp-3)', flexWrap: 'wrap', marginBottom: 'var(--sp-3)' }}>
           <p style={{ fontSize: base, margin: 0 }}>
@@ -108,10 +82,8 @@ export default function RoadmapPage() {
 
       {members.length === 0 ? (
         <p style={{ color: 'var(--muted)', fontSize: base, margin: '16px 0 0' }}>Roadmap vazio. A IA adiciona cursos aqui.</p>
-      ) : view === 'trilha' ? (
-        <RoadmapTrail stages={trailStages(roadmap, byId)} onContinue={onMainAction} />
       ) : (
-        <CourseList entries={entries} view="cards" onOpen={entry => navigate(`/courses/${entry.id}`)} onAction={() => {}} />
+        <RoadmapTrail stages={trailStages(roadmap, byId)} onContinue={onMainAction} />
       )}
     </>,
   )
