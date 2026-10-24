@@ -259,3 +259,19 @@ describe('placeSkillPath', () => {
     assert.equal(finished.nodes[0].partsDone, 3)
   })
 })
+
+describe('narrow stacked map', () => {
+  const narrowLanes = { left: 42, center: 250, right: 329 }
+
+  it('alternates required lessons between the left and the right edge', () => {
+    const lessons = ['0-0', '0-1', '0-2', '0-3'].map(key => lesson(key, 0, 'Python básico'))
+    const map = placeSkillPath(PYTHON, lessons, [], { laneX: narrowLanes, labelW: 0, stacked: true })
+    assert.deepEqual(map.nodes.map(node => node.x), [42, 329, 42, 329])
+  })
+
+  it('branches an optional lesson of a right-edge lesson to the left edge', () => {
+    const lessons = [lesson('0-0', 0, 'S'), lesson('0-1', 0, 'S'), lesson('0-2', 0, 'S', true), lesson('0-3', 0, 'S')]
+    const map = placeSkillPath(PYTHON, lessons, [], { laneX: narrowLanes, labelW: 0, stacked: true })
+    assert.deepEqual(map.nodes.map(node => [node.x, node.trunkX]), [[42, undefined], [329, undefined], [42, 329], [42, undefined]])
+  })
+})

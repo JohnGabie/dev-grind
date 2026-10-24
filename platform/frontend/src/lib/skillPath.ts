@@ -242,7 +242,7 @@ function placeStacked(
 ): SkillMap {
   const done = new Set(completed)
   const required = lessons.filter(lesson => !lesson.optional)
-  const laneOf = new Map(required.map((lesson, index) => [lesson.key, index % 2 === 0 ? laneX.left : laneX.center]))
+  const laneOf = new Map(required.map((lesson, index) => [lesson.key, index % 2 === 0 ? laneX.left : laneX.right]))
   const current = required.find(lesson => !done.has(lesson.key))?.key ?? null
   const farLane = (trunk: number) => (trunk === laneX.left ? laneX.right : laneX.left)
   const nodes: PlacedNode[] = []
