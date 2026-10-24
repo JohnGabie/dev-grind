@@ -1,11 +1,11 @@
 import type { ReactNode } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import CourseNotFound from '../components/CourseNotFound'
-import ProgressBar from '../components/ProgressBar'
+import ProgressRing from '../components/ProgressRing'
 import RoadmapTrail from '../components/RoadmapTrail'
 import { useCourseData } from '../hooks/useCourseData'
 import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
-import { STATE_COLOR } from '../lib/courseDisplay'
+import { STATE_COLOR, percentOf } from '../lib/courseDisplay'
 import { actionLabel } from '../lib/courseProgress'
 import { pagePadding } from '../lib/layout'
 import { roadmapCourses, roadmapProgress, roadmapTarget } from '../lib/roadmapModel'
@@ -65,9 +65,9 @@ export default function RoadmapPage() {
       </Link>
       <h1 style={{ fontSize: isMobile ? 'var(--fs-xl)' : 32, margin: '4px 0 8px', overflowWrap: 'anywhere' }}>{roadmap.title}</h1>
       {roadmap.description && <p style={{ color: 'var(--muted)', fontSize: base, margin: '0 0 12px', overflowWrap: 'anywhere' }}>{roadmap.description}</p>}
-      <div style={{ margin: '0 0 var(--sp-6)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--sp-3)', flexWrap: 'wrap', marginBottom: 'var(--sp-3)' }}>
-          <p style={{ fontSize: base, margin: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--sp-4)', margin: '0 0 var(--sp-6)' }}>
+        <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 'var(--sp-3)' }}>
+          <p style={{ fontSize: base, margin: 0, overflowWrap: 'anywhere' }}>
             {count === 1 ? '1 curso' : `${count} cursos`} · {done} de {total} lições
             <span style={{ color: STATE_COLOR[state] }}> · {state}</span>
           </p>
@@ -77,7 +77,7 @@ export default function RoadmapPage() {
             </button>
           )}
         </div>
-        <ProgressBar done={done} total={total} label={`${roadmap.title}: ${done} de ${total} lições`} done100={state === 'concluído'} />
+        <ProgressRing percent={percentOf(done, total)} complete={state === 'concluído'} label={`${roadmap.title}: ${percentOf(done, total)}%`} />
       </div>
 
       {members.length === 0 ? (
