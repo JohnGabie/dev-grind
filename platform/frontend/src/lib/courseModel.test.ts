@@ -27,7 +27,21 @@ describe('asCourse', () => {
       ['1-1', '1-2'],
     )
     assert.equal(course?.sections[0].lessons[0].optional, false)
-    assert.equal(asStep({ type: 'kata', slug: 'saudacao-com-nome' }), null)
+  })
+
+  it('keeps a kata step, trims its slug and keeps an empty slug', () => {
+    assert.deepEqual(asStep({ type: 'kata', slug: ' saudacao-com-nome ' }), { type: 'kata', slug: 'saudacao-com-nome' })
+    assert.deepEqual(asStep({ type: 'kata' }), { type: 'kata', slug: '' })
+    assert.equal(asStep({ type: 'quiz' }), null)
+  })
+
+  it('keeps a lesson whose only step is a kata', () => {
+    const course = asCourse({
+      id: 'kata-only',
+      title: 'Kata',
+      modules: [{ title: 'S', lessons: [{ title: 'Só kata', steps: [{ type: 'kata', slug: 'x', stub: 'def x(): pass' }] }] }],
+    })
+    assert.deepEqual(course?.sections[0].lessons[0].steps, [{ type: 'kata', slug: 'x' }])
   })
 
   it('treats only boolean true as optional', () => {

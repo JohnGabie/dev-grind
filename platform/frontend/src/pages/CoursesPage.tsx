@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type CSSProperties, type RefObject } from 'react'
+import { useCallback, useEffect, useRef, useState, type CSSProperties, type RefObject } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import api from '../api/client'
 import ActionsMenu from '../components/ActionsMenu'
@@ -23,6 +23,17 @@ import PageHeader from '../components/PageHeader'
 import SkillPath from '../components/SkillPath'
 import { type FillPart, type Lesson, type Step } from '../lib/courseModel'
 import { pagePadding } from '../lib/layout'
+import { KataSolver, type KataSolverHandle } from '../components/KataSolver'
+import type { ExerciseData } from '../lib/exercise'
+import { footerAction, footerButton, initialKataState, loadErrorMessage, phaseAfterLoad, phaseAfterVerify, type KataPhase } from '../lib/kataPhase'
+
+type KataStep = {
+  phase: KataPhase
+  error: string | null
+  exercise: ExerciseData | null
+  onActivity: (activity: { pyLoading: boolean; running: boolean }) => void
+  onKeyboardOpen: (open: boolean) => void
+}
 
 function flat(value: string) {
   return value.replace(/\n/g, '').trim()
@@ -62,6 +73,8 @@ function StepView({
   onClear,
   onSubmit,
   inputRef,
+  kata,
+  solverRef,
 }: {
   step: Step
   value: string
@@ -73,10 +86,32 @@ function StepView({
   onClear: () => void
   onSubmit: () => void
   inputRef: RefObject<HTMLInputElement | null>
+  kata: KataStep
+  solverRef: RefObject<KataSolverHandle | null>
 }) {
   const isMobile = useMediaQuery(MOBILE_QUERY)
   const [activeBlank, setActiveBlank] = useState(0)
   const [termFocus, setTermFocus] = useState(false)
+
+  if (step.type === 'kata') {
+    if (kata.phase === 'error' || !kata.exercise) {
+      return (
+        <p role={kata.phase === 'error' ? 'alert' : 'status'} style={{ margin: 0, textAlign: 'center', fontSize: isMobile ? 'var(--fs-base)' : 15, color: kata.phase === 'error' ? 'var(--red)' : 'var(--muted)' }}>
+          {kata.phase === 'error' ? kata.error : 'carregando kata…'}
+        </p>
+      )
+    }
+    return (
+      <KataSolver
+        ref={solverRef}
+        key={kata.exercise.id}
+        exercise={kata.exercise}
+        mode="lesson"
+        onActivity={kata.onActivity}
+        onKeyboardOpen={kata.onKeyboardOpen}
+      />
+    )
+  }
 
   if (step.type === 'text') {
     return (
@@ -288,9 +323,39 @@ function LessonPlayer({
   const scrollRef = useRef<HTMLDivElement>(null)
   const terminalRef = useRef<HTMLInputElement>(null)
 
+  const kataSlug = step.type === 'kata' ? step.slug : null
+  const [kataPhase, setKataPhase] = useState<KataPhase>(() => initialKataState(kataSlug ?? '').phase)
+  const [kataError, setKataError] = useState<string | null>(() => initialKataState(kataSlug ?? '').error)
+  const [exercise, setExercise] = useState<ExerciseData | null>(null)
+  const [solverBusy, setSolverBusy] = useState(false)
+  const [keyboardOpen, setKeyboardOpen] = useState(false)
+  const solverRef = useRef<KataSolverHandle>(null)
+  const inFlight = useRef(false)
+  const onActivity = useCallback((activity: { pyLoading: boolean; running: boolean }) => {
+    setSolverBusy(activity.pyLoading || activity.running)
+  }, [])
+
   useEffect(() => {
     scrollRef.current?.scrollTo(0, 0)
   }, [index])
+
+  useEffect(() => {
+    if (!kataSlug) return
+    let live = true
+    api.get<ExerciseData>(`/exercises/${encodeURIComponent(kataSlug)}`)
+      .then(r => {
+        if (!live) return
+        setExercise(r.data)
+        setKataPhase(phaseAfterLoad(r.data.user_status))
+      })
+      .catch(err => {
+        const message = loadErrorMessage(err.response?.status, kataSlug)
+        if (!live || message === null) return
+        setKataError(message)
+        setKataPhase('error')
+      })
+    return () => { live = false }
+  }, [index, kataSlug])
 
   const changeValue = (next: string) => {
     setValue(next)
@@ -331,6 +396,10 @@ function LessonPlayer({
       setPassed(true)
       return
     }
+    advance()
+  }
+
+  const advance = () => {
     setWrong(false)
     setPassed(false)
     if (last) {
@@ -340,13 +409,37 @@ function LessonPlayer({
     }
     onPart(index + 1)
     const next = lesson.steps[index + 1]
+    const nextKata = initialKataState(next.type === 'kata' ? next.slug : '')
     setIndex(index + 1)
     setValue(next.type === 'browser' ? next.starter : '')
     setBlanks(next.type === 'fill' ? blankAnswers(next).map(() => '') : [])
+    setKataPhase(nextKata.phase)
+    setKataError(nextKata.error)
+    setExercise(null)
+    setSolverBusy(false)
+    setKeyboardOpen(false)
+  }
+
+  const clickKata = async () => {
+    const action = footerAction(kataPhase, inFlight.current, solverBusy)
+    if (action === 'advance') advance()
+    if (action !== 'verify') return
+    const phaseBefore = kataPhase
+    inFlight.current = true
+    setKataPhase('running')
+    try {
+      const result = await solverRef.current?.verify()
+      setKataPhase(phaseAfterVerify(result, phaseBefore))
+    } finally {
+      inFlight.current = false
+    }
   }
 
   const isMobile = useMediaQuery(MOBILE_QUERY)
   const statusText = wrong ? 'Ainda não. Confira o que está em vermelho.' : passed ? 'Certo!' : ''
+  const isKata = step.type === 'kata'
+  const kataButton = isKata ? footerButton(kataPhase, solverBusy, last) : null
+  const footerRed = isKata ? kataPhase === 'failed' : wrong
 
   return (
     <div style={{ flex: 1, minHeight: 0, width: '100%', display: 'flex', flexDirection: 'column' }}>
@@ -369,8 +462,8 @@ function LessonPlayer({
                 {lesson.title} · passo {index + 1} de {lesson.steps.length}{reviewing ? ' · revisão' : ''}
               </div>
             </div>
-            <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '28px 0' }}>
-              <div style={{ width: '100%' }}>
+            <div style={{ flex: 1, display: 'flex', alignItems: isKata ? 'stretch' : 'center', justifyContent: 'center', padding: '28px 0' }}>
+              <div style={isKata ? { width: '100%', minWidth: 0, display: 'flex', flexDirection: 'column' } : { width: '100%' }}>
                 <StepView
                   key={index}
                   step={step}
@@ -383,13 +476,15 @@ function LessonPlayer({
                   onClear={() => changeBlank(-1, '')}
                   onSubmit={wrong ? retry : goNext}
                   inputRef={terminalRef}
+                  kata={{ phase: kataPhase, error: kataError, exercise, onActivity, onKeyboardOpen: setKeyboardOpen }}
+                  solverRef={solverRef}
                 />
               </div>
             </div>
           </div>
         </div>
       </div>
-      <div style={{ width: '100%', borderTop: `1px solid ${wrong ? '#f07178' : 'var(--border)'}` }}>
+      <div style={{ width: '100%', borderTop: `1px solid ${footerRed ? '#f07178' : 'var(--border)'}`, display: isKata && keyboardOpen ? 'none' : undefined }}>
         <div style={{ padding: pagePadding('14px 48px 14px', isMobile, false, false) }}>
           <div
             role="status"
@@ -399,15 +494,18 @@ function LessonPlayer({
           </div>
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
             <button
-              onClick={wrong ? retry : goNext}
+              onClick={kataButton ? clickKata : wrong ? retry : goNext}
+              disabled={kataButton ? !kataButton.enabled : false}
               style={{
-                flexShrink: 0, minHeight: isMobile ? 'var(--ctl-primary)' : undefined, fontSize: isMobile ? 'var(--fs-base)' : 15, fontWeight: 700, padding: '12px 22px', borderRadius: 'var(--radius-lg)', cursor: 'pointer',
+                flexShrink: 0, minHeight: isMobile ? 'var(--ctl-primary)' : undefined, fontSize: isMobile ? 'var(--fs-base)' : 15, fontWeight: 700, padding: '12px 22px', borderRadius: 'var(--radius-lg)',
+                cursor: kataButton && !kataButton.enabled ? 'not-allowed' : 'pointer',
+                opacity: kataButton && !kataButton.enabled ? 0.5 : 1,
                 background: wrong ? 'rgba(240,113,120,0.14)' : 'rgba(68,188,211,0.16)',
                 border: wrong ? '1px solid #f07178' : '1px solid rgba(68,188,211,0.45)',
                 color: wrong ? '#f07178' : 'var(--cyan)',
               }}
             >
-              {wrong ? 'tentar novamente' : needsCheck && !passed ? 'verificar' : last ? 'concluir' : 'continuar'}
+              {kataButton ? kataButton.label : wrong ? 'tentar novamente' : needsCheck && !passed ? 'verificar' : last ? 'concluir' : 'continuar'}
             </button>
           </div>
         </div>

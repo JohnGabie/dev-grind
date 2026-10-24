@@ -7,6 +7,7 @@ export type Step =
   | { type: 'fill'; prompt: string; file: string; parts: FillPart[]; choices: string[] }
   | { type: 'browser'; prompt: string; starter: string }
   | { type: 'terminal'; prompt: string; expect: string }
+  | { type: 'kata'; slug: string }
 
 export function asStep(raw: unknown): Step | null {
   const step = (raw ?? {}) as Record<string, unknown>
@@ -42,6 +43,7 @@ export function asStep(raw: unknown): Step | null {
   }
   if (type === 'browser') return { type, prompt: String(step.prompt ?? ''), starter: String(step.starter ?? '') }
   if (type === 'terminal') return { type, prompt: String(step.prompt ?? ''), expect: String(step.expect ?? '') }
+  if (type === 'kata') return { type, slug: String(step.slug ?? '').trim() }
   return null
 }
 
