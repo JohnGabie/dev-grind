@@ -52,7 +52,7 @@ export default function RoadmapTrail({ stages, onContinue }: { stages: TrailStag
                     <span style={{ color: STATE_COLOR[stage.state] }}> · {stage.state}</span>
                   </span>
                 </span>
-                <ProgressRing percent={stage.percent} complete={stage.state === 'concluído'} label={`${stage.title}: ${stage.percent}%`} />
+                <ProgressRing percent={stage.percent} complete={stage.state === 'concluído'} label={`${stage.percent}%`} />
               </Link>
               {stage.current && (
                 <button
