@@ -1,12 +1,10 @@
 import PositionNumber from './PositionNumber'
+import ProgressRing from './ProgressRing'
 import SelectionMark from './SelectionMark'
 import { selectableProps, selectModeAction, selectModeInert, type SelectProps } from '../lib/selectable'
 import type { ListEntry } from '../lib/listEntry'
 import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
 import { STATE_COLOR, percentOf } from '../lib/courseDisplay'
-
-const RADIUS = 26
-const CIRC = 2 * Math.PI * RADIUS
 
 export default function CourseGalleryTile({ entry, onOpen, onAction, selectMode = false, selected = false, onToggle }: { entry: ListEntry; onOpen: () => void; onAction: () => void } & SelectProps) {
   const isMobile = useMediaQuery(MOBILE_QUERY)
@@ -23,18 +21,7 @@ export default function CourseGalleryTile({ entry, onOpen, onAction, selectMode 
     >
       {selectMode && <SelectionMark selected={selected} />}
       <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-        <svg width="64" height="64" viewBox="0 0 64 64" role="img" aria-label={`${entry.title}: ${percent}%`} style={{ flexShrink: 0 }}>
-          <circle cx="32" cy="32" r={RADIUS} strokeWidth="6" style={{ fill: 'none', stroke: 'rgba(255,255,255,0.12)' }} />
-          {percent > 0 && (
-            <circle
-              cx="32" cy="32" r={RADIUS} strokeWidth="6" strokeLinecap="round"
-              style={{ fill: 'none', stroke: state === 'concluído' ? 'var(--green)' : 'var(--cyan)' }}
-              strokeDasharray={`${(CIRC * percent) / 100} ${CIRC}`}
-              transform="rotate(-90 32 32)"
-            />
-          )}
-          <text x="32" y="36" textAnchor="middle" fontSize="13" style={{ fontFamily: 'var(--font)', fill: 'var(--text)' }}>{percent}%</text>
-        </svg>
+        <ProgressRing percent={percent} complete={state === 'concluído'} label={`${entry.title}: ${percent}%`} />
         <button
           type="button"
           tabIndex={selectMode ? -1 : undefined}
