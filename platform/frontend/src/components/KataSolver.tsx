@@ -5,6 +5,7 @@ import { useMediaQuery, MOBILE_QUERY, TOUCH_QUERY } from '../hooks/useMediaQuery
 import { hiddenCasesNote, summarizeResults } from '../lib/kataResults'
 import { useSoftKeyboard } from '../hooks/useSoftKeyboard'
 import { LESSON_CHAT_TOP } from '../lib/layout'
+import { SAFE_BOTTOM } from '../lib/safeArea'
 import { DIFF_COLOR, renderDesc, type ExerciseData } from '../lib/exercise'
 import type { VerifyResult } from '../lib/kataPhase'
 import api from '../api/client'
@@ -488,7 +489,7 @@ export const KataSolver = forwardRef<KataSolverHandle, KataSolverProps>(function
         <div style={{
           flexShrink: 0, display: 'flex', gap: 8,
           padding: isMobile ? '8px var(--sp-5)' : '8px 12px',
-          paddingBottom: 'calc(8px + env(safe-area-inset-bottom, 0px))',
+          paddingBottom: `calc(8px + ${SAFE_BOTTOM})`,
           borderTop: '1px solid var(--border)', background: 'var(--bg)',
         }}>
           <button
@@ -606,7 +607,7 @@ export const KataSolver = forwardRef<KataSolverHandle, KataSolverProps>(function
           {accepted && (
             <div style={{
               flexShrink: 0, padding: '10px 16px',
-              paddingBottom: `calc(10px + env(safe-area-inset-bottom, 0px))`,
+              paddingBottom: `calc(10px + ${SAFE_BOTTOM})`,
               borderTop: '1px solid var(--border)',
             }}>
               <button

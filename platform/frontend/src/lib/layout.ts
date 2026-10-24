@@ -1,3 +1,5 @@
+import { SAFE_BOTTOM } from './safeArea.ts'
+
 /** Margem lateral das páginas no mobile. 16 deixava o conteúdo colado na borda. */
 export const MOBILE_GUTTER = 20
 
@@ -28,7 +30,7 @@ export const DOCK_SIDE_INSET = MOBILE_GUTTER
 
 /** Altura da dock, o respiro até a borda e o home indicator do iPhone. */
 export const MOBILE_NAV_SPACE =
-  `calc(${DOCK_HEIGHT + DOCK_GAP}px + env(safe-area-inset-bottom, 0px))`
+  `calc(${DOCK_HEIGHT + DOCK_GAP}px + ${SAFE_BOTTOM})`
 
 /**
  * Troca o gutter lateral de desktop pelo de mobile, preservando o vertical.
@@ -53,7 +55,7 @@ export function pagePadding(desktop: string, isMobile: boolean, absorbTopBar = f
   const g = `${MOBILE_GUTTER}px`
   const t = absorbTopBar ? `calc(${MOBILE_TOP_GAP}px + ${MOBILE_TOP_INSET})` : p[0]
   const bottomBase = p.length >= 3 ? p[2] : p[0]
-  const b = `calc(${bottomBase} + ${reserveDock ? MOBILE_NAV_SPACE : 'env(safe-area-inset-bottom, 0px)'})`
+  const b = `calc(${bottomBase} + ${reserveDock ? MOBILE_NAV_SPACE : SAFE_BOTTOM})`
 
   switch (p.length) {
     case 1:

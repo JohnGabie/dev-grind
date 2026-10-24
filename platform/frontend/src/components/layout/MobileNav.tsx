@@ -3,12 +3,13 @@ import { NavLink, useLocation, useNavigate } from 'react-router-dom'
 import { MOBILE_TABS, MOBILE_SHEET } from './navItems'
 import { useAuth } from '../../auth/AuthContext'
 import { DOCK_HEIGHT, DOCK_GAP, DOCK_SIDE_INSET, MOBILE_NAV_SPACE } from '../../lib/layout'
+import { SAFE_BOTTOM } from '../../lib/safeArea'
 
 const BAR_HEIGHT = DOCK_HEIGHT
 const SIDE_INSET = DOCK_SIDE_INSET
 
 // Onde a base da dock se apoia — a folha "Mais" empilha logo acima dela.
-const DOCK_BOTTOM = `calc(${DOCK_GAP}px + env(safe-area-inset-bottom, 0px))`
+const DOCK_BOTTOM = `calc(${DOCK_GAP}px + ${SAFE_BOTTOM})`
 
 const SHEET_PATHS = MOBILE_SHEET.map(i => i.to)
 

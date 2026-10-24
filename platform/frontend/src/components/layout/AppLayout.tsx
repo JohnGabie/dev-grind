@@ -7,6 +7,7 @@ import { ChatPanel } from '../ChatPanel'
 import { CosmeticsProvider } from '../../contexts/CosmeticsContext'
 import { useMediaQuery, MOBILE_QUERY } from '../../hooks/useMediaQuery'
 import { TOPBAR_SPACE, MOBILE_TOP_INSET, MOBILE_NAV_SPACE, LESSON_CHAT_TOP } from '../../lib/layout'
+import { SAFE_BOTTOM } from '../../lib/safeArea'
 import { isInsideCourse, isInsideLesson, isOnSolvePage } from '../../lib/courseProgress'
 import api from '../../api/client'
 
@@ -161,7 +162,7 @@ function ChatBubble() {
   const isMobile = useMediaQuery(MOBILE_QUERY)
   const inCourse = isMobile && isInsideCourse(location.pathname)
   const inLesson = isMobile && isInsideLesson(location.pathname)
-  const dockSpace = inCourse ? 'env(safe-area-inset-bottom, 0px)' : MOBILE_NAV_SPACE
+  const dockSpace = inCourse ? SAFE_BOTTOM : MOBILE_NAV_SPACE
   const [lessonDock, setLessonDock] = useState(false)
   useEffect(() => {
     const sync = () => setLessonDock(document.body.dataset.courseLesson === '1')
@@ -293,7 +294,7 @@ export default function AppLayout() {
           flex: 1,
           overflow: 'hidden',
           position: 'relative',
-          paddingBottom: isMobile && isFixedLayout ? (hideDock ? 'env(safe-area-inset-bottom, 0px)' : MOBILE_NAV_SPACE) : 0,
+          paddingBottom: isMobile && isFixedLayout ? (hideDock ? SAFE_BOTTOM : MOBILE_NAV_SPACE) : 0,
         }}>
           {!isMobile && !hideTopBar && <TopBar />}
           {/* Só os layouts de altura fixa cedem a faixa aqui — o header próprio

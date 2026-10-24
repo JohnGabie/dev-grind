@@ -9,7 +9,7 @@ test('default still reserves the dock on mobile', () => {
 test('reserveDock false drops the nav space on mobile', () => {
   const p = pagePadding('14px 48px 14px', true, false, false)
   assert.ok(!p.includes(MOBILE_NAV_SPACE))
-  assert.equal(p, '14px 20px calc(14px + env(safe-area-inset-bottom, 0px))')
+  assert.equal(p, '14px 20px calc(14px + var(--safe-bottom, env(safe-area-inset-bottom, 0px)))')
 })
 
 test('desktop ignores reserveDock', () => {
