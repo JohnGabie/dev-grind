@@ -109,23 +109,17 @@ describe('roadmapEntry', () => {
     assert.equal(entry.id, 'r1')
     assert.equal(entry.title, 'Backend')
     assert.equal(entry.detail, '1 curso')
-    assert.equal(entry.action, 'começar')
+    assert.equal('action' in entry, false)
     assert.equal(entry.created_at, '2026-10-02 10:00:00')
   })
-  it('has no action when the roadmap is empty', () => {
-    assert.equal(roadmapEntry(roadmap([]), mapOf()).action, null)
-    assert.equal(roadmapEntry(roadmap(['gone']), mapOf()).action, null)
-  })
-  it('uses the plural and continuar when in progress', () => {
+  it('uses the plural for several courses', () => {
     const entry = roadmapEntry(roadmap(['a', 'b', 'c']), mapOf(course('a', 1, 3), course('b', 0, 2), course('c', 0, 2)))
     assert.equal(entry.detail, '3 cursos')
-    assert.equal(entry.action, 'continuar')
     assert.equal(entry.done, 1)
     assert.equal(entry.total, 7)
   })
-  it('is revisar when concluded', () => {
+  it('is concluded when every lesson is done', () => {
     const entry = roadmapEntry(roadmap(['a']), mapOf(course('a', 2, 2)))
     assert.equal(entry.state, 'concluído')
-    assert.equal(entry.action, 'revisar')
   })
 })

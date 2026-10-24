@@ -1,5 +1,5 @@
 import type { Course } from './courseModel'
-import { actionLabel, courseProgress, type CourseState } from './courseProgress.ts'
+import { courseProgress, type CourseState } from './courseProgress.ts'
 
 export interface ListEntry {
   id: string
@@ -10,7 +10,6 @@ export interface ListEntry {
   done: number
   total: number
   state: CourseState
-  action: 'começar' | 'continuar' | 'revisar' | null
   detail?: string
   position?: number
 }
@@ -26,7 +25,6 @@ export function courseEntry(course: Course, position?: number): ListEntry {
     done,
     total,
     state,
-    action: actionLabel(state),
     position,
   }
 }

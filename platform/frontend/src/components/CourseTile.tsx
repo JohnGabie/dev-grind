@@ -13,13 +13,13 @@ export default function CourseTile({ entry, onOpen, selectMode = false, selected
   const inert = selectMode ? selectModeInert : undefined
   return (
     <div
-      className="card"
+      className="card course-item"
       {...pick.props}
       style={{ minWidth: 0, padding: '12px 14px', cursor: 'pointer', boxSizing: 'border-box', display: 'flex', flexDirection: 'column', gap: 8, ...pick.style }}
     >
       {selectMode && <SelectionMark selected={selected} />}
       <button
-        type="button"
+        type="button" className="course-item__open"
         tabIndex={selectMode ? -1 : undefined}
         style={{ ...inert, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', width: '100%', minHeight: isMobile ? 'var(--ctl-md)' : undefined, textAlign: 'left', background: 'none', border: 'none', padding: 0, color: 'inherit', cursor: 'pointer', fontFamily: 'inherit', fontWeight: 700, fontSize: isMobile ? 'var(--fs-base)' : 14, overflowWrap: 'anywhere' }}
       >

@@ -17,7 +17,7 @@ function make(id: string, title: string, done: number, total: number, created_at
 
 function roadmap(id: string, title: string, done: number, total: number, created_at?: string): ListEntry {
   const state = total > 0 && done >= total ? 'concluído' : done > 0 ? 'em andamento' : 'não iniciado'
-  return { id, kind: 'roadmap', title, description: null, created_at, done, total, state, action: 'começar', detail: '2 cursos' }
+  return { id, kind: 'roadmap', title, description: null, created_at, done, total, state, detail: '2 cursos' }
 }
 
 const ids = (list: ListEntry[]) => list.map(c => c.id)

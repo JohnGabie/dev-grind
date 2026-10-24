@@ -13,11 +13,11 @@ import { tabFromParam, type CourseTab } from '../lib/courseTab'
 import { bulkDelete } from '../lib/bulkDelete'
 import { deleteCoursesNotice, deleteRoadmapParams } from '../lib/roadmapDelete'
 import { retainFailed, selectionAfterQuery, toggleSelection } from '../lib/selection'
-import { roadmapEntry, roadmapTarget } from '../lib/roadmapModel'
+import { roadmapEntry } from '../lib/roadmapModel'
 import { useCoursePrefs } from '../hooks/useCoursePrefs'
 import { visibleEntries } from '../lib/courseView'
 import { courseEntry } from '../lib/listEntry'
-import { continueTarget, lessonKeyOf } from '../lib/courseProgress'
+import { lessonKeyOf } from '../lib/courseProgress'
 import { useMediaQuery, MOBILE_QUERY, NARROW_QUERY } from '../hooks/useMediaQuery'
 import PageHeader from '../components/PageHeader'
 import SkillPath from '../components/SkillPath'
@@ -649,17 +649,6 @@ export default function CoursesPage() {
               selected={selected}
               onToggle={entry => setSelected(current => toggleSelection(current, entry.id))}
               onOpen={entry => navigate(roadmapTab ? `/roadmaps/${entry.id}` : `/courses/${entry.id}`)}
-              onAction={entry => {
-                if (roadmapTab) {
-                  const roadmap = roadmaps.find(item => item.id === entry.id)
-                  const target = roadmap ? roadmapTarget(roadmap, byId) : null
-                  if (!target) return navigate(`/roadmaps/${entry.id}`)
-                  return navigate(target.lessonKey ? `/courses/${target.courseId}/${target.lessonKey}` : `/courses/${target.courseId}`)
-                }
-                const target = byId.get(entry.id)
-                const key = target ? continueTarget(target) : null
-                navigate(key ? `/courses/${entry.id}/${key}` : `/courses/${entry.id}`)
-              }}
             />
           )
         })()}

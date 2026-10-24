@@ -1,11 +1,11 @@
 import PositionNumber from './PositionNumber'
 import SelectionMark from './SelectionMark'
-import { selectableProps, selectModeAction, selectModeInert, type SelectProps } from '../lib/selectable'
+import { selectableProps, selectModeInert, type SelectProps } from '../lib/selectable'
 import type { ListEntry } from '../lib/listEntry'
 import { STATE_COLOR } from '../lib/courseDisplay'
 import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
 
-export default function CourseCard({ entry, onOpen, onAction, selectMode = false, selected = false, onToggle }: { entry: ListEntry; onOpen: () => void; onAction: () => void } & SelectProps) {
+export default function CourseCard({ entry, onOpen, selectMode = false, selected = false, onToggle }: { entry: ListEntry; onOpen: () => void } & SelectProps) {
   const isMobile = useMediaQuery(MOBILE_QUERY)
   const { done, total, state, detail } = entry
   const percent = total > 0 ? Math.round((done / total) * 100) : 0
@@ -13,10 +13,10 @@ export default function CourseCard({ entry, onOpen, onAction, selectMode = false
   const pick = selectableProps({ title: entry.title, selectMode, selected, onToggle, onOpen })
   const inert = selectMode ? selectModeInert : undefined
   return (
-    <div className="card" {...pick.props} style={{ width: '100%', boxSizing: 'border-box', padding: '18px 20px', cursor: 'pointer', ...pick.style }}>
+    <div className="card course-item" {...pick.props} style={{ width: '100%', boxSizing: 'border-box', padding: '18px 20px', cursor: 'pointer', ...pick.style }}>
       {selectMode && <SelectionMark selected={selected} />}
       <button
-        type="button"
+        type="button" className="course-item__open"
         tabIndex={selectMode ? -1 : undefined}
         style={{ ...inert, display: 'block', width: '100%', textAlign: 'left', background: 'none', border: 'none', padding: 0, color: 'inherit', cursor: 'pointer', fontFamily: 'inherit' }}
       >
@@ -38,20 +38,6 @@ export default function CourseCard({ entry, onOpen, onAction, selectMode = false
           <span style={{ color: 'var(--text)' }}>{detail ? detail + ' · ' : ''}{done} de {total} lições</span>
           <span style={{ color: STATE_COLOR[state] }}> · {state}</span>
         </span>
-        {entry.action && (
-          <button
-            type="button"
-            disabled={selectMode}
-            aria-hidden={selectMode || undefined}
-            onClick={e => { e.stopPropagation(); onAction() }}
-            style={{
-              background: 'none', border: '1px solid var(--cyan)', borderRadius: 'var(--radius-lg)', color: 'var(--cyan)', cursor: 'pointer',
-              fontFamily: 'inherit', fontSize: size, padding: '0 14px', minHeight: isMobile ? 'var(--ctl-md)' : 32, whiteSpace: 'nowrap', ...(selectMode ? selectModeAction : undefined),
-            }}
-          >
-            {entry.action}
-          </button>
-        )}
       </div>
     </div>
   )

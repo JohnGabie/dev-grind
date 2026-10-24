@@ -1,5 +1,5 @@
 import type { Course } from './courseModel.ts'
-import { actionLabel, continueTarget, courseProgress, type CourseState } from './courseProgress.ts'
+import { continueTarget, courseProgress, type CourseState } from './courseProgress.ts'
 import type { ListEntry } from './listEntry.ts'
 
 export interface Roadmap {
@@ -60,7 +60,6 @@ export function roadmapEntry(roadmap: Roadmap, byId: Map<string, Course>): ListE
     done,
     total,
     state,
-    action: courses === 0 ? null : actionLabel(state),
     detail: courses === 1 ? '1 curso' : `${courses} cursos`,
   }
 }
