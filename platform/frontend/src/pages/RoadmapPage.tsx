@@ -5,7 +5,8 @@ import RoadmapTrail from '../components/RoadmapTrail'
 import { useCourseData } from '../hooks/useCourseData'
 import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
 import { STATE_COLOR } from '../lib/courseDisplay'
-import { pagePadding } from '../lib/layout'
+import { actionLabel } from '../lib/courseProgress'
+import { MOBILE_TOP_INSET, pagePadding } from '../lib/layout'
 import { roadmapCourses, roadmapProgress, roadmapTarget } from '../lib/roadmapModel'
 import { trailStages } from '../lib/roadmapTrail'
 
@@ -58,12 +59,33 @@ export default function RoadmapPage() {
       <Link to={ROADMAPS_TAB} style={{ color: 'var(--cyan)', display: 'inline-flex', alignItems: 'center', minHeight: 'var(--ctl-md)', fontSize: base }}>
         ← roadmaps
       </Link>
-      <h1 style={{ fontSize: isMobile ? 'var(--fs-xl)' : 32, margin: '4px 0 8px', overflowWrap: 'anywhere' }}>{roadmap.title}</h1>
-      {roadmap.description && <p style={{ color: 'var(--muted)', fontSize: base, margin: '0 0 12px', overflowWrap: 'anywhere' }}>{roadmap.description}</p>}
-      <p style={{ fontSize: base, margin: '0 0 var(--sp-6)', overflowWrap: 'anywhere' }}>
-        {count === 1 ? '1 curso' : `${count} cursos`} · {done} de {total} lições
-        <span style={{ color: STATE_COLOR[state] }}> · {state}</span>
-      </p>
+      <div style={{
+        position: 'sticky', top: 0, zIndex: 5, background: 'var(--bg)', borderBottom: '1px solid var(--border)',
+        margin: '0 0 var(--sp-4)', padding: `${isMobile ? MOBILE_TOP_INSET : '0px'} 0 var(--sp-3)`,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--sp-3)', flexWrap: 'wrap',
+      }}>
+        <div style={{ minWidth: 0, flex: '1 1 220px' }}>
+          <h1 style={{ fontSize: isMobile ? 'var(--fs-xl)' : 28, margin: '0 0 var(--sp-1)', overflowWrap: 'anywhere' }}>{roadmap.title}</h1>
+          <p style={{ fontSize: base, margin: 0, overflowWrap: 'anywhere' }}>
+            {count === 1 ? '1 curso' : `${count} cursos`} · {done} de {total} lições
+            <span style={{ color: STATE_COLOR[state] }}> · {state}</span>
+          </p>
+        </div>
+        {members.length > 0 && (
+          <button
+            type="button"
+            onClick={onMainAction}
+            style={{
+              background: 'var(--cyan)', color: 'var(--bg)', border: 'none', borderRadius: 'var(--radius-lg)', cursor: 'pointer',
+              fontFamily: 'inherit', fontWeight: 700, fontSize: base, padding: '0 var(--sp-6)', minHeight: 'var(--ctl-primary)',
+              boxSizing: 'border-box', flex: isMobile ? '1 1 100%' : '0 0 auto',
+            }}
+          >
+            {actionLabel(state)}
+          </button>
+        )}
+      </div>
+      {roadmap.description && <p style={{ color: 'var(--muted)', fontSize: base, margin: '0 0 var(--sp-4)', overflowWrap: 'anywhere' }}>{roadmap.description}</p>}
 
       {members.length === 0 ? (
         <p style={{ color: 'var(--muted)', fontSize: base, margin: '16px 0 0' }}>Roadmap vazio. A IA adiciona cursos aqui.</p>
