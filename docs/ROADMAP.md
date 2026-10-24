@@ -96,15 +96,21 @@ The recommended option is first in each row.
 | D2 | Course creation from the phone | (a) The in-app chat. The phone keeps João's AI key in secure storage. (b) MCP from a computer only. The phone only does courses. (c) Both. | v0.4 |
 | D3 | The MVP subjects | (a) Python and backend: HTTP, SQL, FastAPI. (b) Option (a) plus SQL that runs in the browser. (c) Option (b) plus HTML, CSS and JS. | v0.2, v0.3 |
 | D4 | The leveling test without an AI key | (a) Cards and fixed questions. The AI follow-up runs only when a key exists. (b) The test requires a key. | v0.3 |
-| D5 | The book format in the MVP | (a) PDF only. (b) PDF and EPUB. | v0.4 |
 | D6 | How the learner sees the process data | (a) A settings screen shows what is collected and why. A switch stops the collection. (b) The privacy policy only. | v0.2 |
 | D7 | The daily agent after the core | (a) The agent reads the core estimate and only creates exercises. (b) The core replaces the agent. (c) Both run independently. | v0.2 |
-| D8 | The kyu rank | (a) Hide the rank in the MVP. (b) Keep the rank with the label "activity". (c) Calculate the rank from the mastery estimate. | v0.1 |
 | D9 | The MVP language | (a) Portuguese. Each screen keeps its strings in one place, for i18n later. (b) English and Portuguese before the Play Store. | v1.0 |
-| D10 | Book text through MCP | (a) Excerpts with a length limit `[T]`. (b) Full pages. | v0.1 |
-| D11 | A book delete | (a) Keep the reading record: title, pages read, related work. (b) Delete everything. | v0.1 |
-| D12 | A delete that the AI asks for | (a) The platform shows a confirmation before the delete. (b) A soft delete with undo. | v0.1 |
-| D13 | The Profile page | (a) Keep the learner-profile parts. Hide the social parts. (b) Hide the page until the core exists. | v0.1 |
+| D14 | The move to EPUB (D5) | (a) In v0.1: the reader reads EPUB, and João converts or removes his PDFs. (b) In v0.4, with the app reader. Until then, PDF stays. | v0.1 or v0.4 |
+
+### Decided
+
+| # | Decision | Choice | Date | Applies in |
+|---|---|---|---|---|
+| D5 | The book format | EPUB only. The platform stops supporting PDF. Open item: see D14. | 2026-10-24 | D14 |
+| D8 | The kyu rank | Calculate the rank from the mastery estimate. Until v0.2, the rank stays as it is today. | 2026-10-24 | v0.2 |
+| D10 | Book text through MCP | Excerpts with a length limit `[T]`. Rule SEC8 sets this decision. | 2026-10-24 | v0.1 |
+| D11 | A book delete | Keep the reading record: title, pages read, related work. Remove the file and free the slot. | 2026-10-24 | v0.1 |
+| D12 | A delete that an agent asks for | A soft delete. The item stays in a trash for 30 days `[T]`. The learner can undo the delete in that period. | 2026-10-24 | v0.1 |
+| D13 | The Profile page | Keep the learner-profile parts. Hide the social parts (bio, links, cover, portfolio) until v2. | 2026-10-24 | v0.1 |
 
 ## 6. What does not matter for the MVP
 
@@ -129,7 +135,7 @@ A version is done when each "Done when" item passes. Write the evidence next to 
 3. Set the free book slots to 3 (N9). Remove the slot purchase while the store is hidden.
 4. Save every kata attempt, failures included (N1).
 5. Validate the course format in the Worker (N2).
-6. Apply decisions D8, D10, D11, D12 and D13.
+6. Apply decisions D10, D11, D12 and D13.
 7. For each parked branch, decide: finish, slice or drop.
 8. Write the security ADR with the rules SEC1-SEC8 (N15). The status is `Proposed`.
 9. Audit the current code against SEC1-SEC8. Record each finding in section 9.

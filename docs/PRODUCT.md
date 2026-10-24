@@ -172,7 +172,8 @@ help from AI.
 
 ### 5.4 Books
 - **Book slots:** the learner buys slots with G-Coins and puts their own books in the platform.
-- **Format:** PDF today; EPUB is likely better, because it lets the platform give the reading its own look.
+- **Format: EPUB only (João, 2026-10-24).** The platform stops supporting PDF. EPUB lets the platform give the
+  reading its own look. The roadmap (decision D14) sets when the change happens.
 - **Audio later:** AI-generated audiobook. João reads, but staying in a text is hard for him without audio.
 - **Books as raw material:** build a course from a book; from the page or chapter being read, ask the chat for an
   exercise right there, saved with it.
