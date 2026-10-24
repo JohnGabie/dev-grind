@@ -25,6 +25,7 @@ import { type FillPart, type Lesson, type Step } from '../lib/courseModel'
 import { pagePadding } from '../lib/layout'
 import { KataSolver, type KataSolverHandle } from '../components/KataSolver'
 import type { ExerciseData } from '../lib/exercise'
+import { enterInBlank, enterKeyHintFor } from '../lib/fillEnter'
 import { footerAction, footerButton, initialKataState, loadErrorMessage, phaseAfterLoad, phaseAfterVerify, type KataPhase } from '../lib/kataPhase'
 
 type KataStep = {
@@ -57,6 +58,10 @@ const chipStyle = (on: boolean, isMobile: boolean): CSSProperties => ({
 })
 
 const BLANK_CH = { s: 3, m: 8, l: 16 }
+
+// The learner's answer is what the learner typed: the soft keyboard must not
+// capitalize, correct or complete it (`html` -> `HTML`, `ola` -> `Olá`).
+const NO_KEYBOARD_EDITS = { autoCapitalize: 'off', autoCorrect: 'off', autoComplete: 'off', spellCheck: false } as const
 
 function blankAnswers(step: Extract<Step, { type: 'fill' }>) {
   return step.parts.filter((part): part is Extract<FillPart, { kind: 'blank' }> => part.kind === 'blank')
@@ -92,6 +97,7 @@ function StepView({
   const isMobile = useMediaQuery(MOBILE_QUERY)
   const [activeBlank, setActiveBlank] = useState(0)
   const [termFocus, setTermFocus] = useState(false)
+  const blankRefs = useRef<(HTMLInputElement | null)[]>([])
 
   if (step.type === 'kata') {
     if (kata.phase === 'error' || !kata.exercise) {
@@ -185,11 +191,20 @@ function StepView({
                       {measure}
                     </span>
                     <input
+                      ref={element => { blankRefs.current[current] = element }}
                       value={shown}
                       size={1}
                       onChange={event => onBlank(current, flat(event.target.value))}
                       onFocus={() => setActiveBlank(current)}
-                      spellCheck={false}
+                      onKeyDown={event => {
+                        if (event.key !== 'Enter') return
+                        event.preventDefault()
+                        const next = enterInBlank(blanks, current)
+                        if (next.kind === 'focus') blankRefs.current[next.index]?.focus()
+                        else onSubmit()
+                      }}
+                      enterKeyHint={enterKeyHintFor(blanks, current)}
+                      {...NO_KEYBOARD_EDITS}
                       aria-label={`espaço ${current + 1}`}
                       style={{ ...fieldStyle, width: '100%', minWidth: 0 }}
                     />
@@ -247,7 +262,7 @@ function StepView({
           <textarea
             value={value}
             onChange={e => onChange(e.target.value)}
-            spellCheck={false}
+            {...NO_KEYBOARD_EDITS}
             style={{
               minHeight: 280, resize: 'vertical', padding: 14, borderRadius: 10,
               border: '1px solid var(--border)', background: 'rgba(255,255,255,0.03)',
@@ -283,7 +298,7 @@ function StepView({
           onKeyDown={e => { if (e.key === 'Enter') onSubmit() }}
           onFocus={() => setTermFocus(true)}
           onBlur={() => setTermFocus(false)}
-          spellCheck={false}
+          {...NO_KEYBOARD_EDITS}
           style={{
             width: '100%', border: 'none', background: 'transparent', color: 'var(--text)',
             fontFamily: 'var(--f-mono)', fontVariantLigatures: 'none', fontSize: isMobile ? 'var(--fs-input)' : 15, outline: 'none',
