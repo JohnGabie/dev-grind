@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import CourseNotFound from '../components/CourseNotFound'
 import RoadmapTrail from '../components/RoadmapTrail'
 import { useCourseData } from '../hooks/useCourseData'
@@ -56,14 +56,18 @@ export default function RoadmapPage() {
 
   return shell(
     <>
-      <Link to={ROADMAPS_TAB} style={{ color: 'var(--cyan)', display: 'inline-flex', alignItems: 'center', minHeight: 'var(--ctl-md)', fontSize: base }}>
-        ← roadmaps
-      </Link>
       <div style={{
         position: 'sticky', top: 0, zIndex: 5, background: 'var(--bg)', borderBottom: '1px solid var(--border)',
-        margin: '0 0 var(--sp-4)', padding: `${isMobile ? MOBILE_TOP_INSET : '0px'} 0 var(--sp-3)`,
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--sp-3)', flexWrap: 'wrap',
+        margin: '0 0 var(--sp-4)', padding: `${isMobile ? MOBILE_TOP_INSET : 'var(--sp-2)'} 0 var(--sp-3)`,
       }}>
+        <button
+          type="button"
+          onClick={() => navigate(ROADMAPS_TAB)}
+          style={{ background: 'none', border: 'none', color: 'var(--cyan)', cursor: 'pointer', fontFamily: 'inherit', padding: 0, marginBottom: isMobile ? 0 : 10, display: isMobile ? 'inline-flex' : undefined, alignItems: isMobile ? 'center' : undefined, minHeight: isMobile ? 'var(--ctl-md)' : undefined, fontSize: base }}
+        >
+          ← roadmaps
+        </button>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 'var(--sp-3)', flexWrap: 'wrap' }}>
         <div style={{ minWidth: 0, flex: '1 1 220px' }}>
           <h1 style={{ fontSize: isMobile ? 'var(--fs-xl)' : 28, margin: '0 0 var(--sp-1)', overflowWrap: 'anywhere' }}>{roadmap.title}</h1>
           <p style={{ fontSize: base, margin: 0, overflowWrap: 'anywhere' }}>
@@ -84,6 +88,7 @@ export default function RoadmapPage() {
             {actionLabel(state)}
           </button>
         )}
+        </div>
       </div>
       {roadmap.description && <p style={{ color: 'var(--muted)', fontSize: base, margin: '0 0 var(--sp-4)', overflowWrap: 'anywhere' }}>{roadmap.description}</p>}
 
