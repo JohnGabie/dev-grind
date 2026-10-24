@@ -198,7 +198,7 @@ function StepView({
                       onChange={event => onBlank(current, flat(event.target.value))}
                       onFocus={() => setActiveBlank(current)}
                       onKeyDown={event => {
-                        if (event.key !== 'Enter') return
+                        if (event.key !== 'Enter' || event.nativeEvent.isComposing) return
                         event.preventDefault()
                         const next = enterInBlank(blanks, current)
                         if (next.kind === 'focus') blankRefs.current[next.index]?.focus()
