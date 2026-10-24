@@ -2,8 +2,9 @@ import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useSta
 import Editor, { type OnMount } from '@monaco-editor/react'
 import { usePyodide, type TestResult } from '../hooks/usePyodide'
 import { useMediaQuery, MOBILE_QUERY } from '../hooks/useMediaQuery'
-import { summarizeResults } from '../lib/kataResults'
-import type { ExerciseData } from '../lib/exercise'
+import { hiddenCasesNote, summarizeResults } from '../lib/kataResults'
+import { DIFF_COLOR, renderDesc, type ExerciseData } from '../lib/exercise'
+import type { VerifyResult } from '../lib/kataPhase'
 import api from '../api/client'
 
 /**
@@ -12,7 +13,7 @@ import api from '../api/client'
  * Navigation, the title check and the chat stay with the caller.
  */
 
-export type VerifyResult = 'passed' | 'failed' | 'post_error' | 'grader_error' | 'busy'
+export type { VerifyResult }
 
 export type KataSolverHandle = {
   /** Whole suite. POST /submissions only on a full pass with a 2xx answer.
@@ -169,8 +170,6 @@ export const KataSolver = forwardRef<KataSolverHandle, KataSolverProps>(function
 
   useImperativeHandle(ref, () => ({ verify }), [verify])
 
-  if (mode === 'lesson') return null
-
   const editor = (
     <Editor
       height="100%"
@@ -250,6 +249,104 @@ export const KataSolver = forwardRef<KataSolverHandle, KataSolverProps>(function
       })}
     </div>
   )
+
+  const barraTokens = (
+    <div style={{
+      flexShrink: 0, display: 'flex', gap: 6,
+      padding: isMobile ? '7px var(--sp-5)' : '7px 10px', overflowX: 'auto',
+      borderTop: '1px solid var(--border)',
+      background: 'var(--bg-card)',
+    }}>
+      {TOKENS.map(t => (
+        <button
+          key={t.rotulo}
+          // onPointerDown + preventDefault: um clique normal tiraria o foco do
+          // editor e fecharia o teclado a cada token inserido.
+          onPointerDown={e => { e.preventDefault(); inserirToken(t.inserir, t.voltar ?? 0) }}
+          style={{
+            flexShrink: 0, minWidth: 44, height: 44, padding: '0 12px',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            background: 'var(--bg)', border: '1px solid var(--border)',
+            borderRadius: 7, color: 'var(--text)', cursor: 'pointer',
+            fontSize: isMobile ? 'var(--fs-base)' : 14, fontFamily: 'var(--f-mono)',
+            WebkitTapHighlightColor: 'transparent',
+          }}
+        >
+          {t.rotulo}
+        </button>
+      ))}
+    </div>
+  )
+
+  // ── Lição: uma coluna dentro da lição; o rodapé da lição é o único botão ───
+  if (mode === 'lesson') {
+    const diffColor = DIFF_COLOR[exercise.difficulty] || 'var(--muted)'
+    const feito = exercise.user_status === 'completed' || allPassed
+    return (
+      <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 16, width: '100%', minWidth: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, minWidth: 0 }}>
+          <span style={{
+            fontSize: isMobile ? 'var(--fs-xs)' : 10, fontWeight: 700, color: diffColor, fontFamily: 'var(--f-mono)',
+            padding: '3px 8px', borderRadius: 'var(--radius-sm)', letterSpacing: '0.05em',
+            background: `${diffColor}14`, border: `1px solid ${diffColor}30`, flexShrink: 0,
+          }}>
+            {exercise.difficulty}
+          </span>
+          <h2 style={{ margin: 0, fontSize: isMobile ? 'var(--fs-lg)' : 18, fontWeight: 700, color: 'var(--text)', minWidth: 0, overflowWrap: 'anywhere' }}>
+            {exercise.title}
+          </h2>
+          {feito && (
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-label="feito" style={{ flexShrink: 0 }}>
+              <polyline points="20 6 9 17 4 12" />
+            </svg>
+          )}
+        </div>
+
+        <div style={{ fontSize: isMobile ? 'var(--fs-base)' : 14, lineHeight: 1.8, color: 'var(--muted)', overflowWrap: 'anywhere' }}
+          dangerouslySetInnerHTML={{ __html: renderDesc(exercise.description) }} />
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {exercise.test_cases.filter(tc => tc.visible).map(tc => (
+            <div key={tc.id} className="card" style={{ padding: '10px 14px' }}>
+              <p className="f-mono" style={{ fontSize: 'var(--fs-xs)', color: 'var(--muted)', opacity: 0.6, margin: '0 0 5px' }}>
+                {tc.description}
+              </p>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', minWidth: 0 }}>
+                <code className="f-mono" style={{ fontSize: 'var(--fs-sm)', color: 'var(--text)', overflowWrap: 'anywhere' }}>{tc.input}</code>
+                <span style={{ color: 'var(--border-lit)' }}>→</span>
+                <code className="f-mono" style={{ fontSize: 'var(--fs-sm)', color: 'var(--green)', overflowWrap: 'anywhere' }}>{tc.expected}</code>
+              </div>
+            </div>
+          ))}
+          {hiddenCount > 0 && (
+            <p className="f-mono" style={{ fontSize: 'var(--fs-xs)', color: 'var(--muted)', margin: '4px 0 0' }}>
+              {hiddenCasesNote(hiddenCount, 'ao verificar')}
+            </p>
+          )}
+        </div>
+
+        <div style={{ flex: 1, minHeight: 280, display: 'flex', flexDirection: 'column', borderRadius: 10, border: '1px solid var(--border)', overflow: 'hidden' }}>
+          {/* Monaco mede o pai: o absoluto dá a ele a altura que o flex calculou. */}
+          <div style={{ position: 'relative', flex: 1, minHeight: 0 }}>
+            <div style={{ position: 'absolute', inset: 0 }}>{editor}</div>
+          </div>
+          {isMobile && barraTokens}
+        </div>
+
+        {(results || runError) && (
+          <div aria-live="polite" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {results && (
+              <span className="f-mono" style={{ fontSize: 'var(--fs-sm)', fontWeight: 700, color: allPassed ? 'var(--green)' : 'var(--red)' }}>
+                {passedCount}/{totalCount}
+              </span>
+            )}
+            {avisoErro}
+            {listaResultados}
+          </div>
+        )}
+      </div>
+    )
+  }
 
   // ── Desktop: a coluna da direita do split 38/62 ─────────────────────────────
   if (!isMobile) return (
@@ -356,31 +453,7 @@ export const KataSolver = forwardRef<KataSolverHandle, KataSolverProps>(function
       <div style={{ flex: 1, minHeight: 0 }}>{editor}</div>
 
       {/* Barra de tokens, logo acima do teclado. */}
-      <div style={{
-        flexShrink: 0, display: 'flex', gap: 6,
-        padding: isMobile ? '7px var(--sp-5)' : '7px 10px', overflowX: 'auto',
-        borderTop: '1px solid var(--border)',
-        background: 'var(--bg-card)',
-      }}>
-        {TOKENS.map(t => (
-          <button
-            key={t.rotulo}
-            // onPointerDown + preventDefault: um clique normal tiraria o foco do
-            // editor e fecharia o teclado a cada token inserido.
-            onPointerDown={e => { e.preventDefault(); inserirToken(t.inserir, t.voltar ?? 0) }}
-            style={{
-              flexShrink: 0, minWidth: 44, height: 44, padding: '0 12px',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'var(--bg)', border: '1px solid var(--border)',
-              borderRadius: 7, color: 'var(--text)', cursor: 'pointer',
-              fontSize: isMobile ? 'var(--fs-base)' : 14, fontFamily: 'var(--f-mono)',
-              WebkitTapHighlightColor: 'transparent',
-            }}
-          >
-            {t.rotulo}
-          </button>
-        ))}
-      </div>
+      {barraTokens}
 
       {/* Ações no terço do polegar. Com o teclado aberto elas saem: quem está
           digitando quer a barra de tokens ali, não os botões. */}
